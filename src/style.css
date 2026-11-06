@@ -53,3 +53,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .camera-permission{background:var(--sheet);color:var(--ink);padding:20px;border-radius:16px;flex:none}.camera-permission h2{font-size:18px;line-height:1.6}.camera-permission p{margin:12px 0 18px}.camera-permission .secondary{margin-top:10px}
 .real-camera-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.real-camera-controls p{grid-column:1/-1}.real-camera-controls .secondary{font-size:13px;color:var(--pine);min-height:48px}
 .camera-screen:has(.real-camera)>.turn-card,.camera-screen:has(.real-camera)>.direction-arrow,.camera-screen:has(.real-camera)>.camera-bottom{display:none}
+
+/* Default deployment is the app; ?preview=1 opts into the design review shell. */
+.studio.app-shell{height:100dvh;min-height:100dvh;padding:0;gap:0;align-items:stretch;background:var(--paper)}
+.app-shell>.studio-intro,.app-shell>.studio-controls,.app-shell .status-bar,.app-shell .phone-bottom{display:none}
+.app-shell>.phone{width:100%;max-width:480px;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.app-shell .app-header{flex-shrink:0}.app-shell .home-header{height:64px}
+.app-shell .example-label{font-size:11px;font-weight:400;color:var(--muted);margin-left:10px;white-space:nowrap}
+.app-shell .navigation-top .example-label{display:inline-block;padding:4px 7px;border-radius:5px;background:var(--sheet);color:var(--pine)}
+.app-shell .home-hero,.app-shell .recent-section,.app-shell .location-section,.app-shell .live-entry,.app-shell .ongoing-guide,.app-shell .home-footer{flex-shrink:0}

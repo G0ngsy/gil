@@ -16,6 +16,7 @@ const places = [
 
 function App() {
  const [mode,setMode]=useState<'demo'|'live'>(new URLSearchParams(location.search).get('mode')==='live'?'live':'demo');
+ const review=new URLSearchParams(location.search).get('preview')==='1';
  const initial = new URLSearchParams(location.search).get('screen');
  const [screen,setScreen]=useState<Screen>(initial && initial in screenNames ? initial as Screen:'home');
  const [activeGuide,setActiveGuide]=useState<{place:typeof places[number];screen:'map'|'camera'|'recheck'}|null>(initial==='map'||initial==='camera'||initial==='recheck'?{place:places[0],screen:initial}:null);
@@ -48,14 +49,14 @@ function App() {
  function showNotice(text:string){setNotice(text);timers.current.push(setTimeout(()=>setNotice(''),2200));}
  function retry(){setChecking(true);timers.current.push(setTimeout(()=>{setChecking(false);go('camera');},900));}
  function switchMode(next:'demo'|'live') { const url=new URL(location.href);if(next==='live'){url.searchParams.set('mode','live');url.searchParams.delete('screen');}else{url.searchParams.delete('mode');url.searchParams.set('screen','home');setScreen('home');}history.replaceState(null,'',url);setMode(next); }
- if(mode==='live')return <LiveNavigation onDemo={()=>switchMode('demo')}/>;
+ if(mode==='live')return <LiveNavigation onDemo={()=>switchMode('demo')} review={review}/>;
 
- return <div className="studio">
+ return <div className={`studio ${review?'':'app-shell'}`}>
   <aside className="studio-intro"><span className="eyebrow">GILBIT / DESIGN STUDY 01</span><h1>낯선 길에도,<br/>마음 놓이는 한 걸음.</h1><p>한옥의 차분함을 담은<br/>나만의 도보 길잡이, 길빛.</p><div className="studio-rule"/><span className="studio-note">클릭하며 둘러보는 디자인 시안<br/>지도·경로는 예시이며 카메라는 선택해 켤 수 있어요.</span><div className="swatches"><i/><i/><i/><i/></div><span className="edition">HANJI · PINE · LIGHT</span></aside>
   <div className={`phone ${camera?'camera-phone':''}`}>
    <div className="status-bar" aria-hidden="true"><span>9:41</span><span className="status-icons">▮▮▮ <span>⌁</span> ▰</span></div>
-   {!navigating && <header className={`app-header ${screen==='home'?'home-header':''}`}>{screen==='home'?<button className="brand-menu" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}><Brand/></button>:<button className="icon-button" aria-label="뒤로 가기" onClick={()=>go(screen==='search'?'home':screen==='route'?'search':'home')}><Icon name="back"/></button>}{screen!=='home'&&<span className="header-title">{screenNames[screen]}</span>}{screen==='home'?<button className="icon-button home-bell" aria-label="알림" onClick={()=>showNotice('새로운 알림이 없어요.')}><Icon name="bell" size={23}/></button>:<button className="sample-badge" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}>디자인 시안 ···</button>}</header>}
-   {navigating && <div className="navigation-top"><span><Brand compact/> <button className="nav-demo" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}>안내 시안 ···</button></span><button className="icon-button" aria-label="안내 화면 닫기" onClick={()=>go('home')}><Icon name="close"/></button></div>}
+   {!navigating && <header className={`app-header ${screen==='home'?'home-header':''}`}>{screen==='home'?<button className="brand-menu" aria-label={review?"시안 확인 메뉴":"길빛 홈"} aria-expanded={review?menu:undefined} onClick={()=>review?setMenu(!menu):go('home')}><Brand/></button>:<button className="icon-button" aria-label="뒤로 가기" onClick={()=>go(screen==='search'?'home':screen==='route'?'search':'home')}><Icon name="back"/></button>}{screen!=='home'&&<span className="header-title">{screenNames[screen]}</span>}{screen==='home'?<button className="icon-button home-bell" aria-label="알림" onClick={()=>showNotice('새로운 알림이 없어요.')}><Icon name="bell" size={23}/></button>:review?<button className="sample-badge" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}>디자인 시안 ···</button>:<span className="example-label">예시 경로</span>}</header>}
+   {navigating && <div className="navigation-top"><span><Brand compact/> {review?<button className="nav-demo" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}>안내 시안 ···</button>:<span className="example-label">예시 경로</span>}</span><button className="icon-button" aria-label="안내 화면 닫기" onClick={()=>go('home')}><Icon name="close"/></button></div>}
    <main ref={content} className={`app-content screen-${screen}`} key={screen}>
     {screen==='home' && <>
      <section className="home-hero"><Lattice/><Lattice right/><h2>어디로<br/>걸어갈까요<span>?</span></h2><form className="search-form" onSubmit={e=>{e.preventDefault();search(query);}}><button className="home-search-submit" aria-label="검색" type="submit"><Icon name="search" size={23}/></button><input aria-label="목적지 검색" placeholder="장소나 주소를 검색하세요" value={query} onChange={e=>setQuery(e.target.value)}/></form><Hanok/></section>
@@ -76,8 +77,8 @@ function App() {
    <div className="phone-bottom" aria-hidden="true"><span/></div>
   </div>
   <aside className="studio-controls"><span className="eyebrow">PROTOTYPE INDEX</span><h2>한 걸음씩,<br/>둘러보세요.</h2><nav aria-label="시안 화면 선택">{(Object.keys(screenNames) as Screen[]).map((s,i)=><button key={s} className={screen===s?'active':''} aria-current={screen===s?'page':undefined} onClick={()=>go(s)}><span>0{i+1}</span>{screenNames[s]}<Icon name="arrow" size={16}/></button>)}</nav><p>장소·지도·거리 사진은 예시입니다.<br/>카메라는 켜기 버튼을 누를 때만 권한을 요청해요.</p></aside>
-  <button ref={trigger} className="preview-toggle" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}><Icon name="dots" size={19}/><span>시안 보기</span></button>
-  {menu&&<div className="preview-popover"><div className="popover-heading"><strong>시안 확인 메뉴</strong><button aria-label="시안 메뉴 닫기" className="icon-button" onClick={()=>{setMenu(false);trigger.current?.focus();}}><Icon name="close" size={19}/></button></div><p>실제 이동 없이 화면을 살펴보세요.</p>{(Object.keys(screenNames) as Screen[]).map((s,i)=><button key={s} onClick={()=>go(s)}><span>0{i+1}</span>{screenNames[s]}<Icon name="chevron" size={16}/></button>)}<label className="dark-control"><input type="checkbox" checked={dark} onChange={e=>setDark(e.target.checked)}/>카메라 어두운 배경 확인</label></div>}
+  {review&&<button ref={trigger} className="preview-toggle" aria-label="시안 확인 메뉴" aria-expanded={menu} onClick={()=>setMenu(!menu)}><Icon name="dots" size={19}/><span>시안 보기</span></button>}
+  {review&&menu&&<div className="preview-popover"><div className="popover-heading"><strong>시안 확인 메뉴</strong><button aria-label="시안 메뉴 닫기" className="icon-button" onClick={()=>{setMenu(false);trigger.current?.focus();}}><Icon name="close" size={19}/></button></div><p>실제 이동 없이 화면을 살펴보세요.</p>{(Object.keys(screenNames) as Screen[]).map((s,i)=><button key={s} onClick={()=>go(s)}><span>0{i+1}</span>{screenNames[s]}<Icon name="chevron" size={16}/></button>)}<label className="dark-control"><input type="checkbox" checked={dark} onChange={e=>setDark(e.target.checked)}/>카메라 어두운 배경 확인</label></div>}
   <dialog ref={dialog} onCancel={()=>setEnding(false)} onClick={e=>{if(e.target===e.currentTarget)setEnding(false);}}><div className="dialog-inner"><span className="dialog-icon"><Icon name="compass" size={28}/></span><h2>길 안내를 마칠까요?</h2><p>안내를 종료하고 처음으로 돌아가요.</p><button className="primary" onClick={()=>{setEnding(false);setActiveGuide(null);go('home');}}>안내 종료하기</button><button className="secondary" onClick={()=>setEnding(false)}>계속 안내받기</button></div></dialog>
  </div>;
 }
