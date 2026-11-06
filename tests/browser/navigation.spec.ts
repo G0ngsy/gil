@@ -102,3 +102,28 @@ for(const width of [360,390,430]){
   await expect(page.getByText('이 경로에는 상세 안내가 없어요.',{exact:false})).toBeVisible();
   await expect(page.getByRole('list',{name:'전체 도보 안내'})).toHaveCount(0);
  });
+
+for(const screen of ['map','camera','recheck']){
+ test(`${screen}의 X는 화면만 닫고 목적지와 안내 화면을 유지한다`,async({page})=>{
+  await page.goto(`/?screen=${screen}`);
+  if(screen==='recheck')await page.getByRole('button',{name:'다시 확인',exact:true}).click();
+  await page.getByRole('button',{name:'안내 화면 닫기'}).click();
+  const card=page.getByRole('region',{name:'진행 중인 안내'});
+  await expect(card).toContainText('중앙도서관');await expect(page.getByRole('dialog')).not.toBeVisible();
+  await page.waitForTimeout(1000);await expect(card).toBeVisible();
+  await card.getByRole('button',{name:'안내로 돌아가기'}).click();
+  await expect(page).toHaveURL(new RegExp(`screen=${screen}`));
+  await page.getByRole('button',{name:'안내 화면 닫기'}).click();
+  await card.getByRole('button',{name:'안내 종료',exact:true}).click();
+  await page.getByRole('button',{name:'계속 안내받기'}).click();await expect(card).toBeVisible();
+  await card.getByRole('button',{name:'안내 종료',exact:true}).click();
+  await page.getByRole('button',{name:'안내 종료하기',exact:true}).click();await expect(card).toHaveCount(0);
+ });
+}
+test('다른 목적지를 살펴봐도 기존 안내의 목적지는 유지된다',async({page})=>{
+ await page.goto('/?screen=map');await page.getByRole('button',{name:'안내 화면 닫기'}).click();
+ await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('보건소');await page.getByRole('button',{name:'검색',exact:true}).click();
+ await page.getByRole('button',{name:/건강·복지 · 가장 가까운 곳/}).click();
+ await page.getByRole('button',{name:'뒤로 가기'}).click();await page.getByRole('button',{name:'뒤로 가기'}).click();
+ await page.getByRole('button',{name:'안내로 돌아가기'}).click();await expect(page.locator('.destination-tag')).toHaveText('중앙도서관');
+});
