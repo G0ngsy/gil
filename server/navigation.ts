@@ -1,4 +1,4 @@
-import { isCoordinate, type Coordinate, type Place, type WalkingRoute, type WalkingStep } from '../shared/navigation';
+import { isCoordinate, type Coordinate, type Place, type WalkingRoute, type WalkingStep } from '../shared/navigation.js';
 
 export class NavigationError extends Error {
  constructor(public status: number, public code: string, message: string) { super(message); }

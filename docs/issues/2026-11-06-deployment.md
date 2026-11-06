@@ -18,3 +18,17 @@ CLI 프로젝트 생성 성공. 배포 결과는 docs/deployment-validation.md�
 - 원인: 백업 폴더 제외 규칙 누락, 디렉터리 전체를 명시하지 않은 패턴.
 - 해결방법: outputs/**와 docs/** 등 명시적인 재귀 제외 패턴을 적용했다.
 - 결과: 배포 전 파일 목록 재검증으로 불필요한 업로드를 방지한다.
+
+## 첫 Preview 배포 제한
+
+- 문제: --environment preview 배포가 first_deployment_production으로 중단됐다. 업로드와 원격 빌드는 시작되지 않았다.
+- 원인: Vercel CLI는 신규 프로젝트의 첫 배포를 Production으로 요구한다.
+- 해결방법: 현재 준비한 코드로 기본 vercel.app 주소에 첫 배포할지 사용자 확인을 요청했다. 기존 다른 프로젝트 설정은 변경하지 않는다.
+- 결과: 사용자가 첫 Production 배포를 승인했고 기본 주소 gilbit.vercel.app으로 배포했다.
+
+## 배포 서버 모듈 참조 오류
+
+- 문제: 첫 배포의 홈은 HTTP 200이지만 /api/navigation?action=config가 HTTP 500 FUNCTION_INVOCATION_FAILED를 반환했다.
+- 원인: Node.js 24 ESM 환경에서 확장자가 없는 ../server/navigation 참조를 해석하지 못했다. 로컬 Vite/tsx에서는 재현되지 않았다. 서버 내부의 shared 참조도 같은 형태였다.
+- 해결방법: API와 서버의 런타임 상대 import에 컴파일 후 파일 확장자 .js를 명시했다. TypeScript는 해당 .ts 소스로 해석한다.
+- 결과: 로컬 빌드·단위 테스트 18개 통과. 재배포 후 설정 API HTTP 200 및 searchConfigured:false, UI 준비 안내 정상 표시 확인.
