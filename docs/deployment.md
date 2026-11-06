@@ -5,7 +5,7 @@
 - Vercel 프로젝트 gilbit, 팀 sunyoungs-projects-c61fca90, Hobby.
 - 첫 배포는 Vercel 정책에 따라 사용자 승인 후 Production으로 진행했다. 기능 검증용 배포이며 TMAP 키는 설정하지 않는다.
 - 주소: https://gilbit.vercel.app
-- 최종 배포 ID: dpl_ER61fG8P3oV7itWiKC4f2138SfEt
+- 최종 배포 ID: dpl_n5aTBaj1VApfB2mVAc6W9FLCxxkG
 - React/Vite 정적 화면과 /api/navigation 함수를 함께 빌드한다.
 - Node.js는 package.json의 22 이상 25 미만 조건에 따라 사용한다.
 - 로컬 환경 파일·에이전트 설정·검증 캡처·문서는 .vercelignore로 CLI 업로드에서 제외한다.
