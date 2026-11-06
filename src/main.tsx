@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Brand, DemoMap, Hanok, Icon, Lattice } from './ui';
 import './style.css';
 import { Motif } from './Motif';
+import { LiveNavigation } from './navigation/LiveNavigation';
 
 type Screen = 'home'|'search'|'route'|'map'|'camera'|'recheck'|'arrival';
 const screenNames: Record<Screen,string> = {home:'목적지 검색',search:'검색 결과',route:'도보 경로',map:'지도 안내',camera:'카메라 안내',recheck:'방향 재확인',arrival:'도착 안내'};
@@ -13,6 +14,7 @@ const places = [
 ];
 
 function App() {
+ const [mode,setMode]=useState<'demo'|'live'>(new URLSearchParams(location.search).get('mode')==='live'?'live':'demo');
  const initial = new URLSearchParams(location.search).get('screen');
  const [screen,setScreen]=useState<Screen>(initial && initial in screenNames ? initial as Screen:'home');
  const [query,setQuery]=useState('');
@@ -32,7 +34,7 @@ function App() {
  const camera = screen==='camera'||screen==='recheck';
  const navigating = camera||screen==='map';
  const go=(next:Screen)=>{if(next==='route'||next==='home')setRating('');setScreen(next);setMenu(false);setChecking(false);setNotice('');};
- useEffect(()=>{content.current?.scrollTo(0,0); const url=new URL(location.href);url.searchParams.set('screen',screen);history.replaceState(null,'',url);},[screen]);
+ useEffect(()=>{if(mode!=='demo')return;content.current?.scrollTo(0,0); const url=new URL(location.href);url.searchParams.set('screen',screen);history.replaceState(null,'',url);},[screen,mode]);
  useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
  useEffect(()=>{
   if(ending){lastFocus.current=document.activeElement as HTMLElement;dialog.current?.showModal();}
@@ -43,6 +45,8 @@ function App() {
  const search=(value:string)=>{setQuery(value);go('search');};
  function showNotice(text:string){setNotice(text);timers.current.push(setTimeout(()=>setNotice(''),2200));}
  function retry(){setChecking(true);timers.current.push(setTimeout(()=>{setChecking(false);go('camera');},900));}
+ function switchMode(next:'demo'|'live') { const url=new URL(location.href);if(next==='live'){url.searchParams.set('mode','live');url.searchParams.delete('screen');}else{url.searchParams.delete('mode');url.searchParams.set('screen','home');setScreen('home');}history.replaceState(null,'',url);setMode(next); }
+ if(mode==='live')return <LiveNavigation onDemo={()=>switchMode('demo')}/>;
 
  return <div className="studio">
   <aside className="studio-intro"><span className="eyebrow">GILBIT / DESIGN STUDY 01</span><h1>낯선 길에도,<br/>마음 놓이는 한 걸음.</h1><p>한옥의 차분함을 담은<br/>나만의 도보 길잡이, 길빛.</p><div className="studio-rule"/><span className="studio-note">클릭하며 둘러보는 디자인 시안<br/>실제 위치·지도·카메라는 연결하지 않습니다.</span><div className="swatches"><i/><i/><i/><i/></div><span className="edition">HANJI · PINE · LIGHT</span></aside>
@@ -53,7 +57,7 @@ function App() {
    <main ref={content} className={`app-content screen-${screen}`} key={screen}>
     {screen==='home' && <>
      <section className="home-hero"><Lattice/><Lattice right/><h2>어디로<br/>걸어갈까요<span>?</span></h2><form className="search-form" onSubmit={e=>{e.preventDefault();search(query);}}><button className="home-search-submit" aria-label="검색" type="submit"><Icon name="search" size={23}/></button><input aria-label="목적지 검색" placeholder="장소나 주소를 검색하세요" value={query} onChange={e=>setQuery(e.target.value)}/></form><Hanok/></section>
-     <section className="recent-section"><div className="section-heading"><h3>최근 목적지</h3><span>익숙한 곳으로 한 걸음</span></div><div className="recent-grid">{places.map(p=><button key={p.name} className="place-tile" onClick={()=>search(p.name)}><span className="place-icon"><Icon name={p.icon} size={26}/></span><strong>{p.name}</strong><small>도보 {p.time}</small></button>)}</div></section>
+     <section className="live-entry"><button className="secondary" onClick={()=>switchMode('live')}><Icon name="search" size={19}/>실제 장소로 길찾기<Icon name="arrow" size={18}/></button><p>지도·도보 경로 연결 화면으로 이동해요.</p></section><section className="recent-section"><div className="section-heading"><h3>최근 목적지</h3><span>익숙한 곳으로 한 걸음</span></div><div className="recent-grid">{places.map(p=><button key={p.name} className="place-tile" onClick={()=>search(p.name)}><span className="place-icon"><Icon name={p.icon} size={26}/></span><strong>{p.name}</strong><small>도보 {p.time}</small></button>)}</div></section>
      <section className="location-section"><div className="location-label"><Icon name="locate" size={18}/><span>현재 위치</span><small>예시 위치</small></div><div className="location-card"><div><strong>중앙공원 산책로 입구</strong><p>한빛시 중앙동 일대</p></div><button aria-label="현재 위치 예시 확인" className="icon-button" onClick={()=>showNotice('시안에서는 예시 위치를 사용해요.')}><Icon name="locate" size={20}/></button></div><DemoMap compact/></section><div className="home-footer"><div className="motif-divider"><span className="little-line"/><Motif kind="knot" size={23}/><span className="little-line"/></div><p>길을 찾는 순간도, 편안하도록</p></div>
     </>}
     {screen==='search' && <section className="search-page padded"><form className="search-form" onSubmit={e=>{e.preventDefault();setQuery(query.trim());}}><Icon name="search"/><input aria-label="검색어" placeholder="장소나 주소를 검색하세요" value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button type="button" aria-label="검색어 지우기" onClick={()=>setQuery('')}><Icon name="close" size={19}/></button>}</form><div className="section-heading"><h3>검색 결과 <em>{results.length}</em></h3><span>가까운 거리순</span></div><p className="sample-description">아래 장소와 주소는 시안용 가상 정보예요.</p><div className="search-results">{results.map((p,i)=><button key={p.name} className="result-card" onClick={()=>choose(p)}><span className="result-icon"><Icon name={p.icon}/></span><div className="result-copy"><small>{p.tag}{i===0?' · 가장 가까운 곳':''}</small><h3>{p.name}</h3><p>{p.address}</p><span><Icon name="walk" size={16}/>{p.distance}<i/>도보 {p.time}</span></div><Icon name="chevron" size={19}/></button>)}</div>{results.length===0&&<div className="empty-state"><div className="empty-lattice"><Motif kind="lattice" size={54}/></div><h3>일치하는 장소가 없어요</h3><p>중앙도서관, 시청, 보건소를 검색해 보세요.</p><button className="secondary" onClick={()=>setQuery('')}>전체 예시 장소 보기</button></div>}<div className="quiet-note"><Icon name="leaf" size={19}/><span>목적지를 선택하면<br/>걸어갈 경로를 확인할 수 있어요.</span></div></section>}
