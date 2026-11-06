@@ -1,0 +1,14 @@
+.git/**
+node_modules/**
+dist/**
+.env
+.env.*
+!.env.example
+.agents/**
+.codex/**
+work/**
+outputs/**
+test-results/**
+playwright-report/**
+docs/**
+DESIGN.reference.md
