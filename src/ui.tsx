@@ -26,8 +26,11 @@ export function Icon({ name, size = 24 }: { name: string; size?: number }) {
  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.pin}</svg>;
 }
 
-export function Brand() {
- return <span className="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><path d="M5 19Q18 20 25 7q9 11 26 11M10 24l5-8m6 11 2-9m10 9-2-9m12 6-5-8" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><path d="M36 29C11 34 15 40 33 42" fill="none" stroke="#B58A52" strokeWidth="5" strokeLinecap="round"/></svg><span>길빛</span></span>;
+export function Brand({ compact = false }: { compact?: boolean }) {
+ return <span className={`brand supplied-brand ${compact?'compact-brand':''}`} role="img" aria-label="길빛">
+  <svg className="supplied-mark" viewBox="110 205 550 480" aria-hidden="true"><image href="/assets/gilbit-logo-reference.png" width="1774" height="887"/></svg>
+  <svg className="supplied-wordmark" viewBox="853 503 292 160" aria-hidden="true"><image href="/assets/gilbit-logo-reference.png" width="1774" height="887"/></svg>
+ </span>;
 }
 
 export function Hanok() {
@@ -70,4 +73,3 @@ export function DemoMap({ active = false, compact = false, title = '중앙도서
  </svg><span className="map-destination">{title}</span><span className="map-caption">예시 지도</span>
  </div>;
 }
-
