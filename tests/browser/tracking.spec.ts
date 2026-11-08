@@ -8,7 +8,7 @@ test('키나 위치 권한 없이 모의 이동·이탈·복귀·도착을 확�
  await page.getByRole('button',{name:'경로 이탈',exact:true}).click();await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toBeVisible();
  await page.getByRole('button',{name:'경로 복귀',exact:true}).click();await expect(page.getByText('안내 단계 3 / 3')).toBeVisible();
  await page.getByRole('textbox',{name:'오차(m)'}).fill('100');await page.getByRole('button',{name:'도착',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
- await page.getByRole('textbox',{name:'오차(m)'}).fill('5');await page.getByRole('button',{name:'도착',exact:true}).click();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByTestId('remaining')).toHaveText('0m');
+ await page.getByRole('textbox',{name:'오차(m)'}).fill('5');await page.getByRole('button',{name:'도착',exact:true}).click();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);await page.getByRole('button',{name:'도착',exact:true}).click();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByTestId('remaining')).toHaveText('0m');
  await page.getByRole('button',{name:'추적 초기화'}).click();await expect(page.getByTestId('remaining')).toHaveText('300m');expect(apiCalls).toBe(0);
 });
 
@@ -27,15 +27,15 @@ async function emit(page:import('@playwright/test').Page,lat:number,lng:number,a
  },{lat,lng,accuracy});
 }
 test('GPS는 선택 후 시작하고 중지·재시작·도착 시 해제하며 늦은 콜백을 무시한다',async({page})=>{
- await gpsMock(page);await page.goto('/?mode=simulation');
+ await page.clock.install();await gpsMock(page);await page.goto('/?mode=simulation');
  expect(await page.evaluate(()=>(window as unknown as {gpsTest:{calls:number}}).gpsTest.calls)).toBe(0);
  await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await expect(page.getByRole('button',{name:'출발',exact:true})).toBeDisabled();
- await emit(page,37.5665,126.978);await emit(page,37.5675,126.978);await expect(page.getByText('안내 단계 2 / 3')).toBeVisible();
+ await emit(page,37.5665,126.978);await page.clock.fastForward(15000);await emit(page,37.567,126.978);await page.clock.fastForward(15000);await emit(page,37.5675,126.978);await expect(page.getByText('안내 단계 2 / 3')).toBeVisible();
  await emit(page,37.5682,126.979);await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toBeVisible();
- await emit(page,37.5675,126.9794);await expect(page.getByText('안내 단계 3 / 3')).toBeVisible();
+ await emit(page,37.5675,126.979);await expect(page.getByText('안내 단계 3 / 3')).toBeVisible();
  await page.getByRole('button',{name:'GPS 추적 중지',exact:true}).click();
  await emit(page,37.5675,126.980);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
- await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.5675,126.980);
+ await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.5675,126.980);await page.clock.fastForward(1000);await emit(page,37.5675,126.980);
  await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByRole('button',{name:'실제 GPS 추적 시작'})).toBeEnabled();
  expect(await page.evaluate(()=>(window as unknown as {gpsTest:{clears:number[]}}).gpsTest.clears)).toEqual([1,2]);
 });
@@ -65,4 +65,11 @@ test('시안으로 돌아가면 활성 GPS를 해제한다',async({page})=>{
  await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await page.getByRole('button',{name:'시안으로 돌아가기'}).click();
  await expect(page.getByRole('textbox',{name:'목적지 검색',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>sessionStorage.getItem('gps-cleared'))).toBe('1');
+});
+
+test('실제 GPS의 순간적인 목적지 점프는 도착과 단계 전환으로 쓰지 않는다',async({page})=>{
+ await gpsMock(page);await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();
+ await emit(page,37.5665,126.978);await emit(page,37.5675,126.980);
+ await expect(page.getByRole('alert')).toContainText('이동 속도');await expect(page.getByTestId('remaining')).toHaveText('300m');await expect(page.getByText('안내 단계 1 / 3')).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
+ await page.getByRole('button',{name:'GPS 추적 중지',exact:true}).click();
 });
