@@ -75,3 +75,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .simulation-controls {display:grid;gap:12px;margin:20px 0;}
 .simulation-controls label {display:grid;gap:6px;}
 .simulation-controls input {width:100%;box-sizing:border-box;padding:12px;border:1px solid #E9E2D2;border-radius:8px;background:#FFFDF9;color:#252D2A;font:inherit;}
+.simulation-inputs {border:0;padding:0;min-width:0;margin:20px 0;}
+.simulation-inputs legend {font-weight:700;}
