@@ -93,3 +93,4 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .tracking-map-actions button {flex:1;min-width:0;padding:10px 4px;font-size:13px;}
 .tracking-guide h2 {font-size:20px;}
 .tracking-guide button+button {margin-top:8px;}
+.simulation-controls textarea {width:100%;box-sizing:border-box;padding:12px;border:1px solid #E9E2D2;border-radius:8px;background:#FFFDF9;color:#252D2A;font:inherit;resize:vertical;}

@@ -106,3 +106,25 @@ test('경로 밖 GPS도 현재 위치 보기로 확인하고 수신 중단 시 �
  await page.clock.fastForward(21000);await expect(page.getByRole('region',{name:'지도 안내 제어'})).toContainText('마지막 반영 위치');await expect(page.getByTestId('current-position')).toHaveCount(1);
  await page.getByRole('button',{name:'출발',exact:true}).click();await expect(page.getByRole('region',{name:'지도 안내 제어'})).toContainText('모의 좌표 안내 중');await expect(page.getByTestId('remaining')).toHaveText('300m');
 });
+
+test('현장 경로 적용은 GPS를 해제하고 거리·위치·단계를 새 경로로 초기화한다',async({page})=>{
+ await gpsMock(page);let apiCalls=0;page.on('request',request=>{if(request.url().includes('api/navigation')||request.url().includes('openapi.sk.com'))apiCalls++;});
+ await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.5665,126.978);await expect(page.getByTestId('current-position')).toHaveCount(1);
+ await page.getByText('현장 테스트 경로 설정',{exact:true}).click();await page.getByRole('textbox',{name:'테스트 경로 좌표'}).fill('35.1,129.1\n35.1005,129.1\n35.101,129.1');await page.getByRole('button',{name:'현장 경로 적용'}).click();
+ await expect(page.getByTestId('current-position')).toHaveCount(0);await expect(page.getByTestId('remaining')).toHaveText('111m');await expect(page.getByText('출발 테스트 지점',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'출발',exact:true})).toHaveCount(0);
+ await emit(page,37.5675,126.980);await expect(page.getByTestId('current-position')).toHaveCount(0);expect(await page.evaluate(()=>(window as unknown as {gpsTest:{clears:number[]}}).gpsTest.clears)).toEqual([1]);
+ await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,35.1,129.1);await expect(page.getByTestId('current-position')).toHaveAttribute('transform','translate(0 0)');await page.getByRole('button',{name:'GPS 추적 중지',exact:true}).click();
+ await page.getByRole('button',{name:'서울시청 예시로 복원'}).click();await expect(page.getByTestId('remaining')).toHaveText('300m');await expect(page.getByRole('button',{name:'출발',exact:true})).toBeVisible();expect(apiCalls).toBe(0);
+});
+
+test('현장 입력 오류는 기존 경로와 추적을 보존하며 새로고침 후 좌표를 저장하지 않는다',async({page})=>{
+ await gpsMock(page);await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.5665,126.978);
+ await page.getByText('현장 테스트 경로 설정',{exact:true}).click();await page.getByRole('textbox',{name:'테스트 경로 좌표'}).fill('35,129\n35,129');await page.getByRole('button',{name:'현장 경로 적용'}).click();await expect(page.getByRole('alert')).toContainText('5~500m');await expect(page.getByRole('button',{name:'실제 GPS 추적 시작'})).toBeDisabled();await expect(page.getByTestId('current-position')).toHaveCount(1);
+ await page.getByRole('textbox',{name:'테스트 경로 좌표'}).fill('35.1,129.1\n35.1005,129.1');await page.getByRole('button',{name:'현장 경로 적용'}).click();await expect(page.getByTestId('remaining')).toHaveText('56m');
+ await page.reload();await expect(page.getByTestId('remaining')).toHaveText('300m');await page.getByText('현장 테스트 경로 설정',{exact:true}).click();await expect(page.getByRole('textbox',{name:'테스트 경로 좌표'})).toHaveValue('');
+});
+
+for(const width of [360,430])test(`${width}px 現場 경로 편집과 적용된 도식이 화면에 들어온다`,async({page})=>{
+ await page.setViewportSize({width,height:844});await page.goto('/?mode=simulation');await page.getByText('현장 테스트 경로 설정',{exact:true}).click();await page.getByRole('textbox',{name:'테스트 경로 좌표'}).fill('35.1,129.1\n35.1005,129.1\n35.101,129.1');await page.getByRole('button',{name:'현장 경로 적용'}).click();await page.getByRole('region',{name:'예시 경로 지도 안내'}).scrollIntoViewIfNeeded();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`test-results/field-route-${width}.png`});
+});
