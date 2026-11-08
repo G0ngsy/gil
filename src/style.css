@@ -70,3 +70,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .history-confirm{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:var(--paper);border-radius:8px;margin:12px 0}.history-confirm p{grid-column:1/-1;font-size:13px;line-height:1.8}.history-confirm button{font-size:12px;padding:10px;min-height:48px}
 
 .history-compact .history-item{width:100%;padding:8px 0;display:block}.history-compact .history-item strong,.history-compact .history-item small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-compact .history-note{margin-top:8px;font-size:11px}.history-compact .section-heading{margin-bottom:4px}.history-compact .section-heading h3{font-size:16px}.history-compact .text-button{font-size:11px}.live-history>.history-panel{flex-shrink:0}
+
+/* Manual GPS controls follow the established paper and pine palette. */
+.simulation-controls {display:grid;gap:12px;margin:20px 0;}
+.simulation-controls label {display:grid;gap:6px;}
+.simulation-controls input {width:100%;box-sizing:border-box;padding:12px;border:1px solid #E9E2D2;border-radius:8px;background:#FFFDF9;color:#252D2A;font:inherit;}

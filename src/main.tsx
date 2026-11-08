@@ -7,6 +7,7 @@ import {useRecentHistory} from './history';
 import {RecentHistoryPanel} from './RecentHistory';
 import {CameraPreview} from './CameraPreview';
 import { LiveNavigation } from './navigation/LiveNavigation';
+import { SimulationNavigation } from './navigation/SimulationNavigation';
 
 type Screen = 'home'|'search'|'route'|'map'|'camera'|'recheck'|'arrival'|'history';
 const screenNames: Record<Screen,string> = {home:'목적지 검색',search:'검색 결과',route:'도보 경로',map:'지도 안내',camera:'카메라 안내',recheck:'방향 재확인',arrival:'도착 안내',history:'이용 기록'};
@@ -52,6 +53,7 @@ function App() {
  function showNotice(text:string){setNotice(text);timers.current.push(setTimeout(()=>setNotice(''),2200));}
  function retry(){setChecking(true);timers.current.push(setTimeout(()=>{setChecking(false);go('camera');},900));}
  function switchMode(next:'demo'|'live') { const url=new URL(location.href);if(next==='live'){url.searchParams.set('mode','live');url.searchParams.delete('screen');}else{url.searchParams.delete('mode');url.searchParams.set('screen','home');setScreen('home');}history.replaceState(null,'',url);setMode(next); }
+ if(new URLSearchParams(location.search).get('mode')==='simulation')return <SimulationNavigation onExit={()=>{location.href='/?screen=home';}}/>;
  if(mode==='live')return <LiveNavigation onDemo={()=>switchMode('demo')} review={review}/>;
 
  return <div className={`studio ${review?'':'app-shell'}`}>
