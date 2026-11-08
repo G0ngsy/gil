@@ -73,3 +73,36 @@ test('실제 GPS의 순간적인 목적지 점프는 도착과 단계 전환으�
  await expect(page.getByRole('alert')).toContainText('이동 속도');await expect(page.getByTestId('remaining')).toHaveText('300m');await expect(page.getByText('안내 단계 1 / 3')).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
  await page.getByRole('button',{name:'GPS 추적 중지',exact:true}).click();
 });
+
+for(const width of [360,390,430])test(`${width}px 경로 도식에 이동·이탈·복귀·종료를 표시하고 가로 넘침이 없다`,async({page})=>{
+ await page.setViewportSize({width,height:844});await page.goto('/?mode=simulation');
+ const map=page.getByRole('region',{name:'예시 경로 지도 안내'});
+ await expect(map.getByText('실제 지도·도로 정보가 아니에요.')).toBeVisible();await expect(map.getByTestId('current-position')).toHaveCount(0);
+ await page.getByRole('button',{name:'모의 지도 안내 시작'}).click();await page.getByRole('button',{name:'출발',exact:true}).click();
+ const origin=await map.getByTestId('current-position').getAttribute('transform');
+ await page.getByRole('button',{name:'직진 이동',exact:true}).click();await expect(map.getByTestId('current-position')).not.toHaveAttribute('transform',origin!);
+ await page.getByRole('button',{name:'회전 지점',exact:true}).click();await page.getByRole('button',{name:'다음 안내',exact:true}).click();await expect(map.getByTestId('completed-route')).toHaveCount(1);const travelled=await map.getByTestId('completed-route').getAttribute('points');
+ const svg=map.getByRole('img');const whole=await svg.getAttribute('viewBox');await map.getByRole('button',{name:'현재 위치 보기'}).click();await expect(svg).not.toHaveAttribute('viewBox',whole!);
+ await map.getByRole('button',{name:'전체 경로 보기'}).click();await expect(svg).toHaveAttribute('viewBox',whole!);
+ await page.getByRole('button',{name:'경로 이탈',exact:true}).click();await expect(map.locator('.off-route')).toHaveCount(1);await expect(map.getByTestId('completed-route')).toHaveAttribute('points',travelled!);
+ await page.getByRole('button',{name:'경로 복귀',exact:true}).click();await expect(map.locator('.off-route')).toHaveCount(0);
+ await map.scrollIntoViewIfNeeded();await page.screenshot({path:`test-results/tracking-map-${width}.png`});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByRole('button',{name:'지도 안내 종료',exact:true}).click();await expect(map.getByTestId('current-position')).toHaveCount(0);await expect(map.getByTestId('completed-route')).toHaveCount(0);await expect(page.getByRole('region',{name:'지도 안내 제어'})).toContainText('안내 대기');
+});
+
+test('지도는 거부된 GPS 위치로 이동하지 않고 종료 후 늦은 GPS도 무시한다',async({page})=>{
+ await gpsMock(page);await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.5665,126.978);
+ const marker=page.getByTestId('current-position');const before=await marker.getAttribute('transform');await emit(page,37.5675,126.980);
+ await expect(page.getByRole('alert')).toContainText('이동 속도');await expect(marker).toHaveAttribute('transform',before!);
+ await page.getByRole('button',{name:'지도 안내 종료',exact:true}).click();await emit(page,37.5675,126.979);await expect(marker).toHaveCount(0);
+ expect(await page.evaluate(()=>(window as unknown as {gpsTest:{clears:number[]}}).gpsTest.clears)).toEqual([1]);
+});
+
+test('경로 밖 GPS도 현재 위치 보기로 확인하고 수신 중단 시 마지막 위치를 표시한다',async({page})=>{
+ await page.clock.install();await gpsMock(page);await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await emit(page,37.6,127);
+ const map=page.getByRole('region',{name:'예시 경로 지도 안내'});await expect(map.getByRole('note')).toContainText('범위 밖');
+ await map.getByRole('button',{name:'현재 위치 보기'}).click();await expect(map.getByRole('note')).toHaveCount(0);
+ await page.clock.fastForward(21000);await expect(page.getByRole('region',{name:'지도 안내 제어'})).toContainText('마지막 반영 위치');await expect(page.getByTestId('current-position')).toHaveCount(1);
+ await page.getByRole('button',{name:'출발',exact:true}).click();await expect(page.getByRole('region',{name:'지도 안내 제어'})).toContainText('모의 좌표 안내 중');await expect(page.getByTestId('remaining')).toHaveText('300m');
+});
