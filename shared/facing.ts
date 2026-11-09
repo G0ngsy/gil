@@ -1,7 +1,7 @@
 import {distanceBetween,isCoordinate,type Coordinate,type WalkingRoute} from './navigation';
 import type {Progress} from './tracking';
 
-/** Mock contract: clockwise degrees from TRUE north, not raw device alpha or GPS course. */
+/** Normalized contract: clockwise degrees from TRUE north, not raw device alpha or GPS course. */
 export interface HeadingSample {degrees:number;accuracyDegrees:number;timestamp:number;reference:'true-north'|'magnetic'|'relative'}
 export type Facing='forward'|'left'|'right'|'opposite'|'unknown';
 export type UnknownReason='arrived'|'off-route'|'position-unavailable'|'route-unavailable'|'heading-unavailable'|'unsupported-reference'|'invalid-heading'|'stale-heading'|'unreliable-heading'|'boundary-uncertainty';

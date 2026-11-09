@@ -1,6 +1,6 @@
 # 프로젝트 개요
 
-기준일: 2026-11-09 · 코드 기준: `73404ca`
+최종 갱신: 2026-11-10 · 초기 대조: `73404ca`, 후속 구현은 기능별 현황·누적 기록 참조
 
 ## 문제와 목표
 
@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | `/` | 디자인 시안 | 고정 예시 목적지·거리·화면 전환. 실제 카메라는 별도 선택형 미리보기 |
 | `/?mode=live` | 실제 검색용 흐름 | 서버 API와 지도 SDK 연결 코드. 키 미설정 안내 제공, 실제 제공사 인증은 보류 |
-| `/?mode=simulation` | 이동 검증 | 모의 좌표 또는 선택형 실제 GPS와 예시/직접 입력 경로. 실제 길찾기 아님 |
+| `/?mode=simulation` | 이동 검증 | 모의 좌표 또는 선택형 실제 GPS/방위 센서와 예시·직접 입력 경로. 실제 길찾기 아님 |
 
 `?preview=1`은 디자인 검토용 외곽 도구를 표시한다. 기본 화면은 모바일 전체 높이, PC 최대 480px 앱 영역을 사용한다.
 
@@ -32,7 +32,7 @@
 | --- | --- | --- |
 | React/TypeScript UI | 시안, 검색, 카메라, 기록, 이동 테스트 | [앱 진입](../../src/main.tsx), [실제 검색](../../src/navigation/LiveNavigation.tsx), [이동 테스트](../../src/navigation/SimulationNavigation.tsx) |
 | 공유 계산/모델 | 거리·좌표, 진행 판정, 현장 경로 파싱 | [navigation](../../shared/navigation.ts), [tracking](../../shared/tracking.ts), [fieldRoute](../../shared/fieldRoute.ts) |
-| 센서/저장 | GPS watch, 카메라 stream, localStorage | [GPS](../../src/navigation/useGpsTracking.ts), [카메라](../../src/CameraPreview.tsx), [기록](../../src/history.ts) |
+| 센서/저장 | GPS watch, 카메라 stream, localStorage | [GPS](../../src/navigation/useGpsTracking.ts), [방위](../../src/navigation/useHeadingTracking.ts), [카메라](../../src/CameraPreview.tsx), [기록](../../src/history.ts) |
 | 서버 어댑터 | 비공개 REST 키 처리, 응답 정규화·오류 변환 | [핸들러](../../server/navigation.ts), [배포 진입](../../api/navigation.ts) |
 | 빌드/검증 | Vite·TypeScript, Node/tsx 단위 테스트, Playwright | [설정](../../package.json), [브라우저 설정](../../playwright.config.ts) |
 
