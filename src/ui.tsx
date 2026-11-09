@@ -6,6 +6,7 @@ export function Icon({ name, size = 24 }: { name: string; size?: number }) {
  bell: <><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5l-2 3ZM10 21h4M12 2v2"/></>,
  back: <path d="m14 5-7 7 7 7"/>, close: <path d="m6 6 12 12M18 6 6 18"/>,
  arrow: <path d="M4 12h16m-6-6 6 6-6 6"/>,
+ 'turn-back': <path d="M6 20V9a6 6 0 0 1 12 0v11m-4-4 4 4 4-4"/>,
  turn: <path d="M6 21V11a4 4 0 0 1 4-4h10m-5-5 5 5-5 5"/>,
  pin: <><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
  book: <><path d="M12 5C8 2 3 4 3 4v15s5-2 9 1c4-3 9-1 9-1V4s-5-2-9 1Zm0 0v15"/></>,
