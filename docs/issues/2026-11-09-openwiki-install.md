@@ -1,0 +1,30 @@
+# OpenWiki Codex 연동 설치 (2026-11-09)
+
+## 문제
+코드 근거가 연결된 기술 문서 유지 도구로 OpenWiki를 검토·설치하려 했으나 현재 기본 Node.js가 20.20.0이고 OpenWiki 0.9.0은 Node.js 22.22.0 이상을 요구했다.
+
+## 원인
+기존 앱 실행 환경과 새 개발 도구의 런타임 조건이 달랐다. Codex 설정은 사용자 범위에 있어 별도 쓰기 권한도 필요했다.
+
+## 해결방법
+- [공식 저장소](https://github.com/langchain-ai/openwiki), npm 메타데이터, Codex 설치기·설정 관리·스킬 원문을 검토했다. 기존 포트폴리오 자료를 대체하기보다 코드 근거 기술 위키를 보완하는 용도로 판단했다. 전체 의존성 보안 감사 결과를 의미하지 않는다.
+- 공식 Node.js 22.22.0 Windows x64 ZIP을 다운로드하고 SHASUMS256과 대조했다. `%LOCALAPPDATA%/OpenWiki`에 전용 실행 환경을 두고 기존 시스템 Node를 교체하지 않았다.
+- 전용 환경에서 npm으로 `openwiki@0.9.0`을 설치했다. npm의 전역 prefix가 전용 Node 폴더여서 최초 후속 설정 명령이 예상한 Roaming 경로에서 패키지를 찾지 못했다. 실제 prefix를 확인한 뒤 그 설치본을 사용했다. 그 실패 시점에는 Codex 설정을 변경하지 않았다.
+- `%APPDATA%/npm/openwiki.cmd`와 `openwiki.ps1` 진입점을 연결해 `openwiki integrations install codex`를 실행했다. 스킬은 `~/.agents/skills/openwiki`, 관리 블록은 `~/.codex/config.toml`에 설치됐다.
+- Codex 설정을 전용 도구 폴더에 백업했다. 공식 설치기 API로 MCP 실행을 전용 Node와 로컬 실행 진입점에 연결하고, 영수증에도 해당 실행 경로를 기록했다. 진입점에서 `OPENWIKI_TELEMETRY_DISABLED=1`을 설정했다. 자체 기본 실행 파일을 직접 호출하는 경우에는 이 진입점 설정이 적용되지 않을 수 있다.
+
+## 결과
+- 확인: Node ZIP SHA-256 일치, OpenWiki 0.9.0 설치, `integrations install codex` 성공, `integrations list`의 Codex `installed` 표시.
+- 확인: 백업과 관리 블록 제거 후 설정을 비교해 기존 Codex 설정 내용이 보존된 것을 확인했다. `installed` 상태 검사는 설치기의 파일 영수증/설정 검사 결과이며 Codex 앱에서 연결됐다는 증거가 아니다.
+- 미확인: 별도 연결 검증은 최초 Python에 `tomllib`이 없어 실행 전 실패했다. 호환 검사로 다시 서버 실행을 요청했으나 사용자 승인 거절로 실행하지 않았다. 실제 MCP 초기 연결·도구 목록 응답과 재시작한 Codex에서의 도구 인식은 아직 확인하지 못했다.
+- 범위: 위키 초기화·생성·자동 갱신은 실행하지 않았다. 앱 코드와 기존 포트폴리오 문서는 대체하지 않았다. CLI/스킬/설정은 이 PC의 사용자 범위이며 Git을 복제한다고 설치되는 구성이 아니다.
+
+## 다음 사용과 유지
+
+Codex를 재시작한 뒤 OpenWiki 스킬과 연결 도구 표시를 확인한다. 그 후 원하는 저장소에서 ‘이 저장소의 OpenWiki를 초기화해줘’라고 별도로 요청할 수 있다. 초기화 시 생성 범위와 기존 문서 역할을 구분한다. 현재는 설치만 요청받았으므로 위키 생성은 완료로 보고하지 않는다.
+
+재설치·업데이트 시 npm은 전용 Node 폴더의 설치본을 대상으로 사용하고 사용자 실행 진입점/관리 설정도 함께 확인한다. 일반 시스템 Node 20으로 업데이트하지 않는다. 제거가 필요하면 현재 구성에 연결된 `openwiki integrations uninstall codex`로 관리 항목부터 해제하며, 사용자가 요청하기 전에는 제거를 실행하지 않는다.
+
+## Ponytail과의 차이
+
+[Ponytail 스킬](https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md)은 기존 코드·표준 기능 재사용과 작은 완결된 변경을 유도하는 구현/리뷰 지침이다. OpenWiki는 근거가 연결된 코드 문서를 생성·검색·유지하는 스킬과 도구다. 용도가 다르며 이번 작업에서 Ponytail을 설치하거나 활성화하지 않았다.

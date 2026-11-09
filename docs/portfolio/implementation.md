@@ -19,4 +19,8 @@
 | 현장 테스트 경로 | 2~20개 좌표 검증, 직선 도식·GPS 연결, 변경 시 추적 해제, 저장 안 함 | [파서](../../shared/fieldRoute.ts), [편집기](../../src/navigation/FieldRouteEditor.tsx), [이슈](../issues/2026-11-08-field-route.md), [단위](../../tests/fieldRoute.test.ts) | 통행 가능 경로 보장 없음·실외 테스트 필요 |
 | 배포 | 과거 Vercel 배포와 ESM import 수정 기록 존재 | [배포 검증](../deployment-validation.md), [기록 요약 배포 확인](../validation-2026-11-06-history-summary.md) | 최신 GPS/현장 경로의 재배포 확인 없음. Git push를 배포 완료로 쓰지 않음 |
 
+## 개발 문서 도구 — 2026-11-09 추가
+
+OpenWiki 0.9.0 Codex 사용자 범위 연동을 설치했다. 전용 Node.js 22.22.0을 사용해 기존 Node 20 환경과 분리했다. 설치기 상태와 기존 Codex 설정 보존은 확인했으나 실제 MCP 연결 및 재시작 후 도구 인식은 미확인이다. 위키 생성은 실행하지 않았으며 제품 기능 완료나 포트폴리오 자동 완성을 뜻하지 않는다. [설치·검증 범위](../issues/2026-11-09-openwiki-install.md)를 참고한다.
+
 상세 테스트 조건·캡처 성격은 [근거 목록](evidence.md)을 따른다. 과거 이슈의 ‘미구현’이 이후 구현된 경우 현재 상태는 이 표와 최신 코드로 판단하고 과거 기록은 당시 상태로 보존한다.
