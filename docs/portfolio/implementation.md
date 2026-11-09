@@ -17,6 +17,7 @@
 | 오판 방지 | 진행 연속성, 속도 기반 점프 거부, 정확도 포함 도착 2회 확인 | [이슈](../issues/2026-11-08-gps-matching.md), [테스트](../../tests/tracking.test.ts) | 완전 중첩 경로의 방향 확정 불가, 현장 보정 |
 | 이동 경로 도식 | 위치·진행·이탈 색·전체/현재 위치 보기, 안내 종료와 초기화 | [지도](../../src/navigation/TrackingMap.tsx), [이슈](../issues/2026-11-08-tracking-map.md) | 실제 도로 지도 아님, 원시 GPS 궤적 아님 |
 | 현장 테스트 경로 | 2~20개 좌표 검증, 직선 도식·GPS 연결, 변경 시 추적 해제, 저장 안 함 | [파서](../../shared/fieldRoute.ts), [편집기](../../src/navigation/FieldRouteEditor.tsx), [이슈](../issues/2026-11-08-field-route.md), [단위](../../tests/fieldRoute.test.ts) | 통행 가능 경로 보장 없음·실외 테스트 필요 |
+| 휴대폰·경로 방향 비교(2026-11-09) | 진북 기준 모의 방위와 경로 선분 비교, 정방향/좌우/반대/확인 불가, 오차·오래된 입력 검사 | [계산](../../shared/facing.ts), [단위](../../tests/facing.test.ts), [이슈](../issues/2026-11-09-facing-comparison.md) | 순수 계산·모의 검증만 완료. UI/실제 센서/몸 방향 감지는 미연결 |
 | 배포 | 과거 Vercel 배포와 ESM import 수정 기록 존재 | [배포 검증](../deployment-validation.md), [기록 요약 배포 확인](../validation-2026-11-06-history-summary.md) | 최신 GPS/현장 경로의 재배포 확인 없음. Git push를 배포 완료로 쓰지 않음 |
 
 ## 개발 문서 도구 — 2026-11-09 추가
