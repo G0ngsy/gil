@@ -105,6 +105,8 @@ for(const width of [360,390,430]){
 
 for(const screen of ['map','camera','recheck']){
  test(`${screen}의 X는 화면만 닫고 목적지와 안내 화면을 유지한다`,async({page})=>{
+  // Keep the demo recheck auto-transition from racing this close/resume test.
+  if(screen==='recheck'){const now=Date.now();await page.clock.install({time:now});await page.clock.pauseAt(now+100);}
   await page.goto(`/?screen=${screen}`);
   if(screen==='recheck')await page.getByRole('button',{name:'다시 확인',exact:true}).click();
   await page.getByRole('button',{name:'안내 화면 닫기'}).click();

@@ -3,7 +3,7 @@ import {isCoordinate} from '../../shared/navigation';
 import type {Fix} from '../../shared/tracking';
 
 /** Explicit opt-in only. Each session invalidates late browser callbacks. */
-export function useGpsTracking(onFix:(fix:Fix)=>void){
+export function useGpsTracking(onFix:(fix:Fix)=>void, receivedNotice='실제 GPS 위치를 수신하고 있어요. 경로는 예시입니다.'){
  const [active,setActive]=useState(false);
  const [notice,setNotice]=useState('');
  const session=useRef(0),watch=useRef<number|null>(null);
@@ -23,7 +23,7 @@ export function useGpsTracking(onFix:(fix:Fix)=>void){
     if(session.current!==version)return;
     const fix={lat:position.coords.latitude,lng:position.coords.longitude,accuracy:position.coords.accuracy,timestamp:position.timestamp};
     if(!isCoordinate(fix)||!Number.isFinite(fix.accuracy)||fix.accuracy<0||fix.accuracy>30||!Number.isFinite(fix.timestamp)||Date.now()-fix.timestamp>10000||fix.timestamp>Date.now()+1000){setNotice('GPS 오차가 크거나 오래된 위치예요. 새 위치를 기다리고 있어요.');return;}
-    arm();setNotice('실제 GPS 위치를 수신하고 있어요. 경로는 예시입니다.');receiver.current(fix);
+    arm();setNotice(receivedNotice);receiver.current(fix);
    },error=>{if(session.current!==version)return;stop(error.code===1?'위치 권한이 꺼져 있어요. 브라우저 설정에서 허용한 뒤 다시 시작해 주세요.':error.code===3?'GPS 수신 시간이 초과됐어요. 다시 시작해 주세요.':'현재 위치를 받지 못했어요. 안전한 곳에서 다시 시작해 주세요.');},{enableHighAccuracy:true,maximumAge:0,timeout:15000});
    if(session.current===version)watch.current=id;else navigator.geolocation.clearWatch(id);
   }catch{stop('GPS 추적을 시작하지 못했어요. 브라우저 설정을 확인해 주세요.');}
