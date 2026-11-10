@@ -4,6 +4,11 @@ import { createNavigationHandler } from './server/navigation';
 /** The same handler runs locally and in Vercel; no separate dev server/key copy. */
 export default defineConfig(({mode}) => {
  const env = loadEnv(mode, process.cwd(), '');
+ const serverKey=(env.TMAP_APP_KEY || process.env.TMAP_APP_KEY || '').trim();
+ const mapKey=(env.VITE_TMAP_MAP_KEY || '').trim();
+ if(serverKey && mapKey && serverKey===mapKey) {
+  throw new Error('TMAP 서버 키를 공개 지도 키로 재사용할 수 없습니다. VITE_TMAP_MAP_KEY를 비워 두고 공급자의 키 분리·사용 제한 지원을 확인하세요.');
+ }
  const api: Plugin = {
   name:'gilbit-navigation-api',
   configureServer(server) {
