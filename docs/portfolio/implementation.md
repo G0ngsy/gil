@@ -9,7 +9,7 @@
 | 장소 검색·도보 경로 서버 | 키를 서버에서 처리, 좌표·총계 정규화, 오류 메시지 분리, 요청 취소 | [이슈](../issues/2026-11-06-navigation.md), [서버](../../server/navigation.ts), [단위](../../tests/navigation.test.ts), [브라우저](../../tests/browser/navigation.spec.ts) | TMAP 실제 키 인증·검색 결과·지도 SDK 실응답 |
 | 전체 도보 안내 | 제공된 단계 목록·빈 안내 상태, 지도 실패해도 목록/거리 유지 | [이슈](../issues/2026-11-06-route-directions.md), [UI](../../src/navigation/LiveNavigation.tsx) | 실제 경로의 자동 안내 연결 |
 | 화면 닫기/종료 분리 | 시안에서 목적지·마지막 화면 보관, 홈 복귀 카드, 명시적 종료 | [이슈](../issues/2026-11-06-close-guide.md), [검증](../validation-2026-11-06-close-guide.md) | 백그라운드 안내·새로고침 상태 보존은 없음 |
-| 실제 카메라 미리보기 | 선택형 영상, 마이크 미요청, 종료/늦은 스트림 해제, 가상 방향 숨김 | [코드](../../src/CameraPreview.tsx), [이슈](../issues/2026-11-06-camera.md), [검증](../validation-2026-11-06-camera.md) | 휴대폰 렌즈/권한창, AR 공간·방향 추적 |
+| 실제 카메라 미리보기 | 선택형 영상, 마이크 미요청, 종료/늦은 스트림 해제, 가상 방향 숨김 | [코드](../../src/CameraPreview.tsx), [이슈](../issues/2026-11-06-camera.md), [자동 검증](../validation-2026-11-06-camera.md), [갤럭시 울트라 사용자 보고](../validation-2026-11-10-camera-device.md) | 허용·영상 표시 사용자 확인. 정확한 기종/브라우저/배포 버전·렌즈/해제·AR는 미확인 |
 | 최근 검색/목적지 | 모드별 기기 저장, 각 10개, 중복 제거·삭제·저장 실패 안내 | [코드](../../src/history.ts), [이슈](../issues/2026-11-06-history.md), [단위](../../tests/history.test.ts) | 실사용 삭제 경험·브라우저별 저장 정책 |
 | 홈 기록 요약 | 최근 목적지 1개, 전체 관리 화면 분리 | [이슈](../issues/2026-11-06-history-summary.md), [검증](../validation-2026-11-06-history-summary.md) | 사용성 개선 수치 없음 |
 | 경로 진행 계산 | 선분 투영, 남은 거리·단계, 이탈/복귀·도착,역방향 반영 | [계산](../../shared/tracking.ts), [초기 이슈](../issues/2026-11-08-mock-gps-tracking.md), [테스트](../../tests/tracking.test.ts) | 실제 보행 정확도·임계값 보정 |
