@@ -155,3 +155,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 검증: 빌드 및 단위 109개 통과. 전체 브라우저 103개 실행 중 99개 통과·과거 카메라 분류 검사 4개 실패 → 검사 수정 후 진입/인트로 관련 16개 모두 재통과. 최종 CSS 캡처: assets/2026-11-11-intro-closed-390.png, intro-opening-390.png. 전체 103개를 최종 변경 후 다시 실행한 것은 아니다.
 
 2026-11-11 인트로 배포: 구현 d659a5c, production dpl_BwoVvCBa44vhqNQrUgAf6XnphCdc READY. https://gilbit.vercel.app/?intro=1 HTTP 200 및 원격 Chrome 390px에서 인트로→실제 홈 검색란 전환 확인. 실기기 성능은 미확인.
+
+
+## 2026-11-11 홈 수채 배경 교체
+인트로 첨부 풍경을 실제/시안 홈 배경으로 재사용하고 기존 SVG·중복 장식을 제거했다. 빌드 및 모바일 3개 크기 브라우저 검사 통과. 검색 API는 모의 응답. [문제 해결](../issues/2026-11-11-home-landscape.md), 캡처 assets/2026-11-11-home-landscape-390.png. AI 지원 구현.
