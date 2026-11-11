@@ -159,3 +159,5 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 
 ## 2026-11-11 홈 수채 배경 교체
 인트로 첨부 풍경을 실제/시안 홈 배경으로 재사용하고 기존 SVG·중복 장식을 제거했다. 빌드 및 모바일 3개 크기 브라우저 검사 통과. 검색 API는 모의 응답. [문제 해결](../issues/2026-11-11-home-landscape.md), 캡처 assets/2026-11-11-home-landscape-390.png. AI 지원 구현.
+
+2026-11-11 홈 배경 배포: c0de56c → production dpl_FBSbKcSeccRpzEp97EteLA8qGkKt READY. 원격 Chrome 390px에서 HTTP 200·홈 CSS 수채 배경·기존 SVG 제거 확인.
