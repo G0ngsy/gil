@@ -52,3 +52,5 @@
 
 
 2026-11-11 센서 진단: 구현 `8a0c455` 커밋·푸시 후 production `dpl_3FJCEadcirgQbcKvduqpw2XxUxVd` READY. https://gilbit.vercel.app HTTP 200 및 gilbit-sensor-v1/복사 기능 번들 반영 확인. 갤럭시 실제 진단 결과 수집은 사용자 확인 대기.
+
+2026-11-11 인트로 배포: 구현 d659a5c, production dpl_BwoVvCBa44vhqNQrUgAf6XnphCdc READY. https://gilbit.vercel.app/?intro=1 HTTP 200 및 원격 Chrome 390px에서 인트로→실제 홈 검색란 전환 확인. 실기기 성능은 미확인.
