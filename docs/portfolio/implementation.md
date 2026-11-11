@@ -6,8 +6,8 @@
 | --- | --- | --- | --- |
 | 홈·검색·지도·카메라·재확인·도착 시안 | 한지색 UI, 로고, 화면별 문양, 예시 데이터 표시 | [앱 셸 검증](../validation-2026-11-06-app-shell.md), [디자인](../../DESIGN.md), [앱 코드](../../src/main.tsx) | 사용자 사용성·접근성 실사용 평가 |
 | 앱/디자인 검토 화면 분리 | 기본 앱 영역, `preview=1`에서 검토 도구 | [이슈](../issues/2026-11-06-app-shell.md), [테스트](../../tests/browser/app-shell.spec.ts) | 모바일 실제 기기 화면 확인 |
-| 장소 검색·도보 경로 서버 | 키를 서버에서 처리, 좌표·총계 정규화, 오류 메시지 분리, 요청 취소 | [이슈](../issues/2026-11-06-navigation.md), [서버](../../server/navigation.ts), [단위](../../tests/navigation.test.ts), [브라우저](../../tests/browser/navigation.spec.ts) | TMAP 실제 키 인증·검색 결과·지도 SDK 실응답 |
-| 전체 도보 안내 | 제공된 단계 목록·빈 안내 상태, 지도 실패해도 목록/거리 유지 | [이슈](../issues/2026-11-06-route-directions.md), [UI](../../src/navigation/LiveNavigation.tsx) | 실제 경로의 자동 안내 연결 |
+| 장소 검색·도보 경로 서버 | 키를 서버에서 처리, 좌표·총계 정규화, 오류 메시지 분리, 요청 취소 | [이슈](../issues/2026-11-06-navigation.md), [서버](../../server/navigation.ts), [단위](../../tests/navigation.test.ts), [브라우저](../../tests/browser/navigation.spec.ts) | 실제 REST 인증·응답 확인. 실기기 검색 품질·공개 지도 키 조건은 미확인 |
+| 전체 도보 안내 | 제공된 단계 목록·빈 안내 상태, 지도 실패해도 목록/거리 유지 | [이슈](../issues/2026-11-06-route-directions.md), [UI](../../src/navigation/LiveNavigation.tsx) | 실제 경로 GPS 연결 완료. 실외 자동 안내 정확도는 미확인 |
 | 화면 닫기/종료 분리 | 시안에서 목적지·마지막 화면 보관, 홈 복귀 카드, 명시적 종료 | [이슈](../issues/2026-11-06-close-guide.md), [검증](../validation-2026-11-06-close-guide.md) | 백그라운드 안내·새로고침 상태 보존은 없음 |
 | 실제 카메라 미리보기 | 선택형 영상, 마이크 미요청, 종료/늦은 스트림 해제, 가상 방향 숨김 | [코드](../../src/CameraPreview.tsx), [이슈](../issues/2026-11-06-camera.md), [자동 검증](../validation-2026-11-06-camera.md), [갤럭시 울트라 사용자 보고](../validation-2026-11-10-camera-device.md) | 허용·영상 표시 사용자 확인. 정확한 기종/브라우저/배포 버전·렌즈/해제·AR는 미확인 |
 | 최근 검색/목적지 | 모드별 기기 저장, 각 10개, 중복 제거·삭제·저장 실패 안내 | [코드](../../src/history.ts), [이슈](../issues/2026-11-06-history.md), [단위](../../tests/history.test.ts) | 실사용 삭제 경험·브라우저별 저장 정책 |
@@ -20,7 +20,7 @@
 | 휴대폰·경로 방향 비교(2026-11-09) | 진북 기준 모의 방위와 경로 선분 비교, 정방향/좌우/반대/확인 불가, 오차·오래된 입력 검사 | [계산](../../shared/facing.ts), [단위](../../tests/facing.test.ts), [이슈](../issues/2026-11-09-facing-comparison.md) | 계산·모의 검증 완료, 후속 모의 UI는 아래 카드 항목 참조. 실제 센서/몸 방향 감지는 미연결 |
 | 모의 방향 카드(2026-11-09) | 테스트 화면의 유지형 화살표·문구, 모의 각도/오차 조절, 800ms 안정화·확인 불가 즉시 숨김 | [카드](../../src/navigation/FacingGuide.tsx), [브라우저](../../tests/browser/facing.spec.ts), [이슈](../issues/2026-11-09-facing-card.md) | 모의 GPS에서만 동작. 실제 방위 센서·몸 방향 감지는 미연결 |
 | 실제 방위 센서 테스트(2026-11-09~10) | 선택형 권한 요청·수신/오류/해제, WebKit 자북+오차를 로컬 WMM으로 진북 보정, 공통 방향 카드 연결 | [변환](../../shared/compass.ts), [센서 훅](../../src/navigation/useHeadingTracking.ts), [실제 카드](../../src/navigation/SensorFacingGuide.tsx), [이슈](../issues/2026-11-09-heading-sensor.md) | 이벤트 주입 검증. 실기기 미검증. 세로·수평 자세만 지원, 오차 미제공 브라우저는 화살표 숨김 |
-| 배포 | 과거 Vercel 배포와 ESM import 수정 기록 존재 | [배포 검증](../deployment-validation.md), [기록 요약 배포 확인](../validation-2026-11-06-history-summary.md) | 최신 GPS/현장 경로의 재배포 확인 없음. Git push를 배포 완료로 쓰지 않음 |
+| 배포 | 2026-11-11 소스 9150069의 최신 GPS·센서 버전 배포 확인 | [최신 검증](../validation-2026-11-11-release.md) | 휴대폰·실외 확인 대기. Git push와 실제 배포를 구분 |
 
 ## 개발 문서 도구 — 2026-11-09 추가
 
@@ -47,3 +47,7 @@ OpenWiki 0.9.0 사용자 연동을 검토·설치했으나 코드 단순화라�
 ## 2026-11-11 — 최신 전체 회귀 및 실기기 준비
 
 1d6e986 기준 단위 100개·빌드 통과. 센서 주입 테스트의 브라우저 기본 이벤트 경합을 격리한 후 전체 브라우저 79개를 다시 실행해 모두 통과했다. 제품 센서 변경은 없다. [검증](../validation-2026-11-11-release.md), [문제](../issues/2026-11-11-sensor-regression.md), [실기기 순서](../device-check-2026-11-11.md). 실제 휴대폰 GPS/방위 정확도·실외 경로 검증은 아직 미확인이다.
+
+### 같은 날 배포 확인
+
+소스 9150069의 최신 GPS·센서 코드가 gilbit.vercel.app에 배포됨을 확인했다. 실제 REST 검색/경로 각 200, GPS 시작·중지는 공공 좌표 주입으로 확인했다. 지도 SDK는 키 보류로 요청하지 않았다. 이는 최신 배포 미확인 상태를 갱신하며 실기기 GPS/방위·실외 정확도 미확인은 유지한다. [상세](../validation-2026-11-11-release.md).

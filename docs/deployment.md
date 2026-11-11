@@ -3,9 +3,9 @@
 ## 배포 범위
 
 - Vercel 프로젝트 gilbit, 팀 sunyoungs-projects-c61fca90, Hobby.
-- 첫 배포는 Vercel 정책에 따라 사용자 승인 후 Production으로 진행했다. 기능 검증용 배포이며 TMAP 키는 설정하지 않는다.
+- 첫 배포는 Vercel 정책에 따라 사용자 승인 후 Production으로 진행했다. 기능 검증용 배포다. 현재 서버 TMAP_APP_KEY는 기존 Secret 설정을 사용하고 공개 지도 키는 보류한다.
 - 주소: https://gilbit.vercel.app
-- 최종 배포 ID: dpl_n5aTBaj1VApfB2mVAc6W9FLCxxkG
+- 최종 배포 ID: dpl_2bzAEJkdTUopX3p8YpBS8Zd1DRz8
 - React/Vite 정적 화면과 /api/navigation 함수를 함께 빌드한다.
 - Node.js는 package.json의 22 이상 25 미만 조건에 따라 사용한다.
 - 로컬 환경 파일·에이전트 설정·검증 캡처·문서는 .vercelignore로 CLI 업로드에서 제외한다.
@@ -30,3 +30,7 @@
 ## 앱 표시 방식
 
 기본 주소는 앱만 표시한다. 디자인 검토 화면은 https://gilbit.vercel.app/?preview=1 에서 연다.
+
+## 2026-11-11 최신 센서 버전
+
+소스 9150069 배포와 실제 REST/GPS 주입 확인은 [최신 검증](validation-2026-11-11-release.md)을 따른다. 휴대폰은 [GPS·방위 확인 순서](device-check-2026-11-11.md)를 사용한다. 기존 초기 시안 절차와 구분한다.
