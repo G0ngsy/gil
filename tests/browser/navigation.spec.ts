@@ -43,10 +43,10 @@ test('위치 권한을 자동 요청하지 않고 검색→위치→도보 경�
  const request=await requestPromise;expect(request.postDataJSON().start.lng).toBe(126.978);
  await expect(page.getByText('도보 · 340m')).toBeVisible();await expect(page.getByText('6분',{exact:true})).toBeVisible();
  await expect(page.locator('[data-map-ready="true"]')).toBeVisible();
- await page.getByRole('button',{name:'경로 살펴보기',exact:true}).click();await expect(page.getByRole('button',{name:'경로 정보로 돌아가기'})).toBeVisible();
+ await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toHaveCount(0);
  await expect(page.getByText('30m 앞 오른쪽')).toHaveCount(0);await expect(page.getByRole('button',{name:'카메라 안내',exact:true})).toHaveCount(0);
- await page.getByRole('button',{name:'경로 확인 마치기'}).click();await page.getByRole('button',{name:'계속 보기'}).click();
- await page.getByRole('button',{name:'경로 확인 마치기'}).click();await page.getByRole('button',{name:'확인 마치기',exact:true}).click();await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+ await page.getByLabel('안내 메뉴',{exact:true}).click();await page.getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('button',{name:'계속 보기'}).click();
+ await page.getByLabel('안내 메뉴',{exact:true}).click();await page.getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('button',{name:'확인 마치기',exact:true}).click();await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
 });
 test('위치 거부 시 경로 API를 호출하지 않고 재시도 안내한다',async({page})=>{
  await setup(page);let routeCalls=0;page.on('request',r=>{if(r.url().includes('action=route'))routeCalls++;});
@@ -69,14 +69,14 @@ test('검색 실패·빈 결과·늦게 도착하는 과거 응답을 구분한�
 test('경로 실패 시 고정된 거리·시간을 보여주지 않는다',async({page,context})=>{
  await setup(page);await context.grantPermissions(['geolocation']);await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:10});
  await page.route('**/api/navigation?**action=route**',async r=>r.fulfill({status:422,json:{error:{code:'NO_ROUTE',message:'도보 경로를 찾지 못했어요.'}}}));
- await choose(page);await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByRole('alert')).toContainText('도보 경로를 찾지 못');await expect(page.getByText('520m')).toHaveCount(0);await expect(page.getByRole('button',{name:'경로 살펴보기'})).toHaveCount(0);
+ await choose(page);await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByRole('alert')).toContainText('도보 경로를 찾지 못');await expect(page.getByText('520m')).toHaveCount(0);await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toHaveCount(0);
 });
 test('지도 로딩 실패는 경로 정보를 보존하며 재시도할 수 있다',async({page,context})=>{
  await context.grantPermissions(['geolocation']);await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:10});
  await page.route('**/api/navigation?**',async r=>r.fulfill({json:new URL(r.request().url()).searchParams.get('action')==='config'?{searchConfigured:true}:new URL(r.request().url()).searchParams.get('action')==='search'?{places:[place]}:{route}}));
  await page.route('https://apis.openapi.sk.com/tmap/jsv2**',r=>r.abort());
  await choose(page);await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByText('도보 · 340m')).toBeVisible();await expect(page.getByRole('button',{name:'지도 다시 불러오기'})).toBeVisible();
- await page.getByText('전체 도보 안내 보기').click();await expect(page.getByRole('list',{name:'전체 도보 안내'})).toContainText('횡단보도를 따라 이동');
+ await page.getByText('자세히 보기',{exact:true}).click();await expect(page.getByRole('list',{name:'전체 도보 안내'})).toContainText('횡단보도를 따라 이동');
 });
 test('기존 시안의 문양과 화면 전환은 유지된다',async({page})=>{
  await page.goto('/?preview=1');await expect(page.locator('.motif-knot')).toHaveCount(1);await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('중앙');await page.getByRole('button',{name:'검색',exact:true}).click();await page.getByRole('button',{name:/도서관 · 가장 가까운 곳/}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await page.getByRole('button',{name:'카메라 안내',exact:true}).click();await expect(page.locator('.direction-arrow')).toBeVisible();
@@ -88,7 +88,7 @@ for(const width of [360,390,430]){
   await page.setViewportSize({width,height:844});await setup(page);await context.grantPermissions(['geolocation']);await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:10});
   await page.route('**/api/navigation?**action=route**',r=>r.fulfill({json:{route:{...route,steps:[...route.steps,{lat:37.5651,lng:126.9776,description:'도서관 입구까지 보행로를 따라 이동하고 주변의 횡단보도 신호와 차량을 확인해 주세요. '.repeat(4),turnType:201}]}}}));
   await choose(page);await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByText('도보 · 340m')).toBeVisible();
-  await page.getByText('전체 도보 안내 보기').click();await expect(page.getByRole('list',{name:'전체 도보 안내'}).getByRole('listitem')).toHaveCount(2);
+  await page.getByText('자세히 보기',{exact:true}).click();await expect(page.getByRole('list',{name:'전체 도보 안내'}).getByRole('listitem')).toHaveCount(2);
   await page.screenshot({path:`test-results/live-route-${width}.png`});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
  });
@@ -98,7 +98,7 @@ for(const width of [360,390,430]){
   await setup(page);await context.grantPermissions(['geolocation']);await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:10});
   await page.route('**/api/navigation?**action=route**',r=>r.fulfill({json:{route:{...route,steps:[]}}}));
   await choose(page);await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();
-  const summary=page.getByText('전체 도보 안내 보기');await summary.focus();await page.keyboard.press('Enter');
+  const summary=page.getByText('자세히 보기',{exact:true});await summary.focus();await page.keyboard.press('Enter');
   await expect(page.getByText('이 경로에는 상세 안내가 없어요.',{exact:false})).toBeVisible();
   await expect(page.getByRole('list',{name:'전체 도보 안내'})).toHaveCount(0);
  });

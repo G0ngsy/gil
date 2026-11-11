@@ -1,0 +1,18 @@
+import {test,expect,type Page} from '@playwright/test';
+async function setup(page:Page){
+ await page.addInitScript(()=>{navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);navigator.geolocation.watchPosition=ok=>{Object.assign(window,{journeyFix:ok});return 1;};navigator.geolocation.clearWatch=()=>{};});
+ await page.route('https://apis.openapi.sk.com/tmap/jsv2**',r=>r.abort());
+ await page.route('**/api/navigation?**',r=>{const action=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:action==='config'?{searchConfigured:true}:action==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:action==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구 세종대로',category:'도서관',lat:37.5675,lng:126.978}]}});});
+ await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.locator('.map-compact')).toBeVisible();
+}
+for(const width of [360,390,430]){
+ test(`${width}px 지도 실패도 작은 안내로 줄이고 시작·안내·메뉴가 화면에 보인다`,async({page})=>{
+  await page.setViewportSize({width,height:720});await setup(page);
+  expect((await page.locator('.map-compact').boundingBox())!.height).toBeLessThan(150);await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeInViewport();await expect(page.getByRole('button',{name:'안내 종료',exact:true})).toHaveCount(0);await expect(page.getByRole('list',{name:'전체 도보 안내'})).not.toBeVisible();
+  await page.screenshot({path:`test-results/journey-route-${width}.png`});
+  await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toHaveCount(0);await expect(page.getByRole('heading',{name:'현재 위치를 확인하고 있어요'})).toBeInViewport();await expect(page.getByTestId('live-remaining')).toBeInViewport();
+  await page.evaluate(()=>(window as any).journeyFix({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()}));await expect(page.getByRole('heading',{name:'보행로를 따라 직진하세요'})).toBeInViewport();await page.screenshot({path:`test-results/journey-active-${width}.png`});
+  const menu=page.getByLabel('안내 메뉴',{exact:true});await menu.focus();await page.keyboard.press('Enter');await page.getByRole('button',{name:'안내 일시중지',exact:true}).click();await expect(page.getByRole('button',{name:'안내 계속하기'})).toBeVisible();
+  await page.getByRole('button',{name:'안내 계속하기'}).click();await page.getByText('자세히 보기',{exact:true}).click();await expect(page.getByRole('list',{name:'전체 도보 안내'})).toBeVisible();expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+ });
+}
