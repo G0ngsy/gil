@@ -5,7 +5,7 @@
 - Vercel 프로젝트 gilbit, 팀 sunyoungs-projects-c61fca90, Hobby.
 - 첫 배포는 Vercel 정책에 따라 사용자 승인 후 Production으로 진행했다. 기능 검증용 배포다. 현재 서버 TMAP_APP_KEY는 기존 Secret 설정을 사용하고 공개 지도 키는 보류한다.
 - 주소: https://gilbit.vercel.app
-- 최종 배포 ID: dpl_5x2VicgAhQEpQ6HPHEivApFF3Tt7
+- 최종 배포 ID: dpl_88jUr1rdszCVzcAbnoYeDKM9oYrS
 - React/Vite 정적 화면과 /api/navigation 함수를 함께 빌드한다.
 - Node.js는 package.json의 22 이상 25 미만 조건에 따라 사용한다.
 - 로컬 환경 파일·에이전트 설정·검증 캡처·문서는 .vercelignore로 CLI 업로드에서 제외한다.
@@ -42,3 +42,7 @@
 ## 2026-11-11 현재 위치 기준 검색
 
 소스 1a9acd5. 현재 위치 버튼으로 GPS를 확인하고 주변 주소 표시 후 반경 10km 거리순 검색을 사용한다. [최신 검증](validation-2026-11-11-location-search.md)을 참고한다.
+
+## 2026-11-11 경로 안내 화면 정리
+
+소스 87d8231. 경로 확인에서 길 안내 시작을 누르고, 안내 중에는 상단 메뉴에서 일시중지/종료한다. 상세 GPS/전체 경로는 자세히 보기로 펼친다. [검증](validation-2026-11-11-journey-layout.md).
