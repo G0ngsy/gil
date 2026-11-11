@@ -1,15 +1,20 @@
 import {test,expect} from '@playwright/test';
 test.use({reducedMotion:'no-preference'});
-for(const width of [360,390,430,1280])test(`${width}px 문과 로고 분리 후 홈·세션 재진입`,async({page})=>{
+for(const width of [360,390,430,1280])test(`${width}px 문 열림 후 중앙 로고 등장·퇴장과 홈·세션 재진입`,async({page})=>{
  await page.setViewportSize({width,height:844});
  await page.route('**/api/navigation?**',r=>r.fulfill({json:{searchConfigured:false}}));
  await page.goto('/?intro=1');
  const intro=page.getByRole('region',{name:'길빛 시작 화면'});
  await expect(intro).toBeVisible();await expect(page.locator('[inert]')).toHaveCount(1);
  await page.locator('.intro-door-art').first().evaluate((img:HTMLImageElement)=>img.decode());
+ await expect(page.locator('.intro-door .brand')).toHaveCount(0);
+ await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','0');
  await page.screenshot({path:`test-results/intro-closed-${width}.png`});
  await expect(page.locator('.door-intro-opening')).toBeVisible();
  await page.screenshot({path:`test-results/intro-opening-${width}.png`});
+ await expect(page.locator('.door-intro-logo')).toBeVisible();await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','1');
+ await page.screenshot({path:`test-results/intro-logo-${width}.png`});
+ await expect(page.locator('.door-intro-logo-out')).toBeVisible();await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','0');
  await expect(intro).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto('/');await expect(intro).toHaveCount(0);
