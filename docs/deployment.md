@@ -56,3 +56,5 @@
 2026-11-11 인트로 배포: 구현 d659a5c, production dpl_BwoVvCBa44vhqNQrUgAf6XnphCdc READY. https://gilbit.vercel.app/?intro=1 HTTP 200 및 원격 Chrome 390px에서 인트로→실제 홈 검색란 전환 확인. 실기기 성능은 미확인.
 
 2026-11-11 홈 배경 배포: c0de56c → production dpl_FBSbKcSeccRpzEp97EteLA8qGkKt READY. 원격 Chrome 390px에서 HTTP 200·홈 CSS 수채 배경·기존 SVG 제거 확인.
+
+2026-11-11 중앙 로고 순서 배포: 352d65a → dpl_J5y2wcGLXPtR2mTe2B1cgpsMHgaN READY. 원격 Chrome 390px HTTP 200, 문 내부 로고 없음→중앙 로고→퇴장→홈 전환 확인.
