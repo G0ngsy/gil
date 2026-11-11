@@ -24,7 +24,7 @@ async function setup(page:Page,permission='granted',pending=false){
    return (remove as Function)(type,listener,...args);
   }) as typeof window.removeEventListener;
  },{permission,pending});
- await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await fix(page);
+ await page.goto('/?preview=1&mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await fix(page);
  return page.getByRole('region',{name:'실제 방향 안내'});
 }
 async function fix(page:Page){await page.evaluate(()=>(window as unknown as {sensorTest:{position:PositionCallback}}).sensorTest.position({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition));}

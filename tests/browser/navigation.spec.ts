@@ -27,11 +27,11 @@ async function choose(page:Page){
  await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();
  await page.getByRole('button',{name:/도서관 서울도서관/}).click();
 }
-test('키 미설정은 가짜 검색 결과 대신 준비 문구와 시안 복귀를 보여준다',async({page})=>{
+test('키 미설정은 예시 복귀 없이 실제 검색 준비 문구를 보여준다',async({page})=>{
  await page.goto('/?mode=live');await expect(page.getByText('실제 장소 검색을 준비 중이에요.')).toBeVisible();
  await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeDisabled();
  await page.screenshot({path:'docs/previews/gilbit-live-setup.png'});
- await page.getByRole('button',{name:'디자인 시안으로 돌아가기',exact:true}).first().click();await expect(page.getByRole('textbox',{name:'목적지 검색',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'디자인 시안으로 돌아가기',exact:true})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색',exact:true})).toBeVisible();
 });
 test('위치 권한을 자동 요청하지 않고 검색→위치→도보 경로를 연결한다',async({page,context})=>{
  await context.grantPermissions(['geolocation']);await context.setGeolocation({latitude:37.5665,longitude:126.978,accuracy:10});
@@ -79,9 +79,9 @@ test('지도 로딩 실패는 경로 정보를 보존하며 재시도할 수 있
  await page.getByText('전체 도보 안내 보기').click();await expect(page.getByRole('list',{name:'전체 도보 안내'})).toContainText('횡단보도를 따라 이동');
 });
 test('기존 시안의 문양과 화면 전환은 유지된다',async({page})=>{
- await page.goto('/');await expect(page.locator('.motif-knot')).toHaveCount(1);await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('중앙');await page.getByRole('button',{name:'검색',exact:true}).click();await page.getByRole('button',{name:/도서관 · 가장 가까운 곳/}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await page.getByRole('button',{name:'카메라 안내',exact:true}).click();await expect(page.locator('.direction-arrow')).toBeVisible();
- await page.goto('/?screen=recheck');await expect(page.locator('.motif-cloud')).toHaveCount(1);await expect(page.locator('.direction-arrow')).toHaveCount(0);
- await page.goto('/?screen=arrival');await expect(page.locator('.motif-lotus')).toHaveCount(1);await expect(page.locator('.motif-flower')).toHaveCount(0);await page.getByRole('button',{name:'도움이 됐어요',exact:true}).click();await expect(page.locator('.motif-flower')).toHaveCount(1);
+ await page.goto('/?preview=1');await expect(page.locator('.motif-knot')).toHaveCount(1);await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('중앙');await page.getByRole('button',{name:'검색',exact:true}).click();await page.getByRole('button',{name:/도서관 · 가장 가까운 곳/}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await page.getByRole('button',{name:'카메라 안내',exact:true}).click();await expect(page.locator('.direction-arrow')).toBeVisible();
+ await page.goto('/?preview=1&screen=recheck');await expect(page.locator('.motif-cloud')).toHaveCount(1);await expect(page.locator('.direction-arrow')).toHaveCount(0);
+ await page.goto('/?preview=1&screen=arrival');await expect(page.locator('.motif-lotus')).toHaveCount(1);await expect(page.locator('.motif-flower')).toHaveCount(0);await page.getByRole('button',{name:'도움이 됐어요',exact:true}).click();await expect(page.locator('.motif-flower')).toHaveCount(1);
 });
 for(const width of [360,390,430]){
  test(`${width}px 실제 모드의 장소·경로 정보에 가로 넘침이 없다`,async({page,context})=>{
@@ -107,7 +107,7 @@ for(const screen of ['map','camera','recheck']){
  test(`${screen}의 X는 화면만 닫고 목적지와 안내 화면을 유지한다`,async({page})=>{
   // Keep the demo recheck auto-transition from racing this close/resume test.
   if(screen==='recheck'){const now=Date.now();await page.clock.install({time:now});await page.clock.pauseAt(now+100);}
-  await page.goto(`/?screen=${screen}`);
+  await page.goto(`/?preview=1&screen=${screen}`);
   if(screen==='recheck')await page.getByRole('button',{name:'다시 확인',exact:true}).click();
   await page.getByRole('button',{name:'안내 화면 닫기'}).click();
   const card=page.getByRole('region',{name:'진행 중인 안내'});
@@ -123,7 +123,7 @@ for(const screen of ['map','camera','recheck']){
  });
 }
 test('다른 목적지를 살펴봐도 기존 안내의 목적지는 유지된다',async({page})=>{
- await page.goto('/?screen=map');await page.getByRole('button',{name:'안내 화면 닫기'}).click();
+ await page.goto('/?preview=1&screen=map');await page.getByRole('button',{name:'안내 화면 닫기'}).click();
  await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('보건소');await page.getByRole('button',{name:'검색',exact:true}).click();
  await page.getByRole('button',{name:/건강·복지 · 가장 가까운 곳/}).click();
  await page.getByRole('button',{name:'뒤로 가기'}).click();await page.getByRole('button',{name:'뒤로 가기'}).click();

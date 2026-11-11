@@ -1,7 +1,7 @@
 import {test,expect,type Page} from '@playwright/test';
 async function setup(page:Page){
  await page.clock.install();await page.clock.pauseAt(new Date('2030-01-01T00:00:00Z'));
- await page.goto('/?mode=simulation');await page.getByRole('button',{name:'출발',exact:true}).click();
+ await page.goto('/?preview=1&mode=simulation');await page.getByRole('button',{name:'출발',exact:true}).click();
  return page.getByRole('region',{name:'모의 방향 안내'});
 }
 test('0.8초 안정화 후 화살표와 문구를 유지하고 짧은 흔들림에는 전환하지 않는다',async({page})=>{

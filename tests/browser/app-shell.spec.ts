@@ -6,10 +6,19 @@ for(const width of [360,430,1440]){
   const phone=page.locator('.phone');expect(await phone.evaluate(e=>getComputedStyle(e).borderTopWidth)).toBe('0px');expect(await phone.evaluate(e=>getComputedStyle(e).borderRadius)).toBe('0px');
   const bounds=await phone.boundingBox();expect(bounds?.height).toBe(900);expect(bounds?.width).toBe(Math.min(width,480));
   await page.screenshot({path:`test-results/app-shell-${width}.png`});
-  await page.goto('/?screen=map');await expect(page.getByText('예시 경로',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'안내 화면 닫기'})).toBeVisible();
-  await page.goto('/?mode=live');await expect(page.locator('.studio-intro')).not.toBeVisible();await expect(page.getByRole('button',{name:'예시 화면',exact:true})).toBeVisible();
+  await page.goto('/?screen=map');await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();await expect(page.getByText('예시 경로',{exact:true})).toHaveCount(0);
+  await page.goto('/?mode=live');await expect(page.locator('.studio-intro')).not.toBeVisible();await expect(page.getByRole('button',{name:'예시 화면',exact:true})).toHaveCount(0);
  });
 }
 test('검토용 화면은 preview=1에서만 표시한다',async({page})=>{
  await page.setViewportSize({width:1440,height:1000});await page.goto('/?preview=1');await expect(page.locator('.studio-intro')).toBeVisible();await expect(page.locator('.studio-controls')).toBeVisible();await expect(page.locator('.status-bar')).toBeVisible();await page.getByRole('button',{name:'시안 확인 메뉴'}).first().click();await expect(page.locator('.preview-popover')).toBeVisible();
 });
+
+for(const path of ['/','/?screen=map','/?mode=demo','/?mode=simulation']){
+ test(`${path}는 모의 코드와 예시 복귀 버튼 없이 실제 검색으로 열린다`,async({page})=>{
+  const mockRequests:string[]=[];page.on('request',r=>{if(/DemoApp|SimulationNavigation|CameraPreview/.test(r.url()))mockRequests.push(r.url());});
+  await page.goto(path);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'디자인 시안으로 돌아가기',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'예시 화면',exact:true})).toHaveCount(0);
+  await expect(page.getByText('중앙도서관',{exact:true})).toHaveCount(0);await expect(page.getByText('한빛시 중앙로 25',{exact:true})).toHaveCount(0);expect(mockRequests).toEqual([]);
+ });
+}

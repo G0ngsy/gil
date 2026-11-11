@@ -2,7 +2,7 @@
 
 ## 1. 정지 상태에서 GPS 수신과 종료 확인
 
-- https://gilbit.vercel.app/?mode=simulation 을 휴대폰 Chrome 또는 Safari에서 연다.
+- https://gilbit.vercel.app/?preview=1&mode=simulation 을 휴대폰 Chrome 또는 Safari에서 연다.
 - 실제 GPS 추적 시작을 누른 뒤 위치 권한을 허용한다. 자동으로 권한이 요청되는지와 구분한다.
 - 수신 상태와 오차/오래된 위치 관련 문구를 확인한다. 기본 경로는 서울시청 예시이므로 현재 장소에서 경로 이탈로 표시될 수 있다.
 - GPS 추적 중지 후 수신이 끝나는지 확인한다. 재시작하고 탭을 숨겼다가 돌아오면 자동 재시작하지 않아야 한다.
