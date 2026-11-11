@@ -7,8 +7,22 @@ async function setup(page:Page,permission='granted',pending=false){
   Object.defineProperty(screen,'orientation',{configurable:true,value:Object.assign(new EventTarget(),{angle:0})});
   navigator.geolocation.watchPosition=ok=>{state.position=ok;return 1;};navigator.geolocation.clearWatch=()=>{};
   const add=window.addEventListener.bind(window),remove=window.removeEventListener.bind(window);
-  window.addEventListener=((type:string,...args:unknown[])=>{if(type==='deviceorientation'||type==='deviceorientationabsolute')state.listeners++;return (add as Function)(type,...args);}) as typeof window.addEventListener;
-  window.removeEventListener=((type:string,...args:unknown[])=>{if(type==='deviceorientation'||type==='deviceorientationabsolute')state.listeners--;return (remove as Function)(type,...args);}) as typeof window.removeEventListener;
+  const injectedListeners=new Map<EventListener,EventListener>();
+  // Real Chrome can emit an initial trusted null reading after listener registration.
+  // This suite supplies all sensor readings; keep native samples out of that fixture.
+  window.addEventListener=((type:string,listener:EventListener,...args:unknown[])=>{
+   if(type==='deviceorientation'||type==='deviceorientationabsolute'){
+    state.listeners++;
+    let wrapped=injectedListeners.get(listener);
+    if(!wrapped){wrapped=event=>{if(!event.isTrusted)listener(event);};injectedListeners.set(listener,wrapped);}
+    return (add as Function)(type,wrapped,...args);
+   }
+   return (add as Function)(type,listener,...args);
+  }) as typeof window.addEventListener;
+  window.removeEventListener=((type:string,listener:EventListener,...args:unknown[])=>{
+   if(type==='deviceorientation'||type==='deviceorientationabsolute'){state.listeners--;return (remove as Function)(type,injectedListeners.get(listener)||listener,...args);}
+   return (remove as Function)(type,listener,...args);
+  }) as typeof window.removeEventListener;
  },{permission,pending});
  await page.goto('/?mode=simulation');await page.getByRole('button',{name:'실제 GPS 추적 시작'}).click();await fix(page);
  return page.getByRole('region',{name:'실제 방향 안내'});
