@@ -48,7 +48,7 @@ test('불확실한 오차·자세·표준 절대값은 즉시 화살표를 숨�
  await reading(page,{webkitCompassAccuracy:-1});await expect(guide.getByTestId('facing-arrow')).toHaveCount(0);await expect(guide).toContainText('오차');
  await reading(page);await page.clock.runFor(800);await reading(page,{beta:90});await expect(guide.getByTestId('facing-arrow')).toHaveCount(0);await expect(guide).toContainText('나란하게');
  await reading(page,{webkitCompassHeading:undefined,absolute:true,alpha:0});await expect(guide.getByTestId('facing-arrow')).toHaveCount(0);
- await page.clock.runFor(2300);await expect(guide).toContainText('수신이 멈췄어요');await expect.poll(()=>page.evaluate(()=>(window as unknown as {sensorTest:{listeners:number}}).sensorTest.listeners)).toBe(0);
+ await page.clock.runFor(2300);await expect(guide).toContainText('유효한 방향을 확인하지 못해');await expect.poll(()=>page.evaluate(()=>(window as unknown as {sensorTest:{listeners:number}}).sensorTest.listeners)).toBe(0);
 });
 test('권한 거부와 늦게 허용된 취소 요청을 처리한다',async({page})=>{
  const guide=await setup(page,'denied');await guide.getByRole('button',{name:'실제 방향 센서 시작'}).click();await expect(guide).toContainText('권한이 꺼져');await expect(guide.getByRole('button',{name:'실제 방향 센서 시작'})).toBeEnabled();
