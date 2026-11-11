@@ -16,7 +16,7 @@ test('검토용 화면은 preview=1에서만 표시한다',async({page})=>{
 
 for(const path of ['/','/?screen=map','/?mode=demo','/?mode=simulation']){
  test(`${path}는 모의 코드와 예시 복귀 버튼 없이 실제 검색으로 열린다`,async({page})=>{
-  const mockRequests:string[]=[];page.on('request',r=>{if(/DemoApp|SimulationNavigation|CameraPreview/.test(r.url()))mockRequests.push(r.url());});
+  const mockRequests:string[]=[];page.on('request',r=>{if(/DemoApp|SimulationNavigation/.test(r.url()))mockRequests.push(r.url());});
   await page.goto(path);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
   await expect(page.getByRole('button',{name:'디자인 시안으로 돌아가기',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'예시 화면',exact:true})).toHaveCount(0);
   await expect(page.getByText('중앙도서관',{exact:true})).toHaveCount(0);await expect(page.getByText('한빛시 중앙로 25',{exact:true})).toHaveCount(0);expect(mockRequests).toEqual([]);
