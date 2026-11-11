@@ -1,5 +1,5 @@
 import {useGpsTracking} from './useGpsTracking';
-import {initialProgress,updateProgress} from '../../shared/tracking';
+import {initialProgress,updateProgress,type Fix} from '../../shared/tracking';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Brand, Hanok, Icon, Lattice } from '../ui';
 import { Motif } from '../Motif';
@@ -8,6 +8,7 @@ import { findWalkingRoute, getLocationAddress, getUserPosition, navigationReques
 import {useRecentHistory} from '../history';
 import {RecentHistoryPanel} from '../RecentHistory';
 import {RouteJourney,JourneyMenu} from './RouteJourney';
+import {LiveCameraGuide} from './LiveCameraGuide';
 import { WalkingMap } from './WalkingMap';
 
 type Stage='home'|'results'|'route'|'map'|'history';
@@ -38,8 +39,9 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const [ending,setEnding]=useState(false);
  const [progress,setProgress]=useState(initialProgress);
  const [trackingStarted,setTrackingStarted]=useState(false);
- const gps=useGpsTracking(fix=>{if(route)setProgress(previous=>updateProgress(route,previous,fix));},'실제 GPS 위치를 수신하고 있어요.');
- useEffect(()=>{gps.stop('');setTrackingStarted(false);setProgress(initialProgress());},[route]);
+ const [cameraFix,setCameraFix]=useState<Fix|null>(null);
+ const gps=useGpsTracking(fix=>{setCameraFix(fix);if(route)setProgress(previous=>updateProgress(route,previous,fix));},'실제 GPS 위치를 수신하고 있어요.');
+ useEffect(()=>{gps.stop('');setTrackingStarted(false);setCameraFix(null);setProgress(initialProgress());},[route]);
  useEffect(()=>{if(progress.arrived&&gps.active)gps.stop('도착을 확인해 GPS 추적을 마쳤어요.');},[progress.arrived,gps.active]);
  const content=useRef<HTMLElement>(null);
  const dialog=useRef<HTMLDialogElement>(null);
@@ -141,6 +143,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  {stage==='history'&&<>{error&&<p className="inline-error" role="alert">{error}</p>}<RecentHistoryPanel controller={recent} onSearch={q=>void submitSearch(q)} onDestination={p=>void submitSearch(p.name)}/></>}
  {stage==='results'&&<section className="padded"><form className="search-form" onSubmit={onSubmit}><button type="submit" aria-label="다시 검색"><Icon name="search" size={21}/></button><input aria-label="검색어" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/><button type="button" aria-label="검색어 지우기" onClick={()=>{searchAbort.current?.abort();setSearching(false);setQuery('');setPlaces([]);setSearched(false);setError('');}}><Icon name="close" size={18}/></button></form><div className="section-heading live-results-heading"><h3>검색 결과 {searched&&<em>{places.length}</em>}</h3><span>{searchOrigin?'주변 거리순':'전국 관련도순'}</span></div><p className="sample-description">{searchOrigin?'확인한 위치 반경 10km · 거리순':'전국 검색 · 현재 위치 기준이 아니에요'} · 거리는 직선 거리예요.</p>{searching&&<p role="status" className="connection-note">장소를 찾고 있어요…</p>}{error&&<div className="connection-note" role="alert"><p>{error}</p><button className="secondary" onClick={()=>void submitSearch()}>다시 검색</button></div>}<div className="search-results">{places.map(place=><button className="result-card" key={place.id} onClick={()=>choose(place)}><span className="result-icon"><Icon name="pin"/></span><div className="result-copy"><small>{place.category}</small><h3>{place.name}</h3><p>{place.address}</p>{searchOrigin&&<span>직선 {formatDistance(distanceBetween(searchOrigin,place))}</span>}</div><Icon name="chevron" size={19}/></button>)}</div>{searched&&!places.length&&!error&&<div className="empty-state"><div className="empty-lattice"><Motif kind="lattice" size={54}/></div><h3>일치하는 장소가 없어요</h3><p>{searchOrigin?'주변 10km 안에 결과가 없어요. 전국 검색으로 범위를 넓혀 보세요.':'지역명과 장소명을 함께 입력해 보세요.'}</p>{searchOrigin&&<button className="secondary" onClick={()=>{setNearbySearch(false);void submitSearch(query,false);}}>전국에서 다시 검색</button>}</div>}</section>}
  {(stage==='route'||stage==='map')&&selected&&<section className="map-screen live-route-screen journey-screen">{position&&<><WalkingMap start={position} destination={selected} route={route} focusRequest={focusRequest} currentPosition={trackingStarted?progress.position:null}/><button className="map-locate icon-button" aria-label="출발 위치로 지도 이동" onClick={()=>setFocusRequest(n=>n+1)}><Icon name="locate"/></button></>}
+ {stage==='map'&&route&&gps.active&&!progress.arrived&&<LiveCameraGuide route={route} progress={progress} position={cameraFix} active={gps.active}/>}
  <div className="map-bottom bottom-sheet journey-sheet">
  {route?<RouteJourney destination={selected} route={route} progress={progress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={startGuidance} onFinish={()=>setEnding(true)}/>:<><div className="destination-heading"><span className="result-icon"><Icon name="pin"/></span><div><h2>{selected.name}</h2><p>{selected.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button><p className="live-privacy">출발·도착 위치를 TMAP에 보내 경로를 계산해요.</p></>}
  </div></section>}

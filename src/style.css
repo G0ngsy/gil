@@ -121,3 +121,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 @media(max-width:374px){.journey-screen .journey-sheet{padding:18px}.journey-guidance{padding:18px}.journey-guidance h2{font-size:25px}}
 
 .home-hero>.search-scope{position:relative;z-index:2;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 6px;font-size:11px}.home-hero>.search-scope label{justify-content:flex-end;gap:6px;min-height:44px}.home-hero>.search-scope select{min-height:32px;padding:4px 8px;border-radius:999px;font-size:11px;background:var(--sheet)}.home-hero>.search-scope p{order:-1;margin:0 auto 0 0;font-size:10px;line-height:1.5}.live-home>.home-hero h2{margin-bottom:6px}
+/* Actual camera is an optional overlay; the GPS journey remains mounted underneath. */
+.live-camera-guide>.camera-launch{position:static;inset:auto;margin:12px 20px;width:calc(100% - 40px)}
+.live-route-screen:has(.real-camera)>.journey-sheet,.live-route-screen:has(.real-camera)>.map-locate{visibility:hidden}
+.live-camera-overlay{display:grid;gap:12px;position:relative}
+.live-camera-overlay .facing-card,.live-camera-sensor{background:#14251deb;color:#fff;border-radius:18px;padding:16px;text-align:center}
+.live-camera-overlay .facing-card h2,.live-camera-overlay .facing-status,.live-camera-overlay .facing-detail{color:#fff}
+.live-camera-overlay .facing-symbol{color:#6ee5dc}
+.live-camera-overlay .facing-symbol span{display:block;transform:perspective(350px) rotateX(40deg)}
+.live-camera-sensor .secondary{min-height:44px}
+.live-camera-overlay .facing-forward [data-testid="facing-arrow"]{transform:rotate(-90deg)}
+.live-camera-overlay .facing-card{padding:12px;background:#14251da8}
+.live-camera-overlay .facing-symbol{height:76px;margin:8px auto}
+.live-camera-overlay .facing-card h2{font-size:22px}
+.live-camera-overlay .facing-detail{margin-bottom:0}
+.live-camera-sensor{padding:12px}

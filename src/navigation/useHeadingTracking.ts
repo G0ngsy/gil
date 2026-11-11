@@ -32,7 +32,7 @@ export function useHeadingTracking(position:Fix|null,enabled:boolean){
     const result=orientationToHeading(event as unknown as CompassReading,latest.current,angle,Date.now());
     setSample(result.sample);
     if(!result.sample){setNotice(notices[result.reason]);return;}
-    arm(3000);setNotice('실제 방향 수신 중 · 진북 보정 · 테스트 경로');
+    arm(3000);setNotice('실제 방향 수신 중 · 진북 보정');
    };
    const rotate=()=>{if(token===version.current){setSample(null);setNotice(notices.pose);}};
    window.addEventListener('deviceorientation',receive);window.addEventListener('deviceorientationabsolute',receive);

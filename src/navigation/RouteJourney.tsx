@@ -18,7 +18,7 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
  <h3>GPS 상태</h3><p role="status">{notice||'길 안내 시작을 누르면 현재 위치를 계속 확인해요.'}</p>{progress.position&&route.steps.length>0&&<p>안내 단계 {progress.stepIndex+1} / {route.steps.length}</p>}
  <p>화면을 벗어나거나 탭을 숨기면 위치 수신을 중지해요. 경로 이탈 시 자동 재탐색은 하지 않아요.</p><h3>전체 도보 안내 <span>{route.steps.filter(step=>step.description.trim()).length}개</span></h3>
  {route.steps.some(step=>step.description.trim())?<ol aria-label="전체 도보 안내">{route.steps.filter(step=>step.description.trim()).map((step,index)=><li key={index}>{step.description}</li>)}</ol>:<p>이 경로에는 상세 안내가 없어요. 주변과 목적지를 확인해 주세요.</p>}
- <p>시간은 전체 경로 기준이며 남은 시간으로 계산하지 않아요. 카메라 안내는 준비 중이에요.</p></div></details>
+ <p>시간은 전체 경로 기준이며 남은 시간으로 계산하지 않아요. 카메라 방향 안내는 시험 기능이며 지원 자세·브라우저에 제한이 있어요.</p></div></details>
  </div>;
 }
 export function JourneyMenu({active,onPause,onFinish}:{active:boolean;onPause:()=>void;onFinish:()=>void}){
