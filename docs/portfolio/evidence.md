@@ -129,3 +129,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 ## 2026-11-11 — 사용자 제공 한옥 이미지 홈 적용
 
 [홈 캡처](assets/2026-11-11-hanok-photo-home-390.png): 실제 배포 dpl_4cAVqybEJN9bqjh9wzeqryH5ZhtJ, Chrome 390×844. 이미지 출처는 사용자가 첨부한 한옥 사진이며 public/assets/hanok-courtyard.png로 보존했다. 픽셀 편집 없이 CSS 크기/페이드로 표시했다. 빌드 및 360/390/430px 로딩·겹침/넘침 검사 통과, 캡처 육안 확인. 검색/센서·실기기 정확도는 재검증하지 않은 단순 시각 변경이다.
+
+## 2026-11-11 — 한옥 일러스트 복원
+
+[복원 홈](assets/2026-11-11-hanok-restored-390.png): Vercel dpl_85iPo4fBSdqUYTYA7Ab39gKobLus, Chrome 390×844. 360/390/430px DOM 검사로 Hanok SVG 존재·사진 요소/요청 없음·검색 범위 상단 유지·가로 넘침 없음 확인. 빌드 통과. 앞선 사진 적용 캡처는 과거 이력이며 현재 UI가 아니다.

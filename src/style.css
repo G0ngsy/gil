@@ -121,6 +121,3 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 @media(max-width:374px){.journey-screen .journey-sheet{padding:18px}.journey-guidance{padding:18px}.journey-guidance h2{font-size:25px}}
 
 .home-hero>.search-scope{position:relative;z-index:2;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 6px;font-size:11px}.home-hero>.search-scope label{justify-content:flex-end;gap:6px;min-height:44px}.home-hero>.search-scope select{min-height:32px;padding:4px 8px;border-radius:999px;font-size:11px;background:var(--sheet)}.home-hero>.search-scope p{order:-1;margin:0 auto 0 0;font-size:10px;line-height:1.5}.live-home>.home-hero h2{margin-bottom:6px}
-
-/* User-supplied hanok courtyard image, blended into the warm home surface. */
-.home-hero .hanok-photo-art{position:relative;width:calc(100% + 36px);aspect-ratio:1.95;margin:-4px -18px -5px;overflow:hidden;mask-image:linear-gradient(to bottom,transparent 0%,#000 12%,#000 88%,transparent 100%)}.hanok-photo-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 52%}.live-home>.home-hero .search-form{z-index:3}
