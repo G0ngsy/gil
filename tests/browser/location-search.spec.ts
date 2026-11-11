@@ -32,3 +32,9 @@ test('현재 위치를 확인해도 사용자가 전국 검색을 선택하면 �
 test('2분 이상 지난 위치는 주변 검색 전에 새로 확인한다',async({page})=>{
  await page.clock.install();await setup(page);await page.goto('/');await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();await expect(page.getByRole('combobox',{name:'검색 범위'})).toHaveValue('nearby');await page.clock.fastForward(120001);await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');const next=page.waitForRequest(r=>r.url().includes('action=search'));await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();expect((await next).postDataJSON().center.lat).toBeCloseTo(37.5675,8);expect(await page.evaluate(()=>(window as any).geoCalls)).toBe(2);
 });
+
+test('검색 설정 확인 중에 위치를 눌러도 주소 조회를 건너뛰지 않는다',async({page})=>{
+ await setup(page);let finish:(()=>void)|undefined;const pending=new Promise<void>(resolve=>finish=resolve);
+ await page.route('**/api/navigation?action=config',async r=>{await pending;await r.fulfill({json:{searchConfigured:true}});});
+ await page.goto('/');await expect(page.getByText('검색 서비스 연결을 확인하고 있어요…')).toBeVisible();await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();await expect(page.getByText('서울특별시 중구 세종대로 110',{exact:true})).toBeVisible();finish!();
+});

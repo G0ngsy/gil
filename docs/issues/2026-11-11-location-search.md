@@ -23,3 +23,10 @@
 
 - [장소 통합 검색](https://tmap-skopenapi.readme.io/reference/%EC%9E%A5%EC%86%8C%ED%86%B5%ED%95%A9%EA%B2%80%EC%83%89): 거리순 R은 중심 위경도와 반경 필요, 반경 단위 km.
 - [ReverseGeocoding](https://tmap-skopenapi.readme.io/reference/reversegeocoding): WGS84 좌표, A10 주소, newAddressExtend=N으로 확장 검색하지 않음.
+
+## 배포 확인에서 발견한 설정 확인 경합
+
+- 문제: 홈 직후 위치 버튼을 누른 원격 검증에서 주소 요청이 발생하지 않았다.
+- 원인: configured=null(확인 중)과 false(미설정)를 함께 차단했다. 사용자 GPS 버튼을 누른 뒤에도 설정 응답보다 빠르면 주소 조회를 건너뛰었다.
+- 해결방법: 확정된 미설정(false)일 때만 조회를 보류하고, 확인 중에는 사용자 동작에 따른 주소 요청을 서버로 보내 실제 응답을 처리한다. config 응답을 보류한 브라우저 회귀를 추가했다.
+- 결과: 추가 회귀·최종 전체 실행 및 원격 재배포 결과는 검증 문서 참조.

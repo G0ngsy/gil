@@ -84,7 +84,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  async function lookupAddress(point:UserPosition){
   addressAbort.current?.abort();const controller=new AbortController();addressAbort.current=controller;
   setAddress(null);setAddressError('');
-  if(configured!==true){setAddressLoading(false);setAddressError('좌표는 확인했어요. 주소 표시는 검색 서비스 연결 후 이용할 수 있어요.');return;}
+  if(configured===false){setAddressLoading(false);setAddressError('좌표는 확인했어요. 주소 표시는 검색 서비스 연결 후 이용할 수 있어요.');return;}
   setAddressLoading(true);
   try{const data=await getLocationAddress(point,controller.signal);if(!data.location?.address)throw new Error('주소를 읽지 못했어요.');if(!controller.signal.aborted)setAddress(data.location);}
   catch(e){if(!controller.signal.aborted)setAddressError(`위치는 확인했지만 주소를 표시하지 못했어요. ${message(e)}`);}
