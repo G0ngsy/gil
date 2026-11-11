@@ -19,3 +19,13 @@
 지도 키는 보류 상태, 실제 경로 카메라·방위 결합 및 실외 정확도는 미확인이다. 검토 플래그는 접근권한 기능이 아니다. 사용자의 저장 기록은 삭제하지 않았다. 공개 화면의 예시 노출 제거와 자동 테스트 fixture 보존을 구분한다.
 
 배포 결과는 확인 후 추가한다. 작업은 사용자 지시에 따른 AI 지원 리팩터링·자동 검증·문서화이며 사용자 성과 수치는 측정하지 않았다.
+
+## 실제 배포 확인
+
+- 소스 b6f0e4c, 배포 dpl_D7MT3QHWzWXiuJsAaVodSa7p6rbN READY, https://gilbit.vercel.app.
+- 기본 홈의 실제 검색 입력, 예시 장소/예시 복귀 버튼 없음 확인.
+- 실제 TMAP 서울도서관 검색 1회/보행 경로 1회 모두 HTTP200, GPS 이동 안내 시작 버튼 표시. 출발 위치만 공공 좌표를 주입했다. 실제 사용자 GPS·실외 이동 검증은 아니다.
+- 기본 검색 흐름에서 DemoApp/SimulationNavigation 검토 chunk 요청 0건, 지도 SDK 요청 0건, pageerror 0건.
+- 예전 mode=simulation 단독 URL도 실제 검색, preview=1&mode=simulation은 별도 검토 화면으로 표시됨 확인.
+- docs/portfolio/assets/2026-11-11-real-default-home-390.png: 실제 배포 Chrome 390×844 홈, 육안 확인. 출처는 본 작업의 자동화 캡처이며 실제 휴대폰 사진이 아니다.
+- 포트폴리오/README 로컬 링크 193개 검사 통과. 이 결과는 실외 정확도·AR 결합·지도 키 정책 해결을 뜻하지 않는다.
