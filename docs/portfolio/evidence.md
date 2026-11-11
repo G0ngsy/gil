@@ -121,3 +121,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 ### 실제 배포 경로 확인·안내 화면
 
 [경로 확인](assets/2026-11-11-route-simple-390.png), [안내 중](assets/2026-11-11-guidance-simple-390.png): 소스 87d8231, dpl_88jUr1rdszCVzcAbnoYeDKM9oYrS, Chrome 390×844. 실제 TMAP 검색/경로 응답, GPS 공공 좌표 주입, 지도 키 공백. 시작/일시중지/계속/종료와 pageerror 0건 확인. 캡처 육안 확인. 실기기 정확도·실제 지도 표시 근거가 아니다. [검증](../validation-2026-11-11-journey-layout.md).
+
+## 2026-11-11 — 작은 검색 범위 상단 배치
+
+[390px 홈](assets/2026-11-11-search-scope-compact-390.png): dpl_UCybsX95hiz4GHx5WbepdztERxPV, 실제 배포 Chrome. 360/390/430px에서 검색 범위 높이 32px·검색 입력 위쪽·겹침/가로 넘침 없음 확인. 캡처 육안 확인. 빌드·기존 위치 검색 테스트 8개 통과. 검색 로직·권한은 변경하지 않았고 실제 GPS는 이번 UI 검증에서 요청하지 않았다.
