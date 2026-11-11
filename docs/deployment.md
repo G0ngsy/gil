@@ -46,3 +46,6 @@
 ## 2026-11-11 경로 안내 화면 정리
 
 소스 87d8231. 경로 확인에서 길 안내 시작을 누르고, 안내 중에는 상단 메뉴에서 일시중지/종료한다. 상세 GPS/전체 경로는 자세히 보기로 펼친다. [검증](validation-2026-11-11-journey-layout.md).
+
+
+2026-11-11 카메라 방향 연결: 코드 `48ee0ab` 커밋/푸시 후 production `dpl_F9oLmWWr2SXjJdfeEeLkUUqzjnm4` READY, https://gilbit.vercel.app 별칭 반영. HTTP 200 및 신규 카메라 방향 안내 번들 포함 확인. 원격 실기기 센서·실외 정확도는 확인하지 않았다.
