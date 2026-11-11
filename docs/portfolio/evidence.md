@@ -109,3 +109,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 ### 현재 위치·주변 검색 실제 배포
 
 소스 1a9acd5 / dpl_52Qusv9huvR13TvNRecQDcTPspWT, Chrome 390×844. [현재 주소](assets/2026-11-11-current-address-390.png)와 [주변 장소](assets/2026-11-11-nearby-search-390.png)는 실제 REST 주소/POI 응답을 사용하고 GPS만 서울시청 공공 좌표로 주입했다. 주소 200·주변 검색 200/17건·pageerror 0건, 캡처 육안 확인. 실제 휴대폰 위치·다른 지역 품질·실외 정확도 검증이 아니다. [상세](../validation-2026-11-11-location-search.md).
+
+## 2026-11-11 — 홈 추천 검색 제거
+
+[홈 캡처](assets/2026-11-11-home-without-suggestions-390.png): Vercel dpl_5x2VicgAhQEpQ6HPHEivApFF3Tt7, Chrome 390×844. 검색 입력/현재 위치/최근 목적지 존재, 추천 제목·버튼 부재를 DOM 검증했다. GPS 권한·실제 API 호출은 이번 UI 삭제 검증에서 실행하지 않았다. 빌드 통과. 사용자 요청에 따른 AI 지원 수정·검증 기록이다.
