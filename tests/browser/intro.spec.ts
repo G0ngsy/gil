@@ -15,7 +15,9 @@ for(const width of [360,390,430,1280])test(`${width}px 문 열림 후 중앙 로
  await expect(page.locator('.door-intro-logo')).toBeVisible();await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','1');
  await page.screenshot({path:`test-results/intro-logo-${width}.png`});
  await expect(page.locator('.door-intro-logo-out')).toBeVisible();await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','0');
- await expect(intro).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+ await expect(page.locator('.intro-home-revealing')).toBeAttached();
+ await expect(page.locator('.intro-home')).toHaveCSS('opacity','1');
+ await expect(intro).toHaveCount(0);await expect(page.locator('.intro-home')).toHaveCSS('transform','none');await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto('/');await expect(intro).toHaveCount(0);
 });

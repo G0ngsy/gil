@@ -138,7 +138,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .live-camera-sensor{padding:12px}
 .sensor-diagnostics{text-align:left;margin-top:12px;border-top:1px solid #ffffff40;padding-top:12px}.sensor-diagnostics summary{cursor:pointer;min-height:44px;padding:10px}.sensor-diagnostics textarea{display:block;width:100%;max-width:100%;margin:12px 0;color:#172c24;background:#fffdf6;font:12px/1.6 monospace;padding:10px;border-radius:8px;resize:vertical}.sensor-diagnostics .secondary{margin-top:8px}
 /* Doors open first; a separate centered logo appears over the landscape. */
-.door-intro{position:fixed;inset:0;z-index:1000;overflow:hidden;background:var(--paper);isolation:isolate;opacity:1;transition:opacity .6s ease;touch-action:manipulation}
+.door-intro{position:fixed;inset:0;z-index:1000;overflow:hidden;background:var(--paper);isolation:isolate;opacity:1;transition:opacity .8s ease;touch-action:manipulation}
 .intro-landscape{position:absolute;inset:0;background:#f7f3ea url('/assets/intro-landscape.png') center/cover no-repeat}
 .intro-door{position:absolute;top:0;bottom:0;width:50%;overflow:hidden;transition:transform 1.55s cubic-bezier(.65,0,.25,1);will-change:transform;background:#eee0c4}
 .intro-door-left{left:0}.intro-door-right{right:0}
@@ -159,3 +159,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .landscape-home-hero h2{padding-left:35px}
 .landscape-home-hero .search-form{background:#fffdf9f5}
 @media(max-width:374px){.landscape-home-hero{min-height:365px;padding-bottom:135px}.landscape-home-hero h2{padding-left:29px}}
+
+/* Keep the home mounted; animate only the transition, then remove the transform. */
+.intro-home-waiting{opacity:0;transform:scale(.96);transform-origin:50% 50dvh}
+.intro-home-revealing{opacity:1;transform:scale(1);transform-origin:50% 50dvh;transition:transform .8s cubic-bezier(.22,1,.36,1),opacity .8s ease}
+@media(prefers-reduced-motion:reduce){.intro-home-waiting,.intro-home-revealing{opacity:1;transform:none;transition:none}}
