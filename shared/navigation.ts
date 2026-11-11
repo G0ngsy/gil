@@ -1,4 +1,5 @@
 export interface Coordinate { lat: number; lng: number }
+export interface LocationAddress { address:string; area:string }
 export interface Place extends Coordinate { id: string; name: string; address: string; category: string }
 export interface WalkingStep extends Coordinate { description: string; turnType: number }
 export interface WalkingRoute {

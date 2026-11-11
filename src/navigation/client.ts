@@ -1,4 +1,4 @@
-import type { Coordinate, Place, WalkingRoute } from '../../shared/navigation';
+import {isCoordinate, type LocationAddress, type Coordinate, type Place, type WalkingRoute } from '../../shared/navigation';
 
 export class ClientError extends Error { constructor(message: string, public code = 'UNKNOWN') { super(message); } }
 export async function navigationRequest<T>(action: string, options: {q?:string;body?:unknown;signal?:AbortSignal} = {}): Promise<T> {
@@ -17,7 +17,8 @@ export async function navigationRequest<T>(action: string, options: {q?:string;b
  if (!response.ok) throw new ClientError(data.error?.message || '요청을 처리하지 못했어요.',data.error?.code);
  return data;
 }
-export const searchPlaces = (q:string, signal:AbortSignal) => navigationRequest<{places:Place[]}>('search',{q,signal});
+export const searchPlaces = (q:string, signal:AbortSignal, center?:Coordinate) => navigationRequest<{places:Place[]}>('search',center?{body:{q,center:{lat:center.lat,lng:center.lng}},signal}:{q,signal});
+export const getLocationAddress=(point:Coordinate,signal:AbortSignal)=>navigationRequest<{location:LocationAddress}>('address',{body:{point:{lat:point.lat,lng:point.lng}},signal});
 export const findWalkingRoute = (start:Coordinate,end:Coordinate,signal:AbortSignal) => navigationRequest<{route:WalkingRoute}>('route',{body:{start,end},signal});
 
 export interface UserPosition extends Coordinate { accuracy: number; timestamp: number }
@@ -27,7 +28,7 @@ export function getUserPosition():Promise<UserPosition> {
   if (!navigator.geolocation) {reject(new ClientError('이 브라우저에서는 현재 위치를 확인할 수 없어요.','UNSUPPORTED'));return;}
   navigator.geolocation.getCurrentPosition(position=>{
    const {latitude:lat,longitude:lng,accuracy}=position.coords;
-   if (!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy>100) {reject(new ClientError('위치 오차가 커요. 주변이 트인 안전한 곳에서 다시 확인해 주세요.','LOW_ACCURACY'));return;}
+   if (!isCoordinate({lat,lng})||!Number.isFinite(accuracy)||accuracy<0||accuracy>100||!Number.isFinite(position.timestamp)||position.timestamp<0||Date.now()-position.timestamp>10000||position.timestamp>Date.now()+1000) {reject(new ClientError('위치 오차가 커요. 주변이 트인 안전한 곳에서 다시 확인해 주세요.','LOW_ACCURACY'));return;}
    resolve({lat,lng,accuracy,timestamp:position.timestamp});
   },error=>reject(new ClientError(error.code===1?'위치 권한이 꺼져 있어요. 브라우저 설정에서 허용한 뒤 다시 눌러 주세요.':error.code===3?'위치 확인 시간이 초과됐어요. 다시 시도해 주세요.':'현재 위치를 찾지 못했어요. 안전한 곳에서 다시 확인해 주세요.',error.code===1?'PERMISSION_DENIED':'LOCATION_UNAVAILABLE')),
   {enableHighAccuracy:true,timeout:12000,maximumAge:0});

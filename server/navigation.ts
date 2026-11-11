@@ -1,4 +1,4 @@
-import { isCoordinate, type Coordinate, type Place, type WalkingRoute, type WalkingStep } from '../shared/navigation.js';
+import { distanceBetween, isCoordinate, type LocationAddress, type Coordinate, type Place, type WalkingRoute, type WalkingStep } from '../shared/navigation.js';
 
 export class NavigationError extends Error {
  constructor(public status: number, public code: string, message: string) { super(message); }
@@ -60,6 +60,15 @@ export function parseWalkingRoute(data: unknown): WalkingRoute {
 }
 const invalidRoute = () => new NavigationError(502, 'INVALID_RESPONSE', '도보 경로 정보를 읽지 못했어요. 다시 시도해 주세요.');
 
+
+export function parseLocationAddress(data:unknown):LocationAddress{
+ const info=record(record(data).addressInfo);
+ const area=[info.city_do,info.gu_gun,info.eup_myun,info.adminDong||info.legalDong].map(string).filter(Boolean).join(' ');
+ const address=string(info.fullAddress).split(',').map(s=>s.trim()).find(Boolean)||area;
+ if(!address||address.length>500)throw new NavigationError(502,'NO_ADDRESS','좌표는 확인했지만 주변 주소를 찾지 못했어요.');
+ return {address,area:area||address};
+}
+
 function json(data: unknown, status = 200) {
  return Response.json(data, {status, headers: {'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'}});
 }
@@ -69,26 +78,37 @@ export function createNavigationHandler({appKey, fetcher = fetch}: Dependencies)
   try {
    const url = new URL(request.url), action = url.searchParams.get('action');
    if (action === 'config' && request.method === 'GET') return json({searchConfigured: Boolean(appKey.trim())});
-   if (!['search','route'].includes(action || '')) throw new NavigationError(404,'NOT_FOUND','요청한 기능을 찾을 수 없어요.');
-   if (request.method !== (action === 'search' ? 'GET' : 'POST')) return new Response(null, {status:405,headers:{Allow:action === 'search'?'GET':'POST','Cache-Control':'no-store'}});
+   if (!['search','route','address'].includes(action || '')) throw new NavigationError(404,'NOT_FOUND','요청한 기능을 찾을 수 없어요.');
+   const allowed=action==='search'?['GET','POST']:['POST'];
+   if (!allowed.includes(request.method)) return new Response(null,{status:405,headers:{Allow:allowed.join(', '),'Cache-Control':'no-store'}});
+   let input:RecordValue={};
+   if(request.method==='POST'){
+    if(!request.headers.get('content-type')?.includes('application/json'))throw new NavigationError(415,'INVALID_BODY','요청 형식이 올바르지 않아요.');
+    const raw=await request.text();if(raw.length>4096)throw new NavigationError(413,'INVALID_BODY','요청 내용이 너무 커요.');
+    try{input=record(JSON.parse(raw));}catch{throw new NavigationError(400,'INVALID_BODY','요청 내용을 확인해 주세요.');}
+   }
+   let center:Coordinate|undefined;
    let target = '', body: string | undefined;
    if (action === 'search') {
-    const q = (url.searchParams.get('q') || '').trim();
+    const q = (request.method==='POST'?string(input.q):url.searchParams.get('q')||'').trim();
     if (q.length < 2 || q.length > 80) throw new NavigationError(400,'INVALID_QUERY','검색어를 2~80자로 입력해 주세요.');
     const params = new URLSearchParams({version:'1',format:'json',searchKeyword:q,reqCoordType:'WGS84GEO',resCoordType:'WGS84GEO',count:'20',searchtypCd:'A'});
+    if('center' in input){
+     if(!isCoordinate(input.center))throw new NavigationError(400,'INVALID_COORDINATE','검색 기준 위치를 확인해 주세요.');
+     center=input.center;params.set('searchtypCd','R');params.set('radius','10');params.set('centerLat',String(center.lat));params.set('centerLon',String(center.lng));
+    }
     target = `https://apis.openapi.sk.com/tmap/pois?${params}`;
+   } else if(action==='address'){
+    if(!isCoordinate(input.point))throw new NavigationError(400,'INVALID_COORDINATE','주소를 확인할 위치를 확인해 주세요.');
+    const params=new URLSearchParams({version:'1',format:'json',lat:String(input.point.lat),lon:String(input.point.lng),coordType:'WGS84GEO',addressType:'A10',newAddressExtend:'N'});
+    target=`https://apis.openapi.sk.com/tmap/geo/reversegeocoding?${params}`;
    } else {
-    if (!request.headers.get('content-type')?.includes('application/json')) throw new NavigationError(415,'INVALID_BODY','요청 형식이 올바르지 않아요.');
-    const raw = await request.text();
-    if (raw.length > 4096) throw new NavigationError(413,'INVALID_BODY','요청 내용이 너무 커요.');
-    let input: RecordValue;
-    try { input = record(JSON.parse(raw)); } catch { throw new NavigationError(400,'INVALID_BODY','요청 내용을 확인해 주세요.'); }
     if (!isCoordinate(input.start) || !isCoordinate(input.end)) throw new NavigationError(400,'INVALID_COORDINATE','출발지와 목적지 위치를 확인해 주세요.');
     if (Math.abs(input.start.lat-input.end.lat)<0.00001 && Math.abs(input.start.lng-input.end.lng)<0.00001) throw new NavigationError(400,'SAME_LOCATION','출발지와 목적지가 너무 가까워요. 주변을 확인해 주세요.');
     body = JSON.stringify({startX:input.start.lng,startY:input.start.lat,endX:input.end.lng,endY:input.end.lat,startName:encodeURIComponent('출발지'),endName:encodeURIComponent('목적지'),reqCoordType:'WGS84GEO',resCoordType:'WGS84GEO',searchOption:'0',sort:'index'});
     target = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
    }
-   if (!appKey.trim()) throw new NavigationError(503,'NOT_CONFIGURED','실제 장소 검색을 준비 중이에요. 지금은 디자인 시안을 이용해 주세요.');
+   if (!appKey.trim()) throw new NavigationError(503,'NOT_CONFIGURED','검색 서비스 설정을 확인한 뒤 다시 이용해 주세요.');
    let response: Response;
    try { response = await fetcher(target, {method:action==='route'?'POST':'GET',headers:{appKey,Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},body,signal:AbortSignal.timeout(10000)}); }
    catch { throw new NavigationError(504,'UPSTREAM_TIMEOUT','연결이 지연되고 있어요. 잠시 후 다시 시도해 주세요.'); }
@@ -101,7 +121,13 @@ export function createNavigationHandler({appKey, fetcher = fetch}: Dependencies)
    }
    let data: unknown;
    try { data = await response.json(); } catch { throw new NavigationError(502,'INVALID_RESPONSE','서비스 응답을 읽지 못했어요.'); }
-   return action === 'search' ? json({places:parsePlaces(data)}) : json({route:parseWalkingRoute(data)});
+   if(action==='address')return json({location:parseLocationAddress(data)});
+   if(action==='search'){
+    let places=parsePlaces(data);
+    if(center){const origin=center;places=places.filter(p=>distanceBetween(origin,p)<=10000).sort((a,b)=>distanceBetween(origin,a)-distanceBetween(origin,b));}
+    return json({places});
+   }
+   return json({route:parseWalkingRoute(data)});
   } catch (error) {
    if (error instanceof NavigationError) return json({error:{code:error.code,message:error.message}},error.status);
    return json({error:{code:'INTERNAL_ERROR',message:'요청을 처리하지 못했어요. 다시 시도해 주세요.'}},500);

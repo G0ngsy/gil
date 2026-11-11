@@ -110,3 +110,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .facing-presets button {flex:1 0 27%;min-width:0;padding:12px 8px;}
 .facing-presets button {background:#FFFDF9;color:#245447;border:1px solid #E9E2D2;}
 .facing-presets button[aria-pressed="true"] {background:#245447;color:#FFFDF9;border-color:#245447;}
+
+.current-address{display:block;font-size:15px;line-height:1.7;overflow-wrap:anywhere;margin-bottom:8px;color:var(--pine)}.live-location .location-disclosure,.live-location .address-warning{font-size:11px;margin:12px 0 0}.live-location>.text-button{font-size:12px;min-height:44px}.search-scope{margin:16px 0;font-size:12px;color:var(--muted)}.search-scope label{display:flex;align-items:center;justify-content:space-between;gap:12px}.search-scope select{min-height:44px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--sheet);color:var(--pine);font:inherit}.search-scope p{margin-top:7px;line-height:1.8}

@@ -3,8 +3,8 @@ import {initialProgress,updateProgress} from '../../shared/tracking';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Brand, Hanok, Icon, Lattice } from '../ui';
 import { Motif } from '../Motif';
-import { distanceBetween, formatDistance, formatDuration, type Place, type WalkingRoute } from '../../shared/navigation';
-import { findWalkingRoute, getUserPosition, navigationRequest, searchPlaces, type UserPosition } from './client';
+import { distanceBetween, formatDistance, formatDuration, type LocationAddress, type Place, type WalkingRoute } from '../../shared/navigation';
+import { findWalkingRoute, getLocationAddress, getUserPosition, navigationRequest, searchPlaces, type UserPosition } from './client';
 import {useRecentHistory} from '../history';
 import {RecentHistoryPanel} from '../RecentHistory';
 import { WalkingMap } from './WalkingMap';
@@ -18,6 +18,11 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const [places,setPlaces]=useState<Place[]>([]);
  const [selected,setSelected]=useState<Place|null>(null);
  const [position,setPosition]=useState<UserPosition|null>(null);
+ const [address,setAddress]=useState<LocationAddress|null>(null);
+ const [addressLoading,setAddressLoading]=useState(false);
+ const [addressError,setAddressError]=useState('');
+ const [nearbySearch,setNearbySearch]=useState(true);
+ const [searchOrigin,setSearchOrigin]=useState<UserPosition|null>(null);
  const [route,setRoute]=useState<WalkingRoute|null>(null);
  const [searched,setSearched]=useState(false);
  const [searching,setSearching]=useState(false);
@@ -39,11 +44,12 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const dialog=useRef<HTMLDialogElement>(null);
  const focus=useRef<HTMLElement|null>(null);
  const searchAbort=useRef<AbortController|null>(null);
+ const addressAbort=useRef<AbortController|null>(null);
  const routeAbort=useRef<AbortController|null>(null);
  const locationVersion=useRef(0);
  const alive=useRef(false);
  const stageTitle={home:'길빛',results:'장소 검색',route:'도보 경로 확인',map:'도보 경로 살펴보기',history:'이용 기록'}[stage];
- useEffect(()=>{alive.current=true;return()=>{alive.current=false;locationVersion.current++;searchAbort.current?.abort();routeAbort.current?.abort();};},[]);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;locationVersion.current++;searchAbort.current?.abort();routeAbort.current?.abort();addressAbort.current?.abort();};},[]);
  useEffect(()=>{
   const controller=new AbortController();
   setConfigError('');setConfigured(null);
@@ -58,27 +64,42 @@ export function LiveNavigation({onDemo,review=false}:Props) {
 
  function cancelWork(){gps.stop();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
  function back(){cancelWork();setError('');setStage(stage==='route'?'results':'home');}
- async function submitSearch(value=query){
+ async function submitSearch(value=query,nearby=nearbySearch){
   const q=value.trim();setQuery(value);
   if(q.length<2||q.length>80){setError('검색어를 2~80자로 입력해 주세요.');return;}
   if(configured!==true){setError('검색 서비스가 아직 준비되지 않았어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.');return;}
   searchAbort.current?.abort();routeAbort.current?.abort();
   const controller=new AbortController();searchAbort.current=controller;
-  setStage('results');setError('');setPlaces([]);setSearched(false);setSearching(true);setRoute(null);setSelected(null);
+  setError('');setPlaces([]);setSearched(false);setSearching(true);setRoute(null);setSelected(null);
   try {
-   const data=await searchPlaces(q,controller.signal);
+   let origin=nearby?position:null;
+   if(origin&&Date.now()-origin.timestamp>120000){origin=await locate(false);if(!origin){setError('현재 위치를 갱신하지 못했어요. 다시 확인하거나 전국 검색을 선택해 주세요.');return;}}
+   if(controller.signal.aborted)return;
+   setSearchOrigin(origin);setStage('results');
+   const data=await searchPlaces(q,controller.signal,origin||undefined);
    if(!controller.signal.aborted){setPlaces(data.places);setSearched(true);recent.recordSearch(q);}
   }catch(e){if(!controller.signal.aborted)setError(message(e));}
   finally{if(!controller.signal.aborted)setSearching(false);}
  }
- async function locate():Promise<UserPosition|null>{
+ async function lookupAddress(point:UserPosition){
+  addressAbort.current?.abort();const controller=new AbortController();addressAbort.current=controller;
+  setAddress(null);setAddressError('');
+  if(configured!==true){setAddressLoading(false);setAddressError('좌표는 확인했어요. 주소 표시는 검색 서비스 연결 후 이용할 수 있어요.');return;}
+  setAddressLoading(true);
+  try{const data=await getLocationAddress(point,controller.signal);if(!data.location?.address)throw new Error('주소를 읽지 못했어요.');if(!controller.signal.aborted)setAddress(data.location);}
+  catch(e){if(!controller.signal.aborted)setAddressError(`위치는 확인했지만 주소를 표시하지 못했어요. ${message(e)}`);}
+  finally{if(!controller.signal.aborted)setAddressLoading(false);}
+ }
+ async function locate(cancelSearch=true):Promise<UserPosition|null>{
   gps.stop();
+  if(cancelSearch){searchAbort.current?.abort();setSearching(false);}
+  addressAbort.current?.abort();setAddress(null);setAddressError('');setAddressLoading(false);setPosition(null);
   const version=++locationVersion.current;
   routeAbort.current?.abort();setRouting(false);setRoute(null);
   setLocating(true);setLocationError('');setError('');
   try {
    const next=await getUserPosition();
-   if(alive.current&&locationVersion.current===version){setPosition(next);setFocusRequest(n=>n+1);return next;}
+   if(alive.current&&locationVersion.current===version){setPosition(next);setFocusRequest(n=>n+1);void lookupAddress(next);return next;}
   }catch(e){if(alive.current&&locationVersion.current===version){setPosition(null);setLocationError(message(e));}}
   finally{if(alive.current&&locationVersion.current===version)setLocating(false);}
   return null;
@@ -99,16 +120,23 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   finally{if(!controller.signal.aborted)setRouting(false);}
  }
  const onSubmit=(event:FormEvent)=>{event.preventDefault();void submitSearch();};
- const locationPanel=<section className="live-location"><div className="location-label"><Icon name="locate" size={18}/><strong>출발 위치</strong></div><p>{position?`현재 위치를 확인했어요 · 오차 약 ${Math.round(position.accuracy)}m`:'길찾기를 시작하려면 현재 위치를 확인해 주세요.'}</p><button className="secondary" disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={19}/>{locating?'현재 위치 확인 중…':position?'현재 위치 다시 확인':'현재 위치 확인'}</button>{locationError&&<p className="inline-error" role="alert">{locationError}</p>}</section>;
+ const locationPanel=<section className="live-location" aria-label="현재 위치"><div className="location-label"><Icon name="locate" size={18}/><strong>현재 위치 · 출발지</strong></div>
+ {position?<><strong className="current-address">{address?address.address:addressLoading?'현재 위치의 주소를 확인하고 있어요…':'현재 위치 좌표를 확인했어요'}</strong><p>GPS 기준 주변 주소 · 오차 약 {Math.round(position.accuracy)}m<br/>확인 시각 {new Date(position.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</p></>:<p>현재 위치를 확인하면 주변 장소를 가까운 순서로 찾을 수 있어요.</p>}
+ <button className="secondary" disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={19}/>{locating?'현재 위치 확인 중…':position?'현재 위치 다시 확인':'현재 위치 확인'}</button>
+ {position&&addressError&&<><p className="address-warning" role="status">{addressError}</p><button className="text-button" disabled={addressLoading||configured!==true} onClick={()=>void lookupAddress(position)}>주소 다시 확인</button></>}
+ {!position&&<p className="location-disclosure">주소 확인·주변 검색을 위해 현재 좌표를 서버와 TMAP에 전달해요. 위치는 저장하지 않아요.</p>}
+ {locationError&&<p className="inline-error" role="alert">{locationError}</p>}</section>;
+ const searchScope=<div className="search-scope"><label>검색 범위<select aria-label="검색 범위" value={position&&nearbySearch?'nearby':'national'} onChange={e=>setNearbySearch(e.target.value==='nearby')}><option value="nearby" disabled={!position}>내 주변 10km</option><option value="national">전국 검색</option></select></label>{!position&&<p>위치를 확인하기 전에는 전국에서 검색해요.</p>}</div>;
+
  const setup=<>{configured===null&&!configError&&<p className="connection-note" role="status">검색 서비스 연결을 확인하고 있어요…</p>}{configured===false&&<div className="connection-note"><strong>실제 장소 검색을 준비 중이에요.</strong><p>검색 서비스 설정을 확인한 뒤 다시 이용해 주세요.</p>{review&&<button className="text-button" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</div>}{configError&&<div className="connection-note" role="alert"><p>{configError}</p><button className="text-button" onClick={()=>setConfigAttempt(n=>n+1)}>연결 다시 확인</button></div>}</>;
 
  return <div className={`studio live-studio ${review?'':'app-shell'}`}><aside className="studio-intro"><span className="eyebrow">GILBIT / WALKING ROUTE</span><h1>눈앞의 길을,<br/>실제 경로로.</h1><p>장소를 찾고 현재 위치에서<br/>걸어갈 경로를 확인하세요.</p><div className="studio-rule"/><span className="studio-note">현재 위치는 버튼을 눌렀을 때만 확인해요.<br/>경로는 저장하지 않아요.</span>{review&&<button className="secondary return-demo" onClick={onDemo}>디자인 시안 보기</button>}</aside><div className="phone live-phone"><header className={`app-header ${stage==='home'?'home-header':''}`}>
   {stage==='home'?<Brand/>:<><button className="icon-button" aria-label="뒤로 가기" onClick={back}><Icon name="back"/></button><strong className="header-title">{stageTitle}</strong></>}
   <>{review&&<button className="live-demo-exit" onClick={onDemo}>시안 보기</button>}</>
  </header><main className={`app-content live-content live-${stage}`} ref={content}>
- {stage==='home'&&<><section className="home-hero"><Lattice/><Lattice right/><h2>어디로<br/>걸어갈까요<span>?</span></h2><form className="search-form" onSubmit={onSubmit}><button className="home-search-submit" type="submit" aria-label="실제 장소 검색" disabled={configured!==true}><Icon name="search" size={23}/></button><input aria-label="실제 목적지 검색" placeholder="장소나 주소를 검색하세요" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/></form><Hanok/></section><div className="live-home-body">{setup}{error&&<p className="inline-error" role="alert">{error}</p>}<div className="section-heading"><h3>이런 곳을 찾아보세요</h3></div><div className="suggestions">{['도서관','시청','보건소'].map((q,i)=><button key={q} className="place-tile" disabled={configured!==true} onClick={()=>void submitSearch(q)}><Icon name={['book','building','health'][i]} size={25}/><strong>{q}</strong></button>)}</div><RecentHistoryPanel controller={recent} compact onDetails={()=>{setError('');setStage('history');}} onSearch={q=>void submitSearch(q)} onDestination={p=>void submitSearch(p.name)}/>{locationPanel}<p className="live-privacy">위치를 확인하면 이 기기의 좌표를 가져와요.<br/>도보 경로를 찾을 때 출발·도착 위치가 TMAP에 전달돼요.</p></div></>}
+ {stage==='home'&&<><section className="home-hero"><Lattice/><Lattice right/><h2>어디로<br/>걸어갈까요<span>?</span></h2><form className="search-form" onSubmit={onSubmit}><button className="home-search-submit" type="submit" aria-label="실제 장소 검색" disabled={configured!==true||locating||searching}><Icon name="search" size={23}/></button><input aria-label="실제 목적지 검색" placeholder="장소나 주소를 검색하세요" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/></form><Hanok/></section><div className="live-home-body">{locationPanel}{searchScope}{setup}{error&&<p className="inline-error" role="alert">{error}</p>}<div className="section-heading"><h3>이런 곳을 찾아보세요</h3></div><div className="suggestions">{['도서관','시청','보건소'].map((q,i)=><button key={q} className="place-tile" disabled={configured!==true} onClick={()=>void submitSearch(q)}><Icon name={['book','building','health'][i]} size={25}/><strong>{q}</strong></button>)}</div><RecentHistoryPanel controller={recent} compact onDetails={()=>{setError('');setStage('history');}} onSearch={q=>void submitSearch(q)} onDestination={p=>void submitSearch(p.name)}/><p className="live-privacy">주소·주변 검색에는 현재 위치, 도보 경로 계산에는 출발·도착 위치가 TMAP에 전달돼요. 좌표와 현재 주소는 저장하지 않아요.</p></div></>}
  {stage==='history'&&<>{error&&<p className="inline-error" role="alert">{error}</p>}<RecentHistoryPanel controller={recent} onSearch={q=>void submitSearch(q)} onDestination={p=>void submitSearch(p.name)}/></>}
- {stage==='results'&&<section className="padded"><form className="search-form" onSubmit={onSubmit}><button type="submit" aria-label="다시 검색"><Icon name="search" size={21}/></button><input aria-label="검색어" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/><button type="button" aria-label="검색어 지우기" onClick={()=>{searchAbort.current?.abort();setSearching(false);setQuery('');setPlaces([]);setSearched(false);setError('');}}><Icon name="close" size={18}/></button></form><div className="section-heading live-results-heading"><h3>검색 결과 {searched&&<em>{places.length}</em>}</h3><span>관련도순</span></div><p className="sample-description">TMAP 장소 검색 · 거리는 직선 거리예요.</p>{searching&&<p role="status" className="connection-note">장소를 찾고 있어요…</p>}{error&&<div className="connection-note" role="alert"><p>{error}</p><button className="secondary" onClick={()=>void submitSearch()}>다시 검색</button></div>}<div className="search-results">{places.map(place=><button className="result-card" key={place.id} onClick={()=>choose(place)}><span className="result-icon"><Icon name="pin"/></span><div className="result-copy"><small>{place.category}</small><h3>{place.name}</h3><p>{place.address}</p>{position&&<span>직선 {formatDistance(distanceBetween(position,place))}</span>}</div><Icon name="chevron" size={19}/></button>)}</div>{searched&&!places.length&&!error&&<div className="empty-state"><div className="empty-lattice"><Motif kind="lattice" size={54}/></div><h3>일치하는 장소가 없어요</h3><p>지역명과 장소명을 함께 입력해 보세요.</p></div>}</section>}
+ {stage==='results'&&<section className="padded"><form className="search-form" onSubmit={onSubmit}><button type="submit" aria-label="다시 검색"><Icon name="search" size={21}/></button><input aria-label="검색어" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/><button type="button" aria-label="검색어 지우기" onClick={()=>{searchAbort.current?.abort();setSearching(false);setQuery('');setPlaces([]);setSearched(false);setError('');}}><Icon name="close" size={18}/></button></form><div className="section-heading live-results-heading"><h3>검색 결과 {searched&&<em>{places.length}</em>}</h3><span>{searchOrigin?'주변 거리순':'전국 관련도순'}</span></div><p className="sample-description">{searchOrigin?'확인한 위치 반경 10km · 거리순':'전국 검색 · 현재 위치 기준이 아니에요'} · 거리는 직선 거리예요.</p>{searching&&<p role="status" className="connection-note">장소를 찾고 있어요…</p>}{error&&<div className="connection-note" role="alert"><p>{error}</p><button className="secondary" onClick={()=>void submitSearch()}>다시 검색</button></div>}<div className="search-results">{places.map(place=><button className="result-card" key={place.id} onClick={()=>choose(place)}><span className="result-icon"><Icon name="pin"/></span><div className="result-copy"><small>{place.category}</small><h3>{place.name}</h3><p>{place.address}</p>{searchOrigin&&<span>직선 {formatDistance(distanceBetween(searchOrigin,place))}</span>}</div><Icon name="chevron" size={19}/></button>)}</div>{searched&&!places.length&&!error&&<div className="empty-state"><div className="empty-lattice"><Motif kind="lattice" size={54}/></div><h3>일치하는 장소가 없어요</h3><p>{searchOrigin?'주변 10km 안에 결과가 없어요. 전국 검색으로 범위를 넓혀 보세요.':'지역명과 장소명을 함께 입력해 보세요.'}</p>{searchOrigin&&<button className="secondary" onClick={()=>{setNearbySearch(false);void submitSearch(query,false);}}>전국에서 다시 검색</button>}</div>}</section>}
  {(stage==='route'||stage==='map')&&selected&&<section className="map-screen live-route-screen">{position?<><WalkingMap start={position} destination={selected} route={route} focusRequest={focusRequest} currentPosition={trackingStarted?progress.position:null}/><button className="map-locate icon-button" aria-label="출발 위치로 지도 이동" onClick={()=>setFocusRequest(n=>n+1)}><Icon name="locate"/></button></>:<div className="live-no-position"><Icon name="map" size={43}/><p>출발 위치를 확인하면<br/>목적지와 경로를 볼 수 있어요.</p></div>}
   <div className="map-bottom bottom-sheet"><span className="sheet-handle"/><div className="destination-heading"><span className="result-icon"><Icon name="pin"/></span><div><h2>{selected.name}</h2><p>{selected.address}</p></div></div>{setup}
    {route?<><div className="trip-summary"><strong>{formatDuration(route.durationSeconds)}</strong><span>도보 · {formatDistance(route.distanceMeters)}</span></div><section className="tracking-guide" aria-label="실제 경로 이동 안내">

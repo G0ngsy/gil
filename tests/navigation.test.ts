@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createNavigationHandler, parsePlaces, parseWalkingRoute } from '../server/navigation';
+import { createNavigationHandler, parsePlaces, parseWalkingRoute, parseLocationAddress } from '../server/navigation';
 import { distanceBetween, formatDistance, formatDuration, isCoordinate } from '../shared/navigation';
 
 const start={lat:37.5665,lng:126.978},end={lat:37.5651,lng:126.9776};
@@ -85,4 +85,29 @@ test('도보 경로를 찾지 못한 경우 재탐색 가능한 오류를 전달
 });
 test('거리 표시와 직선 거리는 도보 소요 시간으로 추정되지 않는다',()=>{
  assert.equal(formatDistance(520),'520m');assert.equal(formatDistance(1200),'1.2km');assert.equal(formatDuration(301),'6분');assert.equal(distanceBetween(start,start),0);assert.ok(distanceBetween(start,end)>100);assert.equal(isCoordinate({lat:NaN,lng:1}),false);
+});
+
+test('주소 변환은 WGS84·확장 없음으로 요청하고 필요한 주소만 반환한다',async()=>{
+ const handler=createNavigationHandler({appKey:'private-key',fetcher:async(input,options)=>{
+  const url=new URL(String(input));assert.equal(url.pathname,'/tmap/geo/reversegeocoding');assert.equal(url.searchParams.get('lat'),String(start.lat));assert.equal(url.searchParams.get('lon'),String(start.lng));assert.equal(url.searchParams.get('coordType'),'WGS84GEO');assert.equal(url.searchParams.get('addressType'),'A10');assert.equal(url.searchParams.get('newAddressExtend'),'N');assert.equal(options?.method,'GET');
+  return Response.json({addressInfo:{fullAddress:'서울특별시 중구 세종대로 110,서울 중구 태평로1가',city_do:'서울특별시',gu_gun:'중구',legalDong:'태평로1가',extra:'private-key'}});
+ }});
+ const response=await handler(request('address',{point:start}));assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert.deepEqual(await response.json(),{location:{address:'서울특별시 중구 세종대로 110',area:'서울특별시 중구 태평로1가'}});
+});
+test('주변 검색은 반경 10km·거리순을 요청하고 범위 밖 결과를 제외한다',async()=>{
+ const template=providerPlaces.searchPoiInfo.pois.poi[0];
+ const handler=createNavigationHandler({appKey:'key',fetcher:async(input)=>{
+  const url=new URL(String(input));assert.equal(url.searchParams.get('searchtypCd'),'R');assert.equal(url.searchParams.get('radius'),'10');assert.equal(url.searchParams.get('centerLat'),String(start.lat));assert.equal(url.searchParams.get('centerLon'),String(start.lng));
+  return Response.json({searchPoiInfo:{pois:{poi:[{...template,id:'far',noorLat:'37.6'},{...template,id:'outside',noorLat:'35.1'},{...template,id:'near',noorLat:String(start.lat),noorLon:String(start.lng)}]}}});
+ }});
+ const response=await handler(request('search',{q:'도서관',center:start}));assert.equal(response.status,200);assert.deepEqual((await response.json()).places.map((p:{id:string})=>p.id),['near','far']);
+});
+for(const [action,body] of [['search',{q:'도서관',center:{lat:'37',lng:126}}],['search',{q:'도서관',center:{lat:37}}],['address',{point:{lat:100,lng:126}}],['address',{point:null}]] as const){
+ test(`${action}의 잘못된 기준 좌표는 제공사 호출 전에 거부한다 ${JSON.stringify(body)}`,async()=>{
+  const handler=createNavigationHandler({appKey:'key',fetcher:async()=>{assert.fail('외부 호출 금지');}});assert.equal((await handler(request(action,body))).status,400);
+ });
+}
+test('주소 결과가 없으면 현재 위치 주소를 만들어내지 않는다',()=>{
+ assert.throws(()=>parseLocationAddress({addressInfo:{}}),/주소를 찾지 못/);
+ assert.deepEqual(parseLocationAddress({addressInfo:{city_do:'제주특별자치도',gu_gun:'제주시',legalDong:'연동'}}),{address:'제주특별자치도 제주시 연동',area:'제주특별자치도 제주시 연동'});
 });
