@@ -23,7 +23,7 @@ test('실제 검색 경로에서 선택형 GPS·거리·단계·이탈·도착�
  await page.clock.fastForward(1000);await emit(page,37.5675,126.978);await expect(page.getByRole('heading',{name:'오른쪽으로 이동',exact:true})).toBeVisible();
  await page.clock.fastForward(15000);await emit(page,37.5675,126.9787);await page.clock.fastForward(10000);await emit(page,37.5675,126.979);
  await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
- await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByTestId('live-remaining')).toHaveText('0m');expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);
+ await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByTestId('live-remaining')).toHaveText('0m');await expect(page.locator('.journey-arrival-decoration')).toBeVisible();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);
 });
 test('중지와 화면 종료는 추적을 해제하고 늦은 위치를 무시한다',async({page})=>{
  await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);

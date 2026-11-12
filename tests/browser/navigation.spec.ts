@@ -81,7 +81,7 @@ test('지도 로딩 실패는 경로 정보를 보존하며 재시도할 수 있
 test('기존 시안의 문양과 화면 전환은 유지된다',async({page})=>{
  await page.goto('/?preview=1');await expect(page.locator('.motif-knot')).toHaveCount(1);await page.getByRole('textbox',{name:'목적지 검색',exact:true}).fill('중앙');await page.getByRole('button',{name:'검색',exact:true}).click();await page.getByRole('button',{name:/도서관 · 가장 가까운 곳/}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await page.getByRole('button',{name:'카메라 안내',exact:true}).click();await expect(page.locator('.direction-arrow')).toBeVisible();
  await page.goto('/?preview=1&screen=recheck');await expect(page.locator('.motif-cloud')).toHaveCount(1);await expect(page.locator('.direction-arrow')).toHaveCount(0);
- await page.goto('/?preview=1&screen=arrival');await expect(page.locator('.motif-lotus')).toHaveCount(1);await expect(page.locator('.motif-flower')).toHaveCount(0);await page.getByRole('button',{name:'도움이 됐어요',exact:true}).click();await expect(page.locator('.motif-flower')).toHaveCount(1);
+ await page.goto('/?preview=1&screen=arrival');await expect(page.locator('.ornamental-lotus')).toHaveCount(1);await expect(page.locator('.motif-flower')).toHaveCount(0);await page.getByRole('button',{name:'도움이 됐어요',exact:true}).click();await expect(page.locator('.motif-flower')).toHaveCount(1);
 });
 for(const width of [360,390,430]){
  test(`${width}px 실제 모드의 장소·경로 정보에 가로 넘침이 없다`,async({page,context})=>{

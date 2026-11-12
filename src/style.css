@@ -164,3 +164,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .intro-home-waiting{opacity:0;transform:scale(.96);transform-origin:50% 50dvh}
 .intro-home-revealing{opacity:1;transform:scale(1);transform-origin:50% 50dvh;transition:transform .8s cubic-bezier(.22,1,.36,1),opacity .8s ease}
 @media(prefers-reduced-motion:reduce){.intro-home-waiting,.intro-home-revealing{opacity:1;transform:none;transition:none}}
+/* Light ochre linework follows the approved home/arrival preview. */
+.ornamental-divider{display:flex;align-items:center;justify-content:center;gap:14px;color:var(--ochre);pointer-events:none}
+.ornamental-divider>span{height:1px;flex:1;background:currentColor;opacity:.75}
+.ornamental-divider>svg{flex:none;display:block}
+.home-history-divider{margin:24px 0 18px;padding:0 16px}
+.live-home-body>.home-history-divider+.history-panel{margin-top:0}
+.ornamental-lotus{gap:12px;width:150px;margin-left:auto;margin-right:auto}
+.ornamental-lotus>span{max-width:35px}
+.arrival .ornamental-lotus{margin-top:0;margin-bottom:18px}
+.journey-arrival-decoration{margin-bottom:20px}

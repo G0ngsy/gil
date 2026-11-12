@@ -178,3 +178,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 
 
 2026-11-12 실제 지도 검증: 코드 `bf4b9bb`, production `dpl_9htSF4E3eY8oAZ3QWud4drhGG55U` READY 및 gilbit.vercel.app 별칭 확인. 기존 AppKey로 지도 SDK HTTP 200, 지도 DOM·타일 HTTP 200·실제 서울도서관 검색 및 도보 경로 표시를 Chrome에서 확인했다. 공개 좌표 37.5665/126.978를 주입했으며 휴대폰 실외 GPS 검증은 아니다. 인증 값/URL은 출력하지 않았다. 캡처 `docs/portfolio/assets/2026-11-12-live-tmap-map-390.png`. 원격 최신 인트로/홈 디자인 커밋을 보존해 rebase 후 빌드·관련 브라우저 5개 재통과했다. 최초 비최신 작업본 배포 시도는 중단하고 최신 통합본으로 재배포했다.
+
+
+## 2026-11-12 승인된 전통 구분선
+홈의 현재 위치/최근 목적지 사이에 마름모, 시안/실제 도착에 가는 단색 연꽃 구분선을 적용했다. 장식은 접근성 트리와 포인터에서 제외했다. 빌드 및 관련 브라우저 24개 통과(초기 이전 연꽃 검사 실패 후 갱신·재실행). API/GPS는 모의 입력, 실외 정확도 검증 아님. 캡처 assets/2026-11-12-ornament-home-390.png, ornament-arrival-390.png. [문제 해결](../issues/2026-11-12-ornamental-dividers.md). 사용자 승인 이미지에 따른 AI 지원 구현.

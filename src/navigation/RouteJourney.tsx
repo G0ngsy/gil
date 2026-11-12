@@ -1,13 +1,14 @@
 import type {Place,WalkingRoute} from '../../shared/navigation';
 import {formatDistance,formatDuration} from '../../shared/navigation';
 import type {Progress} from '../../shared/tracking';
+import {OrnamentalDivider} from '../OrnamentalDivider';
 import {Icon} from '../ui';
 
 interface Props{destination:Place;route:WalkingRoute;progress:Progress;active:boolean;notice:string;navigating:boolean;onStart:()=>void;onFinish:()=>void}
 export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish}:Props){
  const instruction=progress.arrived?'목적지에 도착했어요':!active?'안내가 잠시 멈췄어요':!progress.position?'현재 위치를 확인하고 있어요':progress.rejected?'위치를 다시 확인하고 있어요':progress.offRoute?'경로를 벗어났어요':route.steps[progress.stepIndex]?.description||'주변과 경로를 확인해 주세요';
  return <div className="journey-content">
- {navigating&&<section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite"><span className="journey-kicker">{progress.arrived?'도착 안내':active?'다음 이동 안내':'안내 일시중지'}</span><h2>{instruction}</h2>{active&&(!progress.position||progress.rejected)&&<p>안전한 곳에서 잠시 기다려 주세요.</p>}{progress.offRoute&&active&&<p>안전한 곳에서 경로를 확인해 주세요.</p>}{!active&&!progress.arrived&&notice&&<p>{notice}</p>}
+ {navigating&&<section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className="journey-kicker">{progress.arrived?'도착 안내':active?'다음 이동 안내':'안내 일시중지'}</span><h2>{instruction}</h2>{active&&(!progress.position||progress.rejected)&&<p>안전한 곳에서 잠시 기다려 주세요.</p>}{progress.offRoute&&active&&<p>안전한 곳에서 경로를 확인해 주세요.</p>}{!active&&!progress.arrived&&notice&&<p>{notice}</p>}
  <div className="journey-remaining"><small>남은 거리</small><strong data-testid="live-remaining">{formatDistance(progress.position?progress.remaining:route.distanceMeters)}</strong></div></section>}
  <div className="destination-heading journey-destination"><span className="result-icon"><Icon name="pin"/></span><div><h2>{destination.name}</h2>{!navigating&&<p>{destination.address}</p>}</div></div>
  {!navigating&&<><div className="trip-summary"><strong>{formatDuration(route.durationSeconds)}</strong><span>도보 · {formatDistance(route.distanceMeters)}</span></div><p className="journey-caption">전체 경로 기준 예상 시간</p><button className="primary journey-start" onClick={onStart}><Icon name="walk"/>길 안내 시작</button></>}
