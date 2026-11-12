@@ -63,3 +63,5 @@
 
 
 2026-11-12 실제 지도 검증: 코드 `bf4b9bb`, production `dpl_9htSF4E3eY8oAZ3QWud4drhGG55U` READY 및 gilbit.vercel.app 별칭 확인. 기존 AppKey로 지도 SDK HTTP 200, 지도 DOM·타일 HTTP 200·실제 서울도서관 검색 및 도보 경로 표시를 Chrome에서 확인했다. 공개 좌표 37.5665/126.978를 주입했으며 휴대폰 실외 GPS 검증은 아니다. 인증 값/URL은 출력하지 않았다. 캡처 `docs/portfolio/assets/2026-11-12-live-tmap-map-390.png`. 원격 최신 인트로/홈 디자인 커밋을 보존해 rebase 후 빌드·관련 브라우저 5개 재통과했다. 최초 비최신 작업본 배포 시도는 중단하고 최신 통합본으로 재배포했다.
+
+2026-11-12 전통 구분선 배포: 구현 3f6d35c → production dpl_D28fgEdGH3hsHJqaiuS6JbFX23Ca READY. gilbit.vercel.app 원격 Chrome 390px에서 홈 마름모·도착 시안 연꽃·안내 마치기 버튼 확인. 최초 원격 확인은 비동기 시안 로딩 전에 검사해 실패했고 화면 로딩 대기 후 재확인 통과. 실제 GPS 도착 장식은 로컬 모의 GPS 검증이며 원격 실외 판정 검증은 아니다. 기존 지도 환경 설정을 유지했다.
