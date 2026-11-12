@@ -5,10 +5,9 @@ import { createNavigationHandler } from './server/navigation';
 export default defineConfig(({mode}) => {
  const env = loadEnv(mode, process.cwd(), '');
  const serverKey=(env.TMAP_APP_KEY || process.env.TMAP_APP_KEY || '').trim();
- const mapKey=(env.VITE_TMAP_MAP_KEY || '').trim();
- if(serverKey && mapKey && serverKey===mapKey) {
-  throw new Error('TMAP 서버 키를 공개 지도 키로 재사용할 수 없습니다. VITE_TMAP_MAP_KEY를 비워 두고 공급자의 키 분리·사용 제한 지원을 확인하세요.');
- }
+ // The user explicitly chose one TMAP AppKey for REST and browser maps.
+ // Browser SDK authentication is public; never print the resolved value.
+ const mapKey=serverKey || (env.VITE_TMAP_MAP_KEY || '').trim();
  const api: Plugin = {
   name:'gilbit-navigation-api',
   configureServer(server) {
@@ -29,5 +28,5 @@ export default defineConfig(({mode}) => {
    });
   },
  };
- return {plugins:[api],server:{host:'127.0.0.1'}};
+ return {plugins:[api],define:{'import.meta.env.VITE_TMAP_MAP_KEY':JSON.stringify(mapKey)},server:{host:'127.0.0.1'}};
 });
