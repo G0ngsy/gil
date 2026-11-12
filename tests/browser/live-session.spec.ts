@@ -6,7 +6,7 @@ async function setup(page:Page){
   const state={calls:0,clears:[] as number[],ok:null as PositionCallback|null};Object.assign(window,{liveGps:state});
   navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);
   navigator.geolocation.watchPosition=ok=>{state.calls++;state.ok=ok;return state.calls;};navigator.geolocation.clearWatch=id=>state.clears.push(id);
-  class Map{setCenter(){}fitBounds(){}destroy(){}}class LatLng{}class LatLngBounds{extend(){}}class Overlay{setMap(){}}
+  class Map{destroyed=false;setCenter(){}fitBounds(){}destroy(){this.destroyed=true;}}class LatLng{}class LatLngBounds{extend(){}}class Overlay{owner:Map;constructor(options:Record<string,unknown>){this.owner=options.map as Map;}setMap(){if(this.owner.destroyed)throw new Error('Overlay removed after map destruction');}}
   window.Tmapv2={Map,LatLng,LatLngBounds,Marker:Overlay,Polyline:Overlay};
  });
  await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');const q=r.request().method()==='POST'?r.request().postDataJSON()?.q:new URL(r.request().url()).searchParams.get('q');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route}:{places:[{id:q?.includes('새')?'new':'live-test',name:q?.includes('새')?'새 목적지':'테스트 목적지',address:'검증용',category:'장소',lat:37.5675,lng:126.979}]}});});
