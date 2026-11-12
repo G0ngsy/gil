@@ -63,6 +63,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   return()=>controller.abort();
  },[configAttempt]);
  useEffect(()=>{content.current?.scrollTo(0,0);},[stage]);
+ useEffect(()=>{if(stage==='map')content.current?.scrollTo(0,0);},[gps.active]);
  useEffect(()=>{
   if(ending){focus.current=document.activeElement as HTMLElement;dialog.current?.showModal();}
   else if(dialog.current?.open){dialog.current.close();focus.current?.focus();}

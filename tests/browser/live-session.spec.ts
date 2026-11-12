@@ -26,7 +26,7 @@ for(const width of [360,390,430])test(`${width}px X 홈 이동·복귀 중 GPS�
  await close(page);await page.getByRole('button',{name:'안내로 돌아가기',exact:true}).click();expect(await page.evaluate(()=>(window as any).liveGps)).toMatchObject({calls:1,clears:[]});expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
 });
 test('일시중지·홈·복귀는 진행을 보존하고 재개 후에만 위치를 받는다',async({page})=>{
- await start(page);await page.clock.runFor(6000);await emit(page,37.5667,126.978);const remaining=await page.getByTestId('live-remaining').innerText();await details(page);await page.getByRole('button',{name:'안내 일시중지',exact:true}).click();await close(page);
+ await start(page);await page.clock.runFor(6000);await emit(page,37.5667,126.978);const remaining=await page.getByTestId('live-remaining').innerText();await details(page);await page.getByRole('button',{name:'안내 일시중지',exact:true}).click();await expect(page.getByRole('heading',{name:'안내가 잠시 멈췄어요'})).toBeInViewport();expect(await page.locator('main').evaluate(e=>e.scrollTop)).toBe(0);await close(page);
  await expect(page.getByText('위치 안내가 멈춰 있어요.',{exact:true})).toBeVisible();await page.clock.runFor(1000);await emit(page,37.5675,126.979);await page.getByRole('button',{name:'안내로 돌아가기',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText(remaining);await expect(page.getByText('마지막 확인 기준',{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>(window as any).liveGps.calls)).toBe(1);await page.getByRole('button',{name:'안내 계속하기',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText(remaining);expect(await page.evaluate(()=>(window as any).liveGps.calls)).toBe(2);
 });
