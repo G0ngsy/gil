@@ -2,7 +2,7 @@ import type { Coordinate } from '../../shared/navigation';
 
 export interface TMapView {
  setCenter(position:unknown):void;
- fitBounds(bounds:unknown):void;
+ fitBounds(bounds:unknown,padding?:number|{left:number;top:number;right:number;bottom:number}):void;
  destroy?():void;
 }
 export interface TMapOverlay { setMap(map:TMapView|null):void }

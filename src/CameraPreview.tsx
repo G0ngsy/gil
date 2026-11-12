@@ -1,3 +1,4 @@
+import {Icon} from './ui';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 
 function cameraError(error:unknown){
@@ -38,7 +39,7 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange}:{onMap:
    if(request===version.current)setState('playing');
   }catch(e){if(request===version.current){release();setError(cameraError(e));setState('error');}}
  }
- return <>{!open&&<button className="secondary camera-launch" onClick={()=>void start()}>실제 카메라 켜기</button>}{open&&<section className="real-camera" aria-label="실제 카메라 미리보기">
+ return <>{!open&&<button className="secondary camera-launch" aria-label="실제 카메라 켜기" onClick={()=>void start()}>{live?<><Icon name="camera"/>카메라 안내</>:'실제 카메라 켜기'}</button>}{open&&<section className="real-camera" aria-label="실제 카메라 미리보기">
  <video ref={video} autoPlay muted playsInline aria-label="실시간 카메라 영상"/>
  <div className="real-camera-label"><strong>{live?'카메라 방향 안내':'실제 카메라 · 미리보기'}</strong><p>{live?'화살표는 휴대폰을 향할 방향을 알려줘요.':'방향 추적 준비 중 · 화살표 안내는 표시하지 않아요.'}</p></div>
  {state==='playing'&&overlay}
