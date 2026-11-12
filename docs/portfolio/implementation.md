@@ -139,3 +139,7 @@ GPS 좌표를 ReverseGeocoding으로 주소 표시하고, 확인한 위치 반�
 
 
 2026-11-12 최종 배포: 구현 `5a38dd2`, 실제 SDK 해제 보완 `212f33c`, 일시중지 스크롤 보완 `91e358b`. Production `dpl_CXH8A1kXKJksqtgbeXp2Xa9LZQ2U` READY 및 https://gilbit.vercel.app 반영. 실제 TMAP 서울도서관 검색·도보 경로/타일과 주입 공개 GPS로 X→홈→안내 복귀→일시중지→재개→확인 종료를 검증했다. X 이동 중 watch 유지, 일시중지/종료 때만 해제, 복귀 카드 제거, 일시중지 직후 scrollTop 0, 페이지 오류 0개 확인. 실제 실외 GPS/화면 잠금 중 추적은 검증 또는 지원 완료로 표현하지 않는다. 캡처: portfolio 기준 `assets/2026-11-12-session-active-390.png`, `assets/2026-11-12-session-home-390.png`, `assets/2026-11-12-session-paused-390.png`. 최초 전체 125개 통과 후 실제 SDK 정리 보완 관련 28개, 최종 스크롤 보완 관련 12개/빌드 통과. 전체125개를 마지막 보완 후 재실행한 것은 아니다. 인증 값·인증 URL은 출력하지 않았다.
+
+
+## 2026-11-12 수동 일시중지 제거
+사용자 요청으로 수동 일시중지 기능을 제거하고 안내 종료를 남은 거리 오른쪽에 작은 버튼으로 이동했다. 종료 확인창/X 홈 안내 유지는 보존한다. 자동 GPS 중단/재시도는 별도 유지한다. 빌드·관련 브라우저 30개 통과(모의 GPS). AI 지원 구현. [문제·원인·해결·결과](../issues/2026-11-12-remove-guidance-pause.md).

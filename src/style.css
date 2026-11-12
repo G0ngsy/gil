@@ -230,3 +230,4 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .last-distance-label{display:block;font-size:10px;margin-top:4px;color:var(--muted);font-weight:400}
 .guidance-header>.icon-button:last-of-type{margin-left:auto}
 @media(max-width:374px){.ongoing-guidance{padding:16px}.ongoing-title h3{font-size:17px}}
+.journey-remaining>.journey-end{margin-left:auto;min-height:44px;min-width:64px;padding:8px 10px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:4px;white-space:nowrap;flex:none}

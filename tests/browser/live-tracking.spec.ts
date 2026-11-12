@@ -25,9 +25,9 @@ test('실제 검색 경로에서 선택형 GPS·거리·단계·이탈·도착�
  await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
  await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();await expect(page.getByTestId('live-remaining')).toHaveText('0m');await expect(page.locator('.journey-arrival-decoration')).toBeVisible();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);
 });
-test('일시중지는 추적을 해제하고 X 닫기는 안내를 유지한다',async({page})=>{
+test('자동 위치 중단은 추적을 해제하고 X 닫기는 안내를 유지한다',async({page})=>{
  await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);
- await page.getByText('자세히 보기',{exact:true}).click();await page.getByRole('button',{name:'안내 일시중지',exact:true}).click();await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByTestId('live-remaining')).toHaveText('200m');
- await page.getByRole('button',{name:'안내 계속하기',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText('200m');await page.getByRole('button',{name:'안내 화면 닫기',exact:true}).click();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);await expect(page.getByRole('region',{name:'진행 중인 안내'})).toBeVisible();
+ await page.getByText('자세히 보기',{exact:true}).click();await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByTestId('live-remaining')).toHaveText('200m');
+ await page.getByRole('button',{name:'위치 안내 다시 시작',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText('200m');await page.getByRole('button',{name:'안내 화면 닫기',exact:true}).click();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);await expect(page.getByRole('region',{name:'진행 중인 안내'})).toBeVisible();
  await emit(page,37.5675,126.979);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
 });

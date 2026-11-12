@@ -45,8 +45,8 @@ test('위치 권한을 자동 요청하지 않고 검색→위치→도보 경�
  await expect(page.locator('[data-map-ready="true"]')).toBeVisible();
  await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toHaveCount(0);
  await expect(page.getByText('30m 앞 오른쪽')).toHaveCount(0);await expect(page.getByRole('button',{name:'카메라 안내',exact:true})).toHaveCount(0);
- await page.locator('.journey-details').evaluate(e=>e.setAttribute('open',''));await page.locator('.journey-actions').getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('button',{name:'계속 보기'}).click();
- await page.locator('.journey-details').evaluate(e=>e.setAttribute('open',''));await page.locator('.journey-actions').getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'안내 종료',exact:true}).click();await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+ await page.locator('.journey-details').evaluate(e=>e.setAttribute('open',''));await page.locator('.journey-remaining').getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('button',{name:'계속 보기'}).click();
+ await page.locator('.journey-details').evaluate(e=>e.setAttribute('open',''));await page.locator('.journey-remaining').getByRole('button',{name:'안내 종료',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'안내 종료',exact:true}).click();await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
 });
 test('위치 거부 시 경로 API를 호출하지 않고 재시도 안내한다',async({page})=>{
  await setup(page);let routeCalls=0;page.on('request',r=>{if(r.url().includes('action=route'))routeCalls++;});
