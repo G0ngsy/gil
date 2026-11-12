@@ -231,3 +231,15 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .guidance-header>.icon-button:last-of-type{margin-left:auto}
 @media(max-width:374px){.ongoing-guidance{padding:16px}.ongoing-title h3{font-size:17px}}
 .journey-remaining>.journey-end{margin-left:auto;min-height:44px;min-width:64px;padding:8px 10px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:4px;white-space:nowrap;flex:none}
+/* Compact route card: one maneuver icon and concise route-derived instruction. */
+.journey-screen>.journey-guidance{display:flex;align-items:center;gap:14px;padding:15px 16px;min-height:82px}
+.instruction-symbol{display:flex;align-items:center;justify-content:center;flex:none;width:40px;color:var(--teal)}
+.instruction-left{transform:scaleX(-1)}.instruction-straight{transform:rotate(-90deg)}
+.instruction-status{color:var(--pine)}.instruction-copy{min-width:0;flex:1}
+.journey-screen>.journey-guidance h2{font-size:22px;font-weight:750;line-height:1.4;letter-spacing:-.7px}
+.instruction-copy>p{font-size:12px;line-height:1.6;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.journey-guidance:has(.journey-arrival-decoration){flex-wrap:wrap}.journey-guidance .journey-arrival-decoration{flex-basis:100%;margin:0}
+.journey-navigating .journey-sheet{padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.journey-navigating .journey-content .selected-destination{border:0;background:none;padding:0;box-shadow:none;margin-bottom:14px}
+.journey-navigating .journey-destination>.selection-corner{display:none}
+@media(max-width:374px){.journey-screen>.journey-guidance{gap:10px;padding:13px}.journey-screen>.journey-guidance h2{font-size:20px}}

@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
-async function setup(page:Page){
+async function setup(page:Page,withTurn=false){
  await page.clock.install({time:new Date('2026-11-12T00:00:00Z')});
  await page.addInitScript(()=>{
   navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);
@@ -9,8 +9,8 @@ async function setup(page:Page){
  await page.route('https://topopentile1.tmap.co.kr/scriptSDKV2/tmapjs2.min.js',r=>r.fulfill({contentType:'application/javascript',body:`
  window.mapTest={layers:[],centers:[],maps:0};
  class Overlay{constructor(options){this.options=options;this.map=options.map;window.mapTest.layers.push(this);}setMap(map){this.map=map;}}
- Object.assign(window.Tmapv2,{Map:class{constructor(id){window.mapTest.maps++;document.getElementById(id).textContent='모의 지도';}setCenter(c){window.mapTest.centers.push(c);}fitBounds(){}destroy(){}},LatLng:class{constructor(lat,lng){this.lat=lat;this.lng=lng;}},LatLngBounds:class{extend(){}},Size:class{constructor(w,h){this.w=w;this.h=h;}},Point:class{constructor(x,y){this.x=x;this.y=y;}},Marker:Overlay,Polyline:Overlay,Circle:Overlay});` }));
- await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:a==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구',category:'도서관',lat:37.5675,lng:126.978}]}});});
+ Object.assign(window.Tmapv2,{Map:class{constructor(id){window.mapTest.maps++;document.getElementById(id).textContent='모의 지도';}setCenter(c){window.mapTest.centers.push(c);}fitBounds(){window.mapTest.centers.push({frame:true});}destroy(){}},LatLng:class{constructor(lat,lng){this.lat=lat;this.lng=lng;}},LatLngBounds:class{extend(){}},Size:class{constructor(w,h){this.w=w;this.h=h;}},Point:class{constructor(x,y){this.x=x;this.y=y;}},Marker:Overlay,Polyline:Overlay,Circle:Overlay});` }));
+ await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:withTurn?[{lat:37.5665,lng:126.978,description:'보행로 이동',turnType:200},{lat:37.5675,lng:126.978,description:'우회전',turnType:13,roadName:'세종대로'}]:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:a==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구',category:'도서관',lat:37.5675,lng:126.978}]}});});
  await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByLabel('지도 표시 범례')).toBeVisible();
 }
 async function fix(page:Page,lat=37.5665){await page.evaluate(lat=>(window as any).mapFix({coords:{latitude:lat,longitude:126.978,accuracy:5},timestamp:Date.now()}),lat);}
@@ -32,3 +32,5 @@ for(const width of [360,390,430])test(`${width}px 지도 마커·진행 색상·
  const last=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title==='마지막 확인 위치').map((l:any)=>l.options));expect(last).toHaveLength(1);expect(decodeURIComponent(last[0].icon)).toContain('#77776E');expect(last[0].offset.y).toBe(20);
  expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
 });
+
+test('회전 코드와 실제 진행값으로 짧은 방향 카드의 거리를 갱신한다',async({page})=>{await setup(page,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect(page.getByRole('heading',{name:'111m 앞 오른쪽',exact:true})).toBeVisible();await expect(page.getByText('세종대로 방향',{exact:true})).toBeVisible();await expect(page.locator('.instruction-right')).toBeVisible();expect((await page.locator('.journey-guidance').boundingBox())!.height).toBeLessThan(125);await page.clock.runFor(6000);await fix(page,37.56665);await expect(page.getByRole('heading',{name:'95m 앞 오른쪽',exact:true})).toBeVisible();await expect(page.getByText('자세히 보기',{exact:true})).toHaveCount(0);});

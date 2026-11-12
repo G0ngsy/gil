@@ -17,7 +17,7 @@ async function emit(page:Page,lat:number,lng:number,accuracy=5){await page.evalu
 
 async function start(page:Page){await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);}
 async function close(page:Page){await page.getByRole('button',{name:'안내 화면 닫기',exact:true}).click();await expect(page.getByRole('region',{name:'진행 중인 안내'})).toBeVisible();}
-async function details(page:Page){await page.locator('.journey-details').evaluate(e=>e.setAttribute('open',''));}
+async function details(page:Page){await expect(page.getByText('자세히 보기',{exact:true})).toHaveCount(0);}
 async function newDestination(page:Page){await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('새 목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeVisible();}
 for(const width of [360,390,430])test(`${width}px X 홈 이동·복귀 중 GPS를 유지하고 남은 거리를 갱신한다`,async({page})=>{
  await page.setViewportSize({width,height:844});await start(page);await close(page);await expect(page.getByText('위치 안내가 계속되고 있어요.',{exact:true})).toBeVisible();

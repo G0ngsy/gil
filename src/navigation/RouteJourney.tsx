@@ -1,6 +1,8 @@
 import type {ReactNode} from 'react';
 import type {Place,WalkingRoute} from '../../shared/navigation';
 import {formatDistance,formatDuration} from '../../shared/navigation';
+import {routeInstruction} from '../../shared/routeInstruction';
+import {useEffect,useState} from 'react';
 import type {Progress} from '../../shared/tracking';
 import {OrnamentalDivider} from '../OrnamentalDivider';
 import {SelectionCorner} from '../SelectionCorner';
@@ -16,15 +18,16 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
  {progress.arrived&&navigating&&<button className="primary journey-start" onClick={onFinish}>안내 마치기</button>}
  {cameraControl}
  {navigating&&<p className="journey-safety"><Icon name="shield" size={16}/>주변과 신호를 확인하며 걸어가세요</p>}
- <details className="journey-details"><summary>자세히 보기</summary><div className="journey-detail-body"><h3>경로 정보</h3><p>전체 경로 {formatDistance(route.distanceMeters)} · 예상 {formatDuration(route.durationSeconds)}</p><p>{destination.address}</p>
- <h3>위치 상태</h3><p role="status">{notice||'길 안내 시작을 누르면 현재 위치를 계속 확인해요.'}</p>{progress.position&&route.steps.length>0&&<p>안내 단계 {progress.stepIndex+1} / {route.steps.length}</p>}
- <p>X로 홈에 돌아가도 안내는 유지돼요. 다른 앱으로 이동하거나 화면을 잠그면 위치 수신을 중지해요. 경로 이탈 시 자동 재탐색은 하지 않아요.</p><h3>전체 도보 안내 <span>{route.steps.filter(step=>step.description.trim()).length}개</span></h3>
- {route.steps.some(step=>step.description.trim())?<ol aria-label="전체 도보 안내">{route.steps.filter(step=>step.description.trim()).map((step,index)=><li key={index}>{step.description}</li>)}</ol>:<p>이 경로에는 상세 안내가 없어요. 주변과 목적지를 확인해 주세요.</p>}
- <p>표시 시간은 전체 경로 기준의 예상 시간이에요.</p></div></details>
+
  </div>;
 }
 export function JourneyInstruction({route,progress,active,notice}:Pick<Props,'route'|'progress'|'active'|'notice'>){
- const instruction=progress.arrived?'목적지에 도착했어요':!active?'위치 수신이 멈췄어요':!progress.position?'현재 위치를 확인하고 있어요':progress.rejected?'위치를 다시 확인하고 있어요':progress.offRoute?'경로를 벗어났어요':route.steps[progress.stepIndex]?.description||'주변과 경로를 확인해 주세요';
- return <section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className="journey-kicker">{progress.arrived?'도착 안내':active?'다음 이동 안내':'위치 수신 중지'}</span><h2>{instruction}</h2>{active&&(!progress.position||progress.rejected)&&<p>안전한 곳에서 잠시 기다려 주세요.</p>}{progress.offRoute&&active&&<p>안전한 곳에서 경로를 확인해 주세요.</p>}{!active&&!progress.arrived&&notice&&<p>{notice}</p>}
-</section>;
+ const [now,setNow]=useState(Date.now);
+ useEffect(()=>{if(!active)return;const timer=setInterval(()=>setNow(Date.now()),500);return()=>clearInterval(timer);},[active]);
+ const stale=Boolean(progress.position&&now-progress.timestamp>10000);
+ const status=progress.arrived?'목적지에 도착했어요':!active?'위치 수신이 멈췄어요':!progress.position?'현재 위치를 확인하고 있어요':progress.rejected||stale?'위치를 다시 확인하고 있어요':progress.offRoute?'경로를 벗어났어요':null;
+ const next=routeInstruction(route,progress,Math.max(now,progress.timestamp));
+ const detail=progress.arrived?'':!active?notice:progress.offRoute?'안전한 곳에서 새 경로를 확인해 주세요.':status?'안전한 곳에서 잠시 기다려 주세요.':next.detail;
+ const symbol=status?(progress.arrived?'check':'clock'):next.symbol==='back'?'turn-back':next.symbol==='walk'?'walk':next.symbol==='straight'?'arrow':'turn';
+ return <section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className={`instruction-symbol instruction-${status?'status':next.symbol}`}><Icon name={symbol} size={38}/></span><div className="instruction-copy"><h2>{status||next.title}</h2>{detail&&<p>{detail}</p>}</div></section>;
 }

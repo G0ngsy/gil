@@ -52,7 +52,7 @@ export function parseWalkingRoute(data: unknown): WalkingRoute {
   }
   if (geometry.type === 'Point' && Array.isArray(geometry.coordinates)) {
    const point = coordinate(geometry.coordinates[1], geometry.coordinates[0]);
-   if (point && string(properties.description)) steps.push({...point, description: string(properties.description), turnType: typeof properties.turnType === 'number' ? properties.turnType : 0});
+   if (point && string(properties.description)) steps.push({...point, description: string(properties.description), turnType: typeof properties.turnType === 'number' ? properties.turnType : 0,...(string(properties.nextRoadName).trim()?{roadName:string(properties.nextRoadName).trim().slice(0,60)}:{})});
   }
  }
  if (!segments.length || !Number.isFinite(distanceMeters) || !Number.isFinite(durationSeconds) || distanceMeters! < 0 || durationSeconds! < 0) throw invalidRoute();

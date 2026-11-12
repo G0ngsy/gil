@@ -18,7 +18,7 @@ test('실제 검색 경로에서 선택형 GPS·거리·단계·이탈·도착�
  await setup(page);expect(await page.evaluate(()=>(window as any).liveGps.calls)).toBe(0);
  await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);
  await page.clock.fastForward(15000);await emit(page,37.567,126.978);await expect(page.getByTestId('live-remaining')).not.toHaveText('200m');
- await page.clock.fastForward(15000);await emit(page,37.5675,126.978);await page.getByText('자세히 보기',{exact:true}).click();await expect(page.getByText('안내 단계 2 / 2')).toBeVisible();await page.getByText('자세히 보기',{exact:true}).click();
+ await page.clock.fastForward(15000);await emit(page,37.5675,126.978);await expect(page.getByRole('heading',{name:'오른쪽으로 이동',exact:true})).toBeVisible();
  await page.clock.fastForward(1000);await emit(page,37.5682,126.978);await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toBeVisible();
  await page.clock.fastForward(1000);await emit(page,37.5675,126.978);await expect(page.getByRole('heading',{name:'오른쪽으로 이동',exact:true})).toBeVisible();
  await page.clock.fastForward(15000);await emit(page,37.5675,126.9787);await page.clock.fastForward(10000);await emit(page,37.5675,126.979);
@@ -27,7 +27,7 @@ test('실제 검색 경로에서 선택형 GPS·거리·단계·이탈·도착�
 });
 test('자동 위치 중단은 추적을 해제하고 X 닫기는 안내를 유지한다',async({page})=>{
  await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);
- await page.getByText('자세히 보기',{exact:true}).click();await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByTestId('live-remaining')).toHaveText('200m');
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await page.clock.fastForward(1000);await emit(page,37.5675,126.979);await expect(page.getByTestId('live-remaining')).toHaveText('200m');
  await page.getByRole('button',{name:'위치 안내 다시 시작',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText('200m');await page.getByRole('button',{name:'안내 화면 닫기',exact:true}).click();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);await expect(page.getByRole('region',{name:'진행 중인 안내'})).toBeVisible();
  await emit(page,37.5675,126.979);await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toHaveCount(0);
 });

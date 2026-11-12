@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Coordinate, Place, WalkingRoute } from '../../shared/navigation';
 import type {Fix,Progress} from '../../shared/tracking';
+import {distanceBetween} from '../../shared/navigation';
 import {splitRoute} from '../../shared/mapRoute';
 import {Icon} from '../ui';
 import { loadTMap, point, type TMapOverlay, type TMapView } from './tmap';
@@ -8,6 +9,16 @@ import { loadTMap, point, type TMapOverlay, type TMapView } from './tmap';
 interface Props {start:Coordinate;destination:Place;route:WalkingRoute|null;progress:Progress;navigating:boolean;active:boolean;fix:Fix|null}
 const image=(body:string,w:number,h:number)=>`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`)}`;
 const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]!));
+/** Frame the next walkable section with room for the instruction card and pin labels. */
+function frameAhead(sdk:Parameters<typeof point>[0],map:TMapView,position:Coordinate,route:WalkingRoute|null,along:number){
+ const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,position));let budget=500,previous:Coordinate|null=null;
+ if(route)for(const line of splitRoute(route,along).remaining){
+  if(previous&&line.length&&distanceBetween(previous,line[0])>5)break;
+  for(let i=0;i<line.length;i++){const c=line[i];if(i){const a=line[i-1],length=distanceBetween(a,c);if(length>budget){const ratio=budget/length;bounds.extend(point(sdk,{lat:a.lat+(c.lat-a.lat)*ratio,lng:a.lng+(c.lng-a.lng)*ratio}));budget=0;break;}budget-=length;}bounds.extend(point(sdk,c));}
+  previous=line.at(-1)??null;if(budget<=0)break;
+ }
+ map.fitBounds(bounds,{left:65,top:135,right:85,bottom:90});
+}
 export function WalkingMap({start,destination,route,progress,navigating,active,fix}:Props) {
  const host=useRef<HTMLDivElement>(null),view=useRef<TMapView|null>(null);
  const layers=useRef<TMapOverlay[]>([]);
@@ -24,7 +35,7 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
   loadTMap(key).then(sdk=>{
    if(cancelled)return;
    element.replaceChildren();map=new sdk.Map(element.id,{center:point(sdk,start),width:'100%',height:'100%',zoom:17,zoomControl:false});view.current=map;
-   const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:45,top:70,right:45,bottom:85});setReady(true);setGeneration(n=>n+1);
+   const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:65,top:100,right:85,bottom:90});setReady(true);setGeneration(n=>n+1);
   }).catch(()=>{if(!cancelled)setError('지도를 불러오지 못했어요. 연결 상태를 확인해 주세요.');});
   return()=>{cancelled=true;view.current=null;layers.current.splice(0).forEach(overlay=>overlay.setMap(null));map?.destroy?.();element.replaceChildren();};
  },[key,start,destination,route,retry]);
@@ -43,8 +54,8 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
   }
   return()=>overlays.splice(0).forEach(overlay=>overlay.setMap(null));
  },[ready,generation,start,destination,route,navigating,progress.along,progress.position,progress.timestamp,fresh,fix,retry]);
- useEffect(()=>{const sdk=window.Tmapv2;if(ready&&sdk&&view.current&&following&&fresh&&progress.position)view.current.setCenter(point(sdk,progress.position));},[ready,generation,following,fresh,progress.position,retry]);
- function locate(){const sdk=window.Tmapv2,map=view.current;if(!sdk||!map)return;setFollowing(true);if(navigating&&progress.position)map.setCenter(point(sdk,progress.position));else{const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:45,top:70,right:45,bottom:85});}}
+ useEffect(()=>{const sdk=window.Tmapv2;if(ready&&sdk&&view.current&&following&&fresh&&progress.position)frameAhead(sdk,view.current,progress.position,route,progress.along);},[ready,generation,following,fresh,progress.position,progress.along,route,retry]);
+ function locate(){const sdk=window.Tmapv2,map=view.current;if(!sdk||!map)return;setFollowing(true);if(navigating&&progress.position)frameAhead(sdk,map,progress.position,route,progress.along);else{const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:65,top:100,right:85,bottom:90});}}
  const pointer=useRef<{x:number;y:number}|null>(null);
  return <div className={`live-map-wrapper ${!key||error?'map-compact':''}`}>
  <div id={`walking-map-${id}`} ref={host} className="live-map-canvas" style={!key||error?{display:'none'}:undefined} role="region" aria-label={`${destination.name} 도보 경로 지도`} onPointerDownCapture={e=>{pointer.current={x:e.clientX,y:e.clientY};}} onPointerMoveCapture={e=>{if(pointer.current&&Math.hypot(e.clientX-pointer.current.x,e.clientY-pointer.current.y)>8){setFollowing(false);pointer.current=null;}}} onPointerUpCapture={()=>{pointer.current=null;}} onPointerCancelCapture={()=>{pointer.current=null;}} onWheelCapture={()=>setFollowing(false)}/>

@@ -111,3 +111,5 @@ test('주소 결과가 없으면 현재 위치 주소를 만들어내지 않는�
  assert.throws(()=>parseLocationAddress({addressInfo:{}}),/주소를 찾지 못/);
  assert.deepEqual(parseLocationAddress({addressInfo:{city_do:'제주특별자치도',gu_gun:'제주시',legalDong:'연동'}}),{address:'제주특별자치도 제주시 연동',area:'제주특별자치도 제주시 연동'});
 });
+
+test('제공사의 다음 도로명은 안내점에만 선택적으로 보존한다',()=>{const result=parseWalkingRoute({...providerRoute,features:providerRoute.features.map((f,index)=>index===0?{...f,properties:{...f.properties,nextRoadName:' 세종대로 '}}:f)});assert.equal(result.steps[0].roadName,'세종대로');assert.equal(result.steps[1].roadName,undefined);});
