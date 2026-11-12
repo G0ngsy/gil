@@ -175,3 +175,6 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 2026-11-11 홈 줌인 배포: d39a933 → dpl_9S9uKrEkt8PSSxgFxZ8aAVoqxwJE READY. 원격 Chrome 390px HTTP 200, 96% 시작·0.8초 전환·완료 후 transform 제거·검색란 노출 확인.
 ## 2026-11-12 지도 AppKey 공용 사용
 사용자 요청에 따라 동일 TMAP_APP_KEY를 REST 및 브라우저 지도 SDK에 사용한다. 기존 키 분리 필수 정책을 대체하며 웹 인증 값은 공개됨을 명시했다. 빌드·단위 109개·브라우저 5개, 가짜 키 우선순위/동일 키 허용 검증 통과. 실외 정확도는 미확인. AI 지원 구현. [상세 기록](../issues/2026-11-12-shared-tmap-appkey.md).
+
+
+2026-11-12 실제 지도 검증: 코드 `bf4b9bb`, production `dpl_9htSF4E3eY8oAZ3QWud4drhGG55U` READY 및 gilbit.vercel.app 별칭 확인. 기존 AppKey로 지도 SDK HTTP 200, 지도 DOM·타일 HTTP 200·실제 서울도서관 검색 및 도보 경로 표시를 Chrome에서 확인했다. 공개 좌표 37.5665/126.978를 주입했으며 휴대폰 실외 GPS 검증은 아니다. 인증 값/URL은 출력하지 않았다. 캡처 `docs/portfolio/assets/2026-11-12-live-tmap-map-390.png`. 원격 최신 인트로/홈 디자인 커밋을 보존해 rebase 후 빌드·관련 브라우저 5개 재통과했다. 최초 비최신 작업본 배포 시도는 중단하고 최신 통합본으로 재배포했다.

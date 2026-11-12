@@ -60,3 +60,6 @@
 2026-11-11 중앙 로고 순서 배포: 352d65a → dpl_J5y2wcGLXPtR2mTe2B1cgpsMHgaN READY. 원격 Chrome 390px HTTP 200, 문 내부 로고 없음→중앙 로고→퇴장→홈 전환 확인.
 
 2026-11-11 홈 줌인 배포: d39a933 → dpl_9S9uKrEkt8PSSxgFxZ8aAVoqxwJE READY. 원격 Chrome 390px HTTP 200, 96% 시작·0.8초 전환·완료 후 transform 제거·검색란 노출 확인.
+
+
+2026-11-12 실제 지도 검증: 코드 `bf4b9bb`, production `dpl_9htSF4E3eY8oAZ3QWud4drhGG55U` READY 및 gilbit.vercel.app 별칭 확인. 기존 AppKey로 지도 SDK HTTP 200, 지도 DOM·타일 HTTP 200·실제 서울도서관 검색 및 도보 경로 표시를 Chrome에서 확인했다. 공개 좌표 37.5665/126.978를 주입했으며 휴대폰 실외 GPS 검증은 아니다. 인증 값/URL은 출력하지 않았다. 캡처 `docs/portfolio/assets/2026-11-12-live-tmap-map-390.png`. 원격 최신 인트로/홈 디자인 커밋을 보존해 rebase 후 빌드·관련 브라우저 5개 재통과했다. 최초 비최신 작업본 배포 시도는 중단하고 최신 통합본으로 재배포했다.
