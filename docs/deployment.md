@@ -82,3 +82,6 @@
 
 
 2026-11-12 최종 배포 확인: 코드 `eec5efe`, 지도 여백 보완 `7c3e1e4`. Production `dpl_5TssdsyvZG17ZLmjt2ffzyTxdNqL` READY/https://gilbit.vercel.app 반영. 실제 TMAP 서울도서관 검색·도보 응답/지도 SDK에 공개 출발 좌표와 경로 첫 지점을 GPS 대신 주입해 ‘43m 앞 왼쪽’을 확인했다. 390/360/430px에서 안내 카드 하단 150px, 목적지 핀 상단 각각193/203/186px로 가림 없음을 확인했다. 상세 영역 없음·가로 넘침 없음·X 홈 복귀·종료 확정·페이지 오류0 확인. 캡처 `assets/2026-11-12-minimal-guidance-390.png`, `-360.png`, `-430.png` (portfolio 기준). 빌드·단위120개·관련 브라우저36개, 마지막 지도 여백 조정 후 관련9개 재통과. 실외 실제 GPS 정확도는 미검증. 인증 값/인증 URL은 출력하지 않았다.
+
+
+2026-11-12 배포 확인: 코드 `318b5c8`, production `dpl_5MPcvrNQLNBPRyTYx1hJ1R3EBLgb` READY 및 gilbit.vercel.app 반영. 배포 UI에 모의 주소/경로/GPS를 주입하여 360/390/430px 검색→안내 카드→위치 카드 간격24px 이하, 위치 카드100px 이하, 가로 넘침 없음 확인. 실제 사용자 위치나 실외 정확도 검증은 아니다. 캡처 portfolio 기준 `assets/2026-11-12-compact-home-idle-390.png`, `assets/2026-11-12-compact-home-active-390.png`, `-360.png`, `-430.png`. 안내 없음/진행 중 모두 검토했다.
