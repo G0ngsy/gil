@@ -19,6 +19,8 @@ export function Icon({ name, size = 24 }: { name: string; size?: number }) {
  check: <path d="m5 12 5 5L20 7"/>,
  walk: <><circle cx="14" cy="3.5" r="1.5"/><path d="m8 21 3-7 3 3v4M7 12l2-5 5 1 3 4h3M12 8l-1 6-5-1"/></>,
  compass: <><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5 5-3Z"/></>,
+ pause: <><path d="M8 5v14M16 5v14" strokeWidth="3"/></>,
+ flag: <><path d="M5 21V3m0 1c5-3 9 3 14 0v10c-5 3-9-3-14 0"/></>,
  dots: <><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></>,
  clock: <><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></>,
  leaf: <><path d="M20 3C7 2 2 9 6 16c7 6 15-1 14-13Z"/><path d="M4 21 16 8"/></>,
