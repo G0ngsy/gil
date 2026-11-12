@@ -270,3 +270,6 @@
 
 ## 2026-11-12 길 안내 헤더 축소
 안내 헤더 72→52px, 지도 높이 +20px. 점 메뉴의 실제 일시중지/종료 기능을 확인해 유지했다. 버튼 영역 44px 이상 유지. 빌드·관련 브라우저 6개 통과(360/390/430px, 메뉴 종료 확인창/취소 포함). AI 지원 구현. [문제·원인·해결·결과](../issues/2026-11-12-compact-guidance-header.md).
+
+
+2026-11-12 헤더 축소 배포: 코드 `ca1f16d`, production `dpl_Byt7wU7YDKX3RLtEG9M3BG8xPJWU` READY. gilbit.vercel.app HTTP 200 및 guidance-header 52px CSS 반영 확인. 조작/배치 검증은 로컬 브라우저 6개이며 배포 실기기 재측정은 미실시.
