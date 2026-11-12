@@ -7,6 +7,9 @@ export interface TMapView {
 }
 export interface TMapOverlay { setMap(map:TMapView|null):void }
 export interface TMapSDK {
+ Point?:new (x:number,y:number)=>unknown;
+ Size?:new (width:number,height:number)=>unknown;
+ Circle?:new (options:Record<string,unknown>)=>TMapOverlay;
  Map: new (elementId:string, options:Record<string,unknown>)=>TMapView;
  LatLng: new (lat:number,lng:number)=>unknown;
  LatLngBounds: new ()=>{extend(point:unknown):void};
