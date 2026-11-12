@@ -200,3 +200,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 
 
 2026-11-12 배포 검증: 코드 `6c423a4` + 보완/문서 `b89663b`, production `dpl_8tdkWjzBaHZ79J59mpUYbaJ86Zmy` READY 및 https://gilbit.vercel.app 반영. 실제 TMAP 검색/도보 응답(서울도서관), 실제 지도 SDK/타일에서 파란 현재 위치·녹색 깃발 목적지·밝은 외곽 경로·정확도 Circle 렌더링을 확인했다. 공개 테스트 출발 좌표 37.5657/126.9768 및 경로 첫 좌표를 GPS 대신 주입했으며 실제 사용자 이동 검증이 아니다. 360/390/430px 가로 넘침 없음, 카메라 버튼 화면 내 표시 확인. 캡처 `assets/2026-11-12-map-route-redesign-390.png`, `assets/2026-11-12-map-active-redesign-390.png`, `assets/2026-11-12-map-active-redesign-360.png`, `assets/2026-11-12-map-active-redesign-430.png` (portfolio 기준). 배포 URL/로그에 인증 값을 출력하지 않았다.
+
+
+## 2026-11-12 길 안내 헤더 축소
+안내 헤더 72→52px, 지도 높이 +20px. 점 메뉴의 실제 일시중지/종료 기능을 확인해 유지했다. 버튼 영역 44px 이상 유지. 빌드·관련 브라우저 6개 통과(360/390/430px, 메뉴 종료 확인창/취소 포함). AI 지원 구현. [문제·원인·해결·결과](../issues/2026-11-12-compact-guidance-header.md).

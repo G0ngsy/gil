@@ -217,3 +217,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-sheet:has(.real-camera) .journey-content>*:not(.live-camera-guide){visibility:hidden}
 .live-route-screen:has(.real-camera) .real-camera{visibility:visible}
 @media(max-width:374px){.journey-screen>.journey-guidance h2{font-size:21px}.journey-screen .journey-sheet{padding:18px}.map-key{gap:6px;font-size:8px}}
+
+/* Compact guidance header returns its saved height to the map. */
+.live-phone>.app-header.guidance-header{height:52px;min-height:52px;padding-top:4px;padding-bottom:4px}
+.guidance-header .icon-button,.guidance-header .journey-menu>summary{width:44px;height:44px;min-height:44px}
+.journey-navigating .live-map-wrapper:not(.map-compact){height:clamp(320px,calc(54dvh + 20px),540px);min-height:320px}
