@@ -67,3 +67,6 @@
 2026-11-12 전통 구분선 배포: 구현 3f6d35c → production dpl_D28fgEdGH3hsHJqaiuS6JbFX23Ca READY. gilbit.vercel.app 원격 Chrome 390px에서 홈 마름모·도착 시안 연꽃·안내 마치기 버튼 확인. 최초 원격 확인은 비동기 시안 로딩 전에 검사해 실패했고 화면 로딩 대기 후 재확인 통과. 실제 GPS 도착 장식은 로컬 모의 GPS 검증이며 원격 실외 판정 검증은 아니다. 기존 지도 환경 설정을 유지했다.
 
 2026-11-12 사용자 UI 배포: 코드 732db8a → production dpl_BPQwMiVgq2a3RHLtg7ehCGUowQfg READY. 원격 Chrome 390px에서 HTTP 200·기본 화면 개발 문구/푸터 없음·실제 TMAP 서울도서관 검색과 선택/복귀 카드 장식·명시적 시안 구름 확인. 위치/카메라 권한은 요청하지 않았다. 실제 검색 응답 확인이며 실외 GPS·방위 정확도 확인은 아니다. 캡처 assets/2026-11-12-user-home-production-390.png.
+
+
+2026-11-12 배포 검증: 코드 `6c423a4` + 보완/문서 `b89663b`, production `dpl_8tdkWjzBaHZ79J59mpUYbaJ86Zmy` READY 및 https://gilbit.vercel.app 반영. 실제 TMAP 검색/도보 응답(서울도서관), 실제 지도 SDK/타일에서 파란 현재 위치·녹색 깃발 목적지·밝은 외곽 경로·정확도 Circle 렌더링을 확인했다. 공개 테스트 출발 좌표 37.5657/126.9768 및 경로 첫 좌표를 GPS 대신 주입했으며 실제 사용자 이동 검증이 아니다. 360/390/430px 가로 넘침 없음, 카메라 버튼 화면 내 표시 확인. 캡처 `assets/2026-11-12-map-route-redesign-390.png`, `assets/2026-11-12-map-active-redesign-390.png`, `assets/2026-11-12-map-active-redesign-360.png`, `assets/2026-11-12-map-active-redesign-430.png` (portfolio 기준). 배포 URL/로그에 인증 값을 출력하지 않았다.

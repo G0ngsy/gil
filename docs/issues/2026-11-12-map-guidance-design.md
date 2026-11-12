@@ -16,3 +16,6 @@
 
 
 검증 보충: 전체 브라우저 116개 실행에서 115개 통과, 원격 최신 UI 통합 중 진단 검토 설정 전달 누락 1개를 발견해 복원했다. 수정 후 관련 10개 모두 통과, 최종 카메라 버튼 표시 조정 후 2개 추가 재통과. 단위 111개·빌드 통과. 전체 116개를 최종 버전에서 재실행했다고 주장하지 않는다.
+
+
+2026-11-12 배포 검증: 코드 `6c423a4` + 보완/문서 `b89663b`, production `dpl_8tdkWjzBaHZ79J59mpUYbaJ86Zmy` READY 및 https://gilbit.vercel.app 반영. 실제 TMAP 검색/도보 응답(서울도서관), 실제 지도 SDK/타일에서 파란 현재 위치·녹색 깃발 목적지·밝은 외곽 경로·정확도 Circle 렌더링을 확인했다. 공개 테스트 출발 좌표 37.5657/126.9768 및 경로 첫 좌표를 GPS 대신 주입했으며 실제 사용자 이동 검증이 아니다. 360/390/430px 가로 넘침 없음, 카메라 버튼 화면 내 표시 확인. 캡처 `assets/2026-11-12-map-route-redesign-390.png`, `assets/2026-11-12-map-active-redesign-390.png`, `assets/2026-11-12-map-active-redesign-360.png`, `assets/2026-11-12-map-active-redesign-430.png` (portfolio 기준). 배포 URL/로그에 인증 값을 출력하지 않았다.
