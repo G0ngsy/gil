@@ -79,3 +79,6 @@
 
 
 2026-11-12 수동 일시중지 제거 배포: 코드 `bee4e87`, production `dpl_Hd4q8dwKC41bVRGcumYpYkPcYo4g` READY. gilbit.vercel.app에서 모의 경로/GPS를 사용해 일시중지 버튼 없음, 남은 거리 옆 종료 버튼 높이 44px 이상, 종료 확인창/취소 확인. 실제 센서·실외 검증과 구분.
+
+
+2026-11-12 최종 배포 확인: 코드 `eec5efe`, 지도 여백 보완 `7c3e1e4`. Production `dpl_5TssdsyvZG17ZLmjt2ffzyTxdNqL` READY/https://gilbit.vercel.app 반영. 실제 TMAP 서울도서관 검색·도보 응답/지도 SDK에 공개 출발 좌표와 경로 첫 지점을 GPS 대신 주입해 ‘43m 앞 왼쪽’을 확인했다. 390/360/430px에서 안내 카드 하단 150px, 목적지 핀 상단 각각193/203/186px로 가림 없음을 확인했다. 상세 영역 없음·가로 넘침 없음·X 홈 복귀·종료 확정·페이지 오류0 확인. 캡처 `assets/2026-11-12-minimal-guidance-390.png`, `-360.png`, `-430.png` (portfolio 기준). 빌드·단위120개·관련 브라우저36개, 마지막 지도 여백 조정 후 관련9개 재통과. 실외 실제 GPS 정확도는 미검증. 인증 값/인증 URL은 출력하지 않았다.
