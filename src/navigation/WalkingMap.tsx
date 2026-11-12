@@ -17,7 +17,7 @@ function frameAhead(sdk:Parameters<typeof point>[0],map:TMapView,position:Coordi
   for(let i=0;i<line.length;i++){const c=line[i];if(i){const a=line[i-1],length=distanceBetween(a,c);if(length>budget){const ratio=budget/length;bounds.extend(point(sdk,{lat:a.lat+(c.lat-a.lat)*ratio,lng:a.lng+(c.lng-a.lng)*ratio}));budget=0;break;}budget-=length;}bounds.extend(point(sdk,c));}
   previous=line.at(-1)??null;if(budget<=0)break;
  }
- map.fitBounds(bounds,{left:65,top:135,right:85,bottom:90});
+ map.fitBounds(bounds,{left:65,top:340,right:85,bottom:90});
 }
 export function WalkingMap({start,destination,route,progress,navigating,active,fix}:Props) {
  const host=useRef<HTMLDivElement>(null),view=useRef<TMapView|null>(null);

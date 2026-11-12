@@ -29,5 +29,5 @@ export function JourneyInstruction({route,progress,active,notice}:Pick<Props,'ro
  const next=routeInstruction(route,progress,Math.max(now,progress.timestamp));
  const detail=progress.arrived?'':!active?notice:progress.offRoute?'안전한 곳에서 새 경로를 확인해 주세요.':status?'안전한 곳에서 잠시 기다려 주세요.':next.detail;
  const symbol=status?(progress.arrived?'check':'clock'):next.symbol==='back'?'turn-back':next.symbol==='walk'?'walk':next.symbol==='straight'?'arrow':'turn';
- return <section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className={`instruction-symbol instruction-${status?'status':next.symbol}`}><Icon name={symbol} size={38}/></span><div className="instruction-copy"><h2>{status||next.title}</h2>{detail&&<p>{detail}</p>}</div></section>;
+ return <section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className={`instruction-symbol instruction-${status?'status':next.symbol}`}><Icon name={symbol} size={38}/></span><div className="instruction-copy"><h2>{status||next.title}</h2>{detail&&<p className={status?'instruction-status-note':'instruction-road'}>{detail}</p>}</div></section>;
 }
