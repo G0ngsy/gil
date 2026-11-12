@@ -174,3 +174,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .ornamental-lotus>span{max-width:35px}
 .arrival .ornamental-lotus{margin-top:0;margin-bottom:18px}
 .journey-arrival-decoration{margin-bottom:20px}
+/* Selection decoration is reserved for the user's selected destination. */
+.selected-result,.selected-destination{position:relative;border:1px solid var(--pine);border-radius:14px;background:var(--sheet)}
+.result-card.selected-result{border-color:var(--pine);padding-right:60px}
+.selection-corner{position:absolute;top:10px;right:10px;color:var(--ochre);pointer-events:none}
+.selection-check{display:grid;place-items:center;width:22px;height:22px;background:var(--pine);color:white;border-radius:50%;flex:none}
+.selected-result>.selection-check{position:absolute;right:34px;top:50%;transform:translateY(-50%)}
+.selected-destination{padding:18px 38px 18px 14px;gap:10px}
+.selected-destination>.selection-check{order:3;margin-left:auto}
+.recheck-icon>.motif-cloud{width:48px;height:48px}
+.facing-unknown>.motif-cloud{color:var(--pine)}
+.live-camera-overlay .facing-unknown>.motif-cloud{color:#b8e1d6}
+.result-card>.selection-corner{color:var(--ochre)}
+.selected-result>svg:not(.selection-corner){position:absolute;right:14px;top:50%;transform:translateY(-50%)}
+.selected-result>.selection-check{right:42px}
+.result-card.selected-result{padding-right:76px}

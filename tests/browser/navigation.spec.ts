@@ -28,7 +28,7 @@ async function choose(page:Page){
  await page.getByRole('button',{name:/도서관 서울도서관/}).click();
 }
 test('키 미설정은 예시 복귀 없이 실제 검색 준비 문구를 보여준다',async({page})=>{
- await page.goto('/?mode=live');await expect(page.getByText('실제 장소 검색을 준비 중이에요.')).toBeVisible();
+ await page.goto('/?mode=live');await expect(page.getByText('지금은 장소를 검색할 수 없어요.')).toBeVisible();
  await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeDisabled();
  await page.screenshot({path:'docs/previews/gilbit-live-setup.png'});
  await expect(page.getByRole('button',{name:'디자인 시안으로 돌아가기',exact:true})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색',exact:true})).toBeVisible();

@@ -2,6 +2,7 @@ import {useEffect,useId,useState} from 'react';
 import {compareFacing,routeBearingAt,type Facing} from '../../shared/facing';
 import type {WalkingRoute} from '../../shared/navigation';
 import type {Progress} from '../../shared/tracking';
+import {Motif} from '../Motif';
 import {Icon} from '../ui';
 
 const messages:Record<Facing,{title:string;detail:string}>={
@@ -42,6 +43,6 @@ export function DirectionCard({candidate,unavailable}:{candidate:Facing;unavaila
  const message=unavailable?{title:'방향 안내 대기',detail:unavailable}:messages[displayed];
  return <div className="facing-card" aria-live="polite" aria-atomic="true" data-state={displayed}>
  <p className="facing-status">{unavailable?'방향 안내 대기':displayed==='unknown'?'방향 확인 중':displayed==='forward'?'방향이 맞아요':'방향을 맞춰 주세요'}</p>
- <div className={`facing-symbol facing-${displayed}`}>{displayed!=='unknown'?<span data-testid="facing-arrow"><Icon name={displayed==='forward'?'arrow':displayed==='opposite'?'turn-back':'turn'} size={68}/></span>:<Icon name="clock" size={38}/>}</div>
+ <div className={`facing-symbol facing-${displayed}`}>{displayed!=='unknown'?<span data-testid="facing-arrow"><Icon name={displayed==='forward'?'arrow':displayed==='opposite'?'turn-back':'turn'} size={68}/></span>:<Motif kind="cloud" size={44}/>}</div>
  <h2>{message.title}</h2><p className="facing-detail">{message.detail}</p></div>;
 }

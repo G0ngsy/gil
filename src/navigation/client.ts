@@ -13,8 +13,8 @@ export async function navigationRequest<T>(action: string, options: {q?:string;b
   throw new ClientError('서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.','NETWORK_ERROR');
  }
  let data: T & {error?:{code?:string;message?:string}};
- try {data = await response.json();} catch {throw new ClientError('서버 응답을 읽지 못했어요. 개발 서버 또는 배포 설정을 확인해 주세요.','INVALID_RESPONSE');}
- if (!response.ok) throw new ClientError(data.error?.message || '요청을 처리하지 못했어요.',data.error?.code);
+ try {data = await response.json();} catch {throw new ClientError('정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.','INVALID_RESPONSE');}
+ if (!response.ok) throw new ClientError(['NOT_CONFIGURED','PROVIDER_AUTH'].includes(data.error?.code||'')?'지금은 서비스를 이용할 수 없어요. 잠시 후 다시 시도해 주세요.':data.error?.message || '요청을 처리하지 못했어요.',data.error?.code);
  return data;
 }
 export const searchPlaces = (q:string, signal:AbortSignal, center?:Coordinate) => navigationRequest<{places:Place[]}>('search',center?{body:{q,center:{lat:center.lat,lng:center.lng}},signal}:{q,signal});
@@ -24,7 +24,7 @@ export const findWalkingRoute = (start:Coordinate,end:Coordinate,signal:AbortSig
 export interface UserPosition extends Coordinate { accuracy: number; timestamp: number }
 export function getUserPosition():Promise<UserPosition> {
  return new Promise((resolve,reject)=>{
-  if (!window.isSecureContext) {reject(new ClientError('현재 위치는 HTTPS 또는 이 컴퓨터의 localhost에서 확인할 수 있어요.','INSECURE_CONTEXT'));return;}
+  if (!window.isSecureContext) {reject(new ClientError('현재 위치를 사용할 수 없어요. 안전한 연결로 다시 열어 주세요.','INSECURE_CONTEXT'));return;}
   if (!navigator.geolocation) {reject(new ClientError('이 브라우저에서는 현재 위치를 확인할 수 없어요.','UNSUPPORTED'));return;}
   navigator.geolocation.getCurrentPosition(position=>{
    const {latitude:lat,longitude:lng,accuracy}=position.coords;
