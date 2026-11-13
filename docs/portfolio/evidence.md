@@ -270,3 +270,7 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 ## 2026-11-13 자동 배포된 카메라 안내
 
 [Production 화면](assets/2026-11-13-camera-route-production-390.png): 커밋2050677/기능3fd1d4f, 실제 gilbit.vercel.app의 Chrome390×844. 영상·GPS·장소/경로API는 모의, 화면에 모의 표시. 직진·우회전·이탈·오차·도착 및 페이지 예외0 확인. GitHub Vercel 상태success, HTTP200/config200/새 번들 확인. 실제 TMAP 검색·실기기 영상·실외GPS 검증이 아니다. AI 지원 배포 확인/기록.
+
+## 2026-11-13 — 설치형 웹앱(PWA) 구성
+
+[설치 버튼 화면](assets/2026-11-13-pwa-install-390.png)은 production 빌드 Chrome390×844/별도 일반 프로필에서 실제 beforeinstallprompt로 표시됐다. API 설정 응답만 모의로 격리. manifest/CDP 설치가능 오류0, offline.html만 캐시, 오프라인 탐색·온라인 복귀 통과. 단위120개·빌드·관련 브라우저17개 통과. 실제 휴대폰 설치 완료 증거가 아니다. [문제/검증 기록](../issues/2026-11-13-installable-pwa.md).

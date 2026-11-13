@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "길빛 · 도보 길안내",
+  "short_name": "길빛",
+  "description": "GPS와 경로로 함께 걷는 길빛 도보 길안내",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F3EA",
+  "theme_color": "#245447",
+  "icons": [
+    {
+      "src": "/assets/gilbit-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/gilbit-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/gilbit-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

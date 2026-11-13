@@ -254,3 +254,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 
 .live-camera-overlay .camera-route-instruction{flex-wrap:nowrap}
 .camera-route-instruction .instruction-copy{width:100%}
+
+.pwa-install{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--sheet)}.pwa-install h3{font-size:15px;line-height:1.6}.pwa-install p{font-size:12px;line-height:1.8;color:var(--muted);margin:6px 0}.pwa-install .secondary{margin-top:10px;min-height:44px}
