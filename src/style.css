@@ -125,17 +125,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .live-camera-guide>.camera-launch{position:static;inset:auto;margin:12px 20px;width:calc(100% - 40px)}
 .live-route-screen:has(.real-camera)>.journey-sheet,.live-route-screen:has(.real-camera)>.map-locate{visibility:hidden}
 .live-camera-overlay{display:grid;gap:12px;position:relative}
-.live-camera-overlay .facing-card,.live-camera-sensor{background:#14251deb;color:#fff;border-radius:18px;padding:16px;text-align:center}
-.live-camera-overlay .facing-card h2,.live-camera-overlay .facing-status,.live-camera-overlay .facing-detail{color:#fff}
-.live-camera-overlay .facing-symbol{color:#6ee5dc}
-.live-camera-overlay .facing-symbol span{display:block;transform:perspective(350px) rotateX(40deg)}
-.live-camera-sensor .secondary{min-height:44px}
-.live-camera-overlay .facing-forward [data-testid="facing-arrow"]{transform:rotate(-90deg)}
-.live-camera-overlay .facing-card{padding:12px;background:#14251da8}
-.live-camera-overlay .facing-symbol{height:76px;margin:8px auto}
-.live-camera-overlay .facing-card h2{font-size:22px}
-.live-camera-overlay .facing-detail{margin-bottom:0}
-.live-camera-sensor{padding:12px}
 .sensor-diagnostics{text-align:left;margin-top:12px;border-top:1px solid #ffffff40;padding-top:12px}.sensor-diagnostics summary{cursor:pointer;min-height:44px;padding:10px}.sensor-diagnostics textarea{display:block;width:100%;max-width:100%;margin:12px 0;color:#172c24;background:#fffdf6;font:12px/1.6 monospace;padding:10px;border-radius:8px;resize:vertical}.sensor-diagnostics .secondary{margin-top:8px}
 /* Doors open first; a separate centered logo appears over the landscape. */
 .door-intro{position:fixed;inset:0;z-index:1000;overflow:hidden;background:var(--paper);isolation:isolate;opacity:1;transition:opacity .8s ease;touch-action:manipulation}
@@ -184,7 +173,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .selected-destination>.selection-check{order:3;margin-left:auto}
 .recheck-icon>.motif-cloud{width:48px;height:48px}
 .facing-unknown>.motif-cloud{color:var(--pine)}
-.live-camera-overlay .facing-unknown>.motif-cloud{color:#b8e1d6}
 .result-card>.selection-corner{color:var(--ochre)}
 .selected-result>svg:not(.selection-corner){position:absolute;right:14px;top:50%;transform:translateY(-50%)}
 .selected-result>.selection-check{right:42px}
@@ -254,3 +242,15 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .live-home .compact-location{margin:4px 0 18px;padding:12px 14px;border-radius:14px;box-shadow:0 3px 10px #5d4b270c}
 .compact-location-row{display:flex;align-items:center;gap:10px;min-height:44px}.compact-location-row>svg{color:var(--pine);flex:none}.compact-location-copy{min-width:0;flex:1}.compact-location-copy>span{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}.compact-location-copy>.current-address{display:block;font-size:13px;font-weight:650;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}.compact-location-row>.icon-button{width:44px;height:44px;min-height:44px;flex:none;color:var(--pine)}
 @media(max-width:374px){.live-home>.landscape-home-hero h2{font-size:27px}.live-home .ongoing-title h3{font-size:17px}}
+
+/* Shared route instructions on live camera: fixed overlay, no perspective/heading. */
+.live-camera-overlay{flex:1;align-content:center;gap:18px;min-height:180px}
+.live-camera-overlay .camera-route-instruction{position:static;display:flex;flex-direction:column;align-items:center;gap:14px;margin:0;padding:24px 18px;background:#fffdf9f2;color:var(--ink);text-align:center;border-radius:18px}
+.camera-route-instruction .instruction-symbol{width:auto;height:auto;color:var(--route,#087F83);background:none;flex:none}
+.camera-route-instruction .instruction-symbol>span{display:block}
+.camera-route-instruction h2{font-size:26px;line-height:1.4}
+.real-camera .camera-route-instruction p{color:var(--muted);font-size:14px;line-height:1.7}
+.real-camera .camera-route-note{color:#fff;background:#14251de8;padding:12px;border-radius:12px;text-align:center;margin:0;font-size:12px}
+
+.live-camera-overlay .camera-route-instruction{flex-wrap:nowrap}
+.camera-route-instruction .instruction-copy{width:100%}

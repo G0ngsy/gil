@@ -21,14 +21,14 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
 
  </div>;
 }
-export function JourneyInstruction({route,progress,active,notice,fix}:Pick<Props,'route'|'progress'|'active'|'notice'>&{fix?:Fix|null}){
+export function JourneyInstruction({route,progress,active,notice,fix,surface='map'}:Pick<Props,'route'|'progress'|'active'|'notice'>&{fix?:Fix|null;surface?:'map'|'camera'}){
  const [now,setNow]=useState(Date.now);
  useEffect(()=>{if(!active)return;const timer=setInterval(()=>setNow(Date.now()),500);return()=>clearInterval(timer);},[active]);
  const stale=Boolean(progress.position&&now-progress.timestamp>10000);
  const approximate=Boolean(active&&fix&&fix.accuracy>30&&fix.accuracy<=100&&now-fix.timestamp<=10000);
  const status=progress.arrived?'목적지에 도착했어요':!active?'위치 수신이 멈췄어요':approximate?'위치 오차가 커요':!progress.position?'현재 위치를 확인하고 있어요':progress.rejected||stale?'위치를 다시 확인하고 있어요':progress.offRoute?'경로를 벗어났어요':null;
  const next=routeInstruction(route,progress,Math.max(now,progress.timestamp));
- const detail=progress.arrived?'':!active?notice:approximate?`오차 약 ${Math.round(fix!.accuracy)}m · 지도에는 대략적인 위치를 표시해요. 정확한 위치를 기다려 주세요.`:progress.offRoute?'안전한 곳에서 새 경로를 확인해 주세요.':status?'안전한 곳에서 잠시 기다려 주세요.':next.detail;
+ const detail=progress.arrived?'':!active?notice:approximate?`오차 약 ${Math.round(fix!.accuracy)}m · ${surface==='camera'?'정확한 위치를 기다려 주세요.':'지도에는 대략적인 위치를 표시해요. 정확한 위치를 기다려 주세요.'}`:progress.offRoute?'안전한 곳에서 새 경로를 확인해 주세요.':status?'안전한 곳에서 잠시 기다려 주세요.':next.detail;
  const symbol=status?(progress.arrived?'check':'clock'):next.symbol==='back'?'turn-back':next.symbol==='walk'?'walk':next.symbol==='straight'?'arrow':'turn';
- return <section className="journey-guidance" aria-label="실제 경로 이동 안내" aria-live="polite">{progress.arrived&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className={`instruction-symbol instruction-${status?'status':next.symbol}`}><Icon name={symbol} size={38}/></span><div className="instruction-copy"><h2>{status||next.title}</h2>{detail&&<p className={status?'instruction-status-note':'instruction-road'}>{detail}</p>}</div></section>;
+ return <section className={`journey-guidance ${surface==='camera'?'camera-route-instruction':''}`} aria-label={surface==='camera'?'카메라 경로 안내':'실제 경로 이동 안내'} data-action={status?'status':next.symbol} aria-live="polite">{progress.arrived&&surface==='map'&&<OrnamentalDivider kind="lotus" className="journey-arrival-decoration"/>}<span className={`instruction-symbol instruction-${status?'status':next.symbol}`}><span data-testid={!status&&next.symbol!=='walk'?'route-action-arrow':undefined}><Icon name={symbol} size={surface==='camera'?76:38}/></span></span><div className="instruction-copy"><h2>{status||next.title}</h2>{detail&&<p className={status?'instruction-status-note':'instruction-road'}>{detail}</p>}</div></section>;
 }

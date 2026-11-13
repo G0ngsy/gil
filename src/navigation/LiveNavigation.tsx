@@ -43,9 +43,8 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const guidanceRef=useRef<Guidance|null>(null);
  const [pendingGuidance,setPendingGuidance]=useState<Guidance|null>(null);
  const [progress,setProgress]=useState(initialProgress);
- const [cameraFix,setCameraFix]=useState<Fix|null>(null);
  const [observedFix,setObservedFix]=useState<Fix|null>(null);
- const gps=useGpsTracking(fix=>{const current=guidanceRef.current;if(current){setCameraFix(fix);setProgress(previous=>updateProgress(current.route,previous,fix));}},'실제 GPS 위치를 수신하고 있어요.',fix=>{if(guidanceRef.current)setObservedFix(fix);});
+ const gps=useGpsTracking(fix=>{const current=guidanceRef.current;if(current){setProgress(previous=>updateProgress(current.route,previous,fix));}},'실제 GPS 위치를 수신하고 있어요.',fix=>{if(guidanceRef.current)setObservedFix(fix);});
  useEffect(()=>{if(progress.arrived&&gps.active)gps.stop('도착을 확인해 GPS 추적을 마쳤어요.');},[progress.arrived,gps.active]);
  const content=useRef<HTMLElement>(null);
  const dialog=useRef<HTMLDialogElement>(null);
@@ -127,7 +126,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   finally{if(!controller.signal.aborted)setRouting(false);}
  }
  function beginGuidance(next:Guidance){
-  guidanceRef.current=next;setGuidance(next);setCameraFix(null);setObservedFix(null);setProgress(initialProgress());setStage('map');gps.start();
+  guidanceRef.current=next;setGuidance(next);setObservedFix(null);setProgress(initialProgress());setStage('map');gps.start();
  }
  function startGuidance(){
   if(!route||!selected||!position)return;
@@ -135,7 +134,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   if(guidance){setPendingGuidance(next);setEnding(true);}else beginGuidance(next);
  }
  function resumeGuidance(){if(guidanceRef.current&&!progress.arrived)gps.start();}
- function finishGuidance(){gps.stop();cancelWork();guidanceRef.current=null;setGuidance(null);setCameraFix(null);setObservedFix(null);setProgress(initialProgress());setRoute(null);setSelected(null);setStage('home');}
+ function finishGuidance(){gps.stop();cancelWork();guidanceRef.current=null;setGuidance(null);setObservedFix(null);setProgress(initialProgress());setRoute(null);setSelected(null);setStage('home');}
  function cancelEnding(){setEnding(false);setPendingGuidance(null);}
  const shownDestination=stage==='map'?guidance?.destination:selected;
  const shownRoute=stage==='map'?guidance?.route:route;
@@ -165,7 +164,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  {stage==='map'&&shownRoute&&<JourneyInstruction route={shownRoute} progress={progress} active={gps.active} notice={gps.notice} fix={observedFix}/>}
 
  <div className="map-bottom bottom-sheet journey-sheet">
- {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} cameraControl={stage==='map'&&gps.active&&!progress.arrived?<LiveCameraGuide route={shownRoute} progress={progress} position={cameraFix} active={gps.active} review={review}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
+ {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} cameraControl={stage==='map'?<LiveCameraGuide route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
  </div></section>}
  </main></div>{review&&<aside className="studio-controls"><span className="eyebrow">REAL PLACE SEARCH</span><h2>검색에서<br/>도보 경로까지.</h2><p>실제 데이터와 시안 데이터를 섞지 않아요.<br/>위치 권한은 요청 버튼을 누를 때만 사용해요.</p>{review&&<button className="secondary" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</aside>}
  <dialog ref={dialog} onCancel={cancelEnding}><div className="dialog-inner"><h2>{pendingGuidance?'새 목적지로 안내할까요?':guidance?'길 안내를 종료할까요?':'경로 확인을 마칠까요?'}</h2><p>{pendingGuidance?'현재 안내를 마치고 선택한 목적지로 안내를 시작해요.':'안내를 마치고 처음으로 돌아가요.'}</p><button className="primary" onClick={()=>{setEnding(false);const next=pendingGuidance;setPendingGuidance(null);if(next)beginGuidance(next);else finishGuidance();}}>{pendingGuidance?'새 안내 시작':'안내 종료'}</button><button className="secondary" onClick={cancelEnding}>계속 보기</button></div></dialog></div>;

@@ -41,7 +41,7 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange}:{onMap:
  }
  return <>{!open&&<button className="secondary camera-launch" aria-label="실제 카메라 켜기" onClick={()=>void start()}>{live?<><Icon name="camera"/>카메라 안내</>:'실제 카메라 켜기'}</button>}{open&&<section className="real-camera" aria-label="실제 카메라 미리보기">
  <video ref={video} autoPlay muted playsInline aria-label="실시간 카메라 영상"/>
- <div className="real-camera-label"><strong>{live?'카메라 방향 안내':'실제 카메라 · 미리보기'}</strong><p>{live?'화살표는 휴대폰을 향할 방향을 알려줘요.':'방향 추적 준비 중 · 화살표 안내는 표시하지 않아요.'}</p></div>
+ <div className="real-camera-label"><strong>{live?'카메라 경로 안내':'실제 카메라 · 미리보기'}</strong><p>{live?'GPS와 경로로 다음 행동을 알려줘요.':'방향 추적 준비 중 · 화살표 안내는 표시하지 않아요.'}</p></div>
  {state==='playing'&&overlay}
  {state!=='playing'&&<div className="camera-permission"><h2>{state==='pending'?'카메라 권한을 확인해 주세요':'카메라를 켜 주세요'}</h2><p role={error?'alert':'status'}>{error||'브라우저의 카메라 허용을 선택하면 화면이 나타나요.'}</p>{state!=='pending'&&<button className="primary" onClick={()=>void start()}>카메라 다시 켜기</button>}<button className="secondary" onClick={close}>{state==='pending'?'요청 취소':live?'안내로 돌아가기':'시안으로 돌아가기'}</button></div>}
  <div className="real-camera-controls"><p>안전한 곳에 멈춰 확인하세요.<br/>영상은 저장하거나 전송하지 않아요.</p><button className="secondary" onClick={close}>카메라 끄기</button><button className="secondary" onClick={()=>{close();onMap();}}>지도 보기</button></div>

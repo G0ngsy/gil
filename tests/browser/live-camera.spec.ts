@@ -1,71 +1,43 @@
 import {test,expect,type Page} from '@playwright/test';
-async function setup(page:Page,review:boolean){
- await page.addInitScript(()=>{navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);navigator.geolocation.watchPosition=ok=>{Object.assign(window,{journeyFix:ok});return 1;};navigator.geolocation.clearWatch=()=>{};});
- await page.route('https://apis.openapi.sk.com/tmap/jsv2**',r=>r.abort());
- await page.route('**/api/navigation?**',r=>{const action=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:action==='config'?{searchConfigured:true}:action==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:action==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구 세종대로',category:'도서관',lat:37.5675,lng:126.978}]}});});
- await page.goto(review?'/?preview=1&mode=live':'/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.locator('.map-compact')).toBeVisible();
-}
-
-for(const review of [false,true])test(`실제 안내 카메라 연결·지원 자세·오차 숨김·복귀 자원 해제 (${review?'진단 검토':'사용자 화면'})`,async({page})=>{
+const route={distanceMeters:144,durationSeconds:120,segments:[[{lat:37.5665,lng:126.978},{lat:37.567,lng:126.978},{lat:37.567,lng:126.979}]],steps:[{lat:37.5665,lng:126.978,description:'직진하세요',turnType:11},{lat:37.567,lng:126.978,description:'오른쪽으로 이동하세요',turnType:13},{lat:37.567,lng:126.9782,description:'목적지까지 직진하세요',turnType:11},{lat:37.567,lng:126.979,description:'목적지 도착',turnType:201}]};
+async function setup(page:Page,turnType=13){
+ await page.clock.install();
  await page.addInitScript(()=>{
-  Object.defineProperty(screen,'orientation',{configurable:true,value:Object.assign(new EventTarget(),{angle:0})});
-  Object.defineProperty(window,'DeviceOrientationEvent',{configurable:true,value:class {static requestPermission(){return Promise.resolve('granted');}}});
-  navigator.mediaDevices.getUserMedia=async()=>{const canvas=document.createElement('canvas');canvas.width=390;canvas.height=844;const ctx=canvas.getContext('2d')!;ctx.fillStyle='#536258';ctx.fillRect(0,0,390,844);const stream=canvas.captureStream(1);Object.assign(window,{cameraStream:stream});return stream;};
-  const add=window.addEventListener.bind(window),remove=window.removeEventListener.bind(window),wrapped=new Map<EventListener,EventListener>();
-  window.addEventListener=((type:string,fn:EventListener,...args:unknown[])=>{if(type.startsWith('deviceorientation')){const cb=(e:Event)=>{if(!e.isTrusted)fn(e);};wrapped.set(fn,cb);return (add as Function)(type,cb,...args);}return (add as Function)(type,fn,...args);}) as typeof window.addEventListener;
-  window.removeEventListener=((type:string,fn:EventListener,...args:unknown[]) => (remove as Function)(type,wrapped.get(fn)||fn,...args)) as typeof window.removeEventListener;
+  const state={ok:null as PositionCallback|null,clears:0,orientationRequests:0};Object.assign(window,{routeCameraTest:state});
+  Object.defineProperty(window,'DeviceOrientationEvent',{configurable:true,value:class{static requestPermission(){state.orientationRequests++;throw new Error('must not request orientation');}}});
+  navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);
+  navigator.geolocation.watchPosition=ok=>{state.ok=ok;return 1;};navigator.geolocation.clearWatch=()=>state.clears++;
+  navigator.mediaDevices.getUserMedia=async()=>{const canvas=document.createElement('canvas');canvas.width=390;canvas.height=844;const ctx=canvas.getContext('2d')!;ctx.fillStyle='#536258';ctx.fillRect(0,0,390,844);const stream=canvas.captureStream(1);Object.assign(window,{routeCameraStream:stream});return stream;};
  });
- await page.setViewportSize({width:390,height:844});await setup(page,review);
- await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();
- await page.evaluate(()=>(window as any).journeyFix({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()}));
- await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();
- await expect(page.getByRole('button',{name:'방향 센서 시작',exact:true})).toBeVisible();
- await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
- await page.getByRole('button',{name:'방향 센서 시작',exact:true}).click();
- async function reading(beta=0,accuracy=5){await page.evaluate(({beta,accuracy})=>{const e=new Event('deviceorientation');for(const [key,value] of Object.entries({beta,gamma:0,webkitCompassHeading:10,webkitCompassAccuracy:accuracy}))Object.defineProperty(e,key,{value});window.dispatchEvent(e);},{beta,accuracy});}
- await reading();await expect(page.getByTestId('facing-arrow')).toBeVisible();
- await page.screenshot({path:'test-results/live-camera-overlay.png'});
- await reading(90);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
- await reading();await expect(page.getByTestId('facing-arrow')).toBeVisible();
- await reading(0,-1);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
- if(review){
- await page.getByText('센서 진단',{exact:true}).click();
- await page.getByRole('button',{name:'진단 결과 확인',exact:true}).click();
- const diagnostic=JSON.parse(await page.getByRole('textbox',{name:'센서 진단 결과',exact:true}).inputValue());
- expect(diagnostic.sensor.webkitCompassAccuracy).toBe(-1);expect(diagnostic.sensor.status).toBe('accuracy');
- expect(JSON.stringify(diagnostic)).not.toMatch(/37\.5665|126\.978|latitude|longitude|cameraStream/);
- await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(text:string)=>{Object.assign(window,{copiedDiagnostic:text});}}}));
- await page.getByRole('button',{name:'진단 결과 복사',exact:true}).click();await expect(page.getByText('복사했어요. 대화에 붙여 넣어 주세요.')).toBeVisible();
- expect(await page.evaluate(()=>(window as any).copiedDiagnostic)).toContain('gilbit-sensor-v1');
- await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('blocked');}}}));
- await page.getByRole('button',{name:'진단 결과 복사',exact:true}).click();await expect(page.getByText('자동 복사가 안 돼요.',{exact:false})).toBeVisible();
- await page.evaluate(()=>{const e=new Event('deviceorientation');for(const [key,value] of Object.entries({alpha:120,beta:0,gamma:0,absolute:false}))Object.defineProperty(e,key,{value});window.dispatchEvent(e);});
- await page.getByRole('button',{name:'진단 결과 확인',exact:true}).click();
- const relative=JSON.parse(await page.getByRole('textbox',{name:'센서 진단 결과',exact:true}).inputValue());expect(relative.sensor.alpha).toBe(120);expect(relative.sensor.webkitCompassHeading).toBeNull();expect(relative.sensor.status).toBe('relative');
- await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
- }else{await expect(page.getByText('센서 진단',{exact:true})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'센서 진단 결과'})).toHaveCount(0);}
- await page.getByRole('button',{name:'지도 보기',exact:true}).click();
- await expect(page.getByRole('region',{name:'실제 카메라 미리보기'})).toHaveCount(0);
- expect(await page.evaluate(()=>(window as any).cameraStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
- await expect(page.getByRole('heading',{name:'보행로를 따라 직진하세요'})).toBeVisible();
+ await page.route('https://apis.openapi.sk.com/tmap/jsv2**',r=>r.abort());
+ await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{...route,steps:route.steps.map((step,index)=>index===1?{...step,turnType}:step)}}:a==='address'?{location:{address:'모의 출발지',area:'서울'}}:{places:[{id:'test',name:'모의 목적지',address:'테스트 경로',category:'장소',lat:37.567,lng:126.979}]}});});
+ await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await expect(page.getByRole('region',{name:'카메라 경로 안내',exact:true})).toBeVisible();
+}
+async function emit(page:Page,lat:number,lng:number,accuracy=5){await page.evaluate(({lat,lng,accuracy})=>(window as any).routeCameraTest.ok({coords:{latitude:lat,longitude:lng,accuracy},timestamp:Date.now()}),{lat,lng,accuracy});}
+const card=(page:Page)=>page.getByRole('region',{name:'카메라 경로 안내',exact:true});
+for(const width of [360,390,430])test(`${width}px 방향 센서 없이 직진·회전 접근·회전 후 안내·도착 표시`,async({page})=>{
+ await page.setViewportSize({width,height:844});await setup(page);
+ await expect(card(page)).toHaveAttribute('data-action','straight');await expect(card(page).getByTestId('route-action-arrow')).toBeVisible();
+ await expect(page.getByRole('button',{name:'방향 센서 시작'})).toHaveCount(0);
+ await page.clock.runFor(7000);await emit(page,37.5667,126.978);await expect(card(page)).toHaveAttribute('data-action','right');await expect(card(page).getByRole('heading')).toHaveText(/앞 오른쪽/);
+ await page.clock.runFor(10000);await emit(page,37.567,126.978);await expect(card(page).getByRole('heading')).toHaveText('지금 오른쪽');
+ await page.clock.runFor(7000);await emit(page,37.567,126.97825);await expect(card(page)).toHaveAttribute('data-action','straight');
+ await expect(page.getByRole('button',{name:'지도 보기',exact:true})).toBeInViewport();expect(await page.locator('.real-camera').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+ await page.clock.runFor(15000);await emit(page,37.567,126.9788);await page.clock.runFor(5000);await emit(page,37.567,126.979);await page.clock.runFor(1000);await emit(page,37.567,126.979);
+ await expect(card(page).getByRole('heading')).toHaveText('목적지에 도착했어요');expect(await page.locator('.real-camera').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);await expect(card(page).getByTestId('route-action-arrow')).toHaveCount(0);
+ expect(await page.evaluate(()=>(window as any).routeCameraTest.orientationRequests)).toBe(0);
+ await page.getByRole('button',{name:'지도 보기',exact:true}).click();expect(await page.evaluate(()=>(window as any).routeCameraStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
+});
+test('이탈·부정확·오래된 GPS·수신 중단은 카메라 화살표를 숨기고 지도와 같은 상태를 보인다',async({page})=>{
+ await setup(page);await page.clock.runFor(1000);await emit(page,37.568,126.978);await expect(card(page).getByRole('heading')).toHaveText('경로를 벗어났어요');await expect(card(page).getByTestId('route-action-arrow')).toHaveCount(0);
+ await page.clock.runFor(1000);await emit(page,37.5665,126.978);await expect(card(page).getByTestId('route-action-arrow')).toBeVisible();
+ await page.clock.runFor(1000);await emit(page,37.5665,126.978,45);await expect(card(page).getByRole('heading')).toHaveText('위치 오차가 커요');await expect(card(page).getByTestId('route-action-arrow')).toHaveCount(0);
+ await page.clock.runFor(1000);await emit(page,37.5665,126.978);await page.clock.runFor(11000);await expect(card(page).getByRole('heading')).toHaveText('위치를 다시 확인하고 있어요');await expect(card(page).getByTestId('route-action-arrow')).toHaveCount(0);
+ await page.clock.runFor(10000);await expect(card(page).getByRole('heading')).toHaveText('위치 수신이 멈췄어요');
+ await page.getByRole('button',{name:'지도 보기',exact:true}).click();await expect(page.getByRole('region',{name:'실제 경로 이동 안내'}).getByRole('heading')).toHaveText('위치 수신이 멈췄어요');
 });
 
-
-test('표준 Android 형태의 방향 입력과 직립 자세는 권한 허용 후에도 화살표를 만들지 않는다',async({page})=>{
- await page.addInitScript(()=>{
-  Object.defineProperty(window,'DeviceOrientationEvent',{configurable:true,value:class {}});
-  const add=window.addEventListener.bind(window),remove=window.removeEventListener.bind(window),wrapped=new Map<EventListener,EventListener>();
-  window.addEventListener=((type:string,fn:EventListener,...args:unknown[])=>{if(type.startsWith('deviceorientation')){const cb=(e:Event)=>{if(!e.isTrusted)fn(e);};wrapped.set(fn,cb);return (add as Function)(type,cb,...args);}return (add as Function)(type,fn,...args);}) as typeof window.addEventListener;
-  window.removeEventListener=((type:string,fn:EventListener,...args:unknown[]) => (remove as Function)(type,wrapped.get(fn)||fn,...args)) as typeof window.removeEventListener;
-  Object.defineProperty(screen,'orientation',{configurable:true,value:Object.assign(new EventTarget(),{angle:0})});
-  navigator.mediaDevices.getUserMedia=async()=>{const canvas=document.createElement('canvas');canvas.width=390;canvas.height=844;const ctx=canvas.getContext('2d')!;ctx.fillStyle='#536258';ctx.fillRect(0,0,390,844);return canvas.captureStream(1);};
- });
- await setup(page,false);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();
- await page.evaluate(()=>(window as any).journeyFix({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()}));
- await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await page.getByRole('button',{name:'방향 센서 시작',exact:true}).click();
- await expect(page.getByRole('button',{name:'방향 센서 중지',exact:true})).toBeVisible();
- const send=async(beta:number)=>page.evaluate(beta=>{const e=new Event('deviceorientationabsolute');for(const [k,v]of Object.entries({alpha:120,beta,gamma:0,absolute:true}))Object.defineProperty(e,k,{value:v});window.dispatchEvent(e);},beta);
- await send(0);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
- await expect(page.getByText('이 브라우저의 방향 오차를 확인할 수 없거나 너무 커요. 화살표를 숨겼어요.',{exact:true})).toBeVisible();
- await send(90);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);await expect(page.getByText('휴대폰을 세로 화면으로 바닥과 나란하게 들어 주세요.',{exact:true})).toBeVisible();
+for(const [turnType,symbol,title] of [[12,'left','왼쪽'],[14,'back','유턴']] as const)test(`카메라 ${title}도 지도와 같은 회전 코드를 사용한다`,async({page})=>{
+ await setup(page,turnType);await page.clock.runFor(7000);await emit(page,37.5667,126.978);await expect(card(page)).toHaveAttribute('data-action',symbol);await expect(card(page).getByRole('heading')).toHaveText(new RegExp(title));
+ await page.getByRole('button',{name:'지도 보기',exact:true}).click();await expect(page.getByRole('region',{name:'실제 경로 이동 안내'})).toHaveAttribute('data-action',symbol);
 });
