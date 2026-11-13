@@ -34,3 +34,19 @@ for(const width of [360,390,430])test(`${width}px 지도 마커·진행 색상·
 });
 
 test('회전 코드와 실제 진행값으로 짧은 방향 카드의 거리를 갱신한다',async({page})=>{await setup(page,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect(page.getByRole('heading',{name:'111m 앞 오른쪽',exact:true})).toBeVisible();await expect(page.getByText('세종대로 방향',{exact:true})).toBeVisible();await expect(page.locator('.instruction-right')).toBeVisible();expect((await page.locator('.journey-guidance').boundingBox())!.height).toBeLessThan(125);await page.clock.runFor(6000);await fix(page,37.56665);await expect(page.getByRole('heading',{name:'95m 앞 오른쪽',exact:true})).toBeVisible();await expect(page.getByText('자세히 보기',{exact:true})).toHaveCount(0);});
+
+
+test('오차 큰 GPS는 지도에서만 움직이고 정확한 GPS 회복 전 진행하지 않는다',async({page})=>{
+ await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();
+ const emit=async(lat:number,accuracy:number)=>page.evaluate(({lat,accuracy})=>(window as any).mapFix({coords:{latitude:lat,longitude:126.978,accuracy},timestamp:Date.now()}),{lat,accuracy});
+ await emit(37.5665,45);await expect(page.getByRole('heading',{name:'위치 오차가 커요'})).toBeVisible();
+ await expect(page.getByText('위치 오차 약 45m · 정확한 위치 대기',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('live-remaining')).toHaveText('200m');
+ await page.clock.runFor(12000);await emit(37.5668,45);await page.clock.runFor(12000);await emit(37.5671,45);
+ const marks=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title==='대략적인 위치').map((l:any)=>l.options));
+ expect(marks).toHaveLength(1);expect(marks[0].position.lat).toBe(37.5671);
+ expect(await page.evaluate(()=>(window as any).mapTest.layers.some((l:any)=>l.map&&l.options.radius===45))).toBe(true);
+ await expect(page.getByTestId('live-remaining')).toHaveText('200m');await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toHaveCount(0);
+ await page.clock.runFor(1000);await emit(37.5671,5);await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();await expect(page.getByTestId('live-remaining')).not.toHaveText('200m');
+ await page.clock.runFor(21000);await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toBeVisible();
+});
