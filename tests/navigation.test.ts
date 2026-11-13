@@ -113,3 +113,12 @@ test('주소 결과가 없으면 현재 위치 주소를 만들어내지 않는�
 });
 
 test('제공사의 다음 도로명은 안내점에만 선택적으로 보존한다',()=>{const result=parseWalkingRoute({...providerRoute,features:providerRoute.features.map((f,index)=>index===0?{...f,properties:{...f.properties,nextRoadName:' 세종대로 '}}:f)});assert.equal(result.steps[0].roadName,'세종대로');assert.equal(result.steps[1].roadName,undefined);});
+
+test('장소 중심점은 유지하고 유효한 입구 좌표를 별도로 보존한다',()=>{
+ const poi=providerPlaces.searchPoiInfo.pois.poi[0];const result=parsePlaces({searchPoiInfo:{pois:{poi:[{...poi,frontLat:'37.5652',frontLon:'126.9777'}]}}});assert.equal(result[0].lat,37.5651);assert.deepEqual(result[0].entrance,{lat:37.5652,lng:126.9777});
+ const invalid=parsePlaces({searchPoiInfo:{pois:{poi:[{...poi,frontLat:'',frontLon:''}]}}});assert.equal(invalid[0].entrance,undefined);
+});
+test('보행 요청의 POI ID를 전달하고 잘못된 ID는 외부 호출 전에 거절한다',async()=>{
+ let calls=0;const handler=createNavigationHandler({appKey:'key',fetcher:async(_,options)=>{calls++;assert.equal(JSON.parse(String(options?.body)).endPoiId,'12345');return Response.json(providerRoute);}});
+ assert.equal((await handler(request('route',{start,end,endPoiId:'12345'}))).status,200);assert.equal((await handler(request('route',{start,end,endPoiId:'bad id'}))).status,400);assert.equal(calls,1);
+});

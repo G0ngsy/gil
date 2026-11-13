@@ -276,3 +276,9 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 [설치 버튼 화면](assets/2026-11-13-pwa-install-390.png)은 production 빌드 Chrome390×844/별도 일반 프로필에서 실제 beforeinstallprompt로 표시됐다. API 설정 응답만 모의로 격리. manifest/CDP 설치가능 오류0, offline.html만 캐시, 오프라인 탐색·온라인 복귀 통과. 단위120개·빌드·관련 브라우저17개 통과. 실제 휴대폰 설치 완료 증거가 아니다. [문제/검증 기록](../issues/2026-11-13-installable-pwa.md).
 
 PWA 원격 최종 결과: 코드948777a의 자동배포success, [Production 설치 화면](assets/2026-11-13-pwa-install-production-390.png). 별도 일반 Chrome 프로필/390×844에서 manifest·설치가능 오류0, offline.html만 캐시, 오프라인 안내/온라인 복귀 통과. 실제 TMAP·휴대폰 설치 승인이 아닌 브라우저 설치 조건 검증이다.
+
+## 2026-11-13 — 경로 도착점·상세 안내·출발 GPS 보완
+
+실제 공개 POI 경로 검증: 임의 출발점에서409m/3선분/15점/4안내, 장소까지32m 차이. 입구/POI 반영 후에도 차이 남음. [실제 SDK 지도](assets/2026-11-13-route-endpoint-gap-390.png), [전체 안내](assets/2026-11-13-route-details-390.png)는 실제 공급자 응답+출발 GPS 모의, Chrome390×844/페이지 예외0. 사용자109m 경로 재현이나 실외 정확도 증거가 아니다. 단위124개·관련38개 통과. [문제·원인·검증](../issues/2026-11-13-route-endpoint-location.md).
+
+경로/GPS 보완 최종 결과: 초기38개 통과, 추가22개에서 일반 도착 문구1개 실패를 수정해 세션9개 재통과, 위치 개선2개 재통과. 최종 빌드/단위124개 통과. 테스트 범위 중복과 실제 실외 검증을 구분한다.

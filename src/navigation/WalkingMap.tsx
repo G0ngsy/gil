@@ -1,3 +1,4 @@
+import {routeAccess} from '../../shared/routeAccess';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Coordinate, Place, WalkingRoute } from '../../shared/navigation';
 import type {Fix,Progress} from '../../shared/tracking';
@@ -25,6 +26,9 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
  const id=useId().replaceAll(':','');
  const [error,setError]=useState(''),[ready,setReady]=useState(false),[retry,setRetry]=useState(0),[generation,setGeneration]=useState(0),[following,setFollowing]=useState(true),[now,setNow]=useState(Date.now);
  const key=import.meta.env.VITE_TMAP_MAP_KEY || '';
+ const access=route?routeAccess(route,start,destination):null;
+ const goal=access?.end??destination;
+ const separateGoal=Boolean(access&&access.endGap>15);
  const observed=Boolean(navigating&&fix&&fix.accuracy>30&&fix.accuracy<=100&&(!progress.position||fix.timestamp>=progress.timestamp));
  const approximate=Boolean(observed&&active&&fix&&now-fix.timestamp<=10000);
  const markerPosition=observed?fix:progress.position;
@@ -48,8 +52,10 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
   const marker=(position:Coordinate,icon:string,title:string,w:number,h:number,anchorY=h/2)=>overlays.push(new sdk.Marker({position:point(sdk,position),map,icon,title,iconSize:sdk.Size?new sdk.Size(w,h):undefined,offset:sdk.Point?new sdk.Point(w/2,anchorY):undefined,zIndex:5}));
   if(route){const parts=splitRoute(route,navigating?progress.along:0);for(const [lines,color,width] of [[parts.completed,'#A8B5AC',5],[parts.remaining,'#087F83',7]] as const){for(const segment of lines){const path=segment.map(c=>point(sdk,c));overlays.push(new sdk.Polyline({path,strokeColor:'#FFFDF9',strokeWeight:width+4,strokeOpacity:1,map,zIndex:1}));overlays.push(new sdk.Polyline({path,strokeColor:color,strokeWeight:width,strokeOpacity:1,map,zIndex:2}));}}}
   marker(start,image('<circle cx="15" cy="15" r="11" fill="#77776E" stroke="white" stroke-width="3"/>',30,30),'출발',30,30);
-  const name=escape(destination.name.length>14?destination.name.slice(0,14)+'…':destination.name);const labelWidth=Math.max(92,Math.min(220,destination.name.length*13+24));
-  marker(destination,image(`<path d="M${labelWidth/2} 43s-17-17-17-27a17 17 0 1 1 34 0c0 10-17 27-17 27" fill="#245447" stroke="white" stroke-width="2"/><path d="M${labelWidth/2-5} 25V9h12v9h-12" fill="white" stroke="white" stroke-width="2"/><rect x="1" y="46" width="${labelWidth-2}" height="26" rx="13" fill="#FFFDF9" stroke="#E9E2D2"/><text x="${labelWidth/2}" y="64" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#245447">${name}</text>`,labelWidth,74),destination.name,labelWidth,74,43);
+  const label=separateGoal?'경로 도착점':destination.name;
+  const name=escape(label.length>14?label.slice(0,14)+'…':label);const labelWidth=Math.max(92,Math.min(220,destination.name.length*13+24));
+  marker(goal,image(`<path d="M${labelWidth/2} 43s-17-17-17-27a17 17 0 1 1 34 0c0 10-17 27-17 27" fill="#245447" stroke="white" stroke-width="2"/><path d="M${labelWidth/2-5} 25V9h12v9h-12" fill="white" stroke="white" stroke-width="2"/><rect x="1" y="46" width="${labelWidth-2}" height="26" rx="13" fill="#FFFDF9" stroke="#E9E2D2"/><text x="${labelWidth/2}" y="64" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#245447">${name}</text>`,labelWidth,74),separateGoal?'경로 도착점':destination.name,labelWidth,74,43);
+  if(separateGoal)marker(destination,image('<circle cx="40" cy="12" r="7" fill="#FFFDF9" stroke="#245447" stroke-width="3"/><rect x="1" y="22" width="78" height="19" rx="9" fill="#FFFDF9" stroke="#E9E2D2"/><text x="40" y="36" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#245447">장소 위치</text>',80,42),'장소 위치',80,42,12);
   if(navigating&&markerPosition){
    const color=fresh&&!observed?'#2878D0':'#77776E';
    if(fix&&sdk.Circle&&(approximate||(fresh&&fix.timestamp===progress.timestamp)))overlays.push(new sdk.Circle({center:point(sdk,markerPosition),radius:fix.accuracy,fillColor:'#2878D0',fillOpacity:0.14,strokeColor:'#2878D0',strokeOpacity:0.18,strokeWeight:1,map,zIndex:3}));
@@ -62,6 +68,6 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
  const pointer=useRef<{x:number;y:number}|null>(null);
  return <div className={`live-map-wrapper ${!key||error?'map-compact':''}`}>
  <div id={`walking-map-${id}`} ref={host} className="live-map-canvas" style={!key||error?{display:'none'}:undefined} role="region" aria-label={`${destination.name} 도보 경로 지도`} onPointerDownCapture={e=>{pointer.current={x:e.clientX,y:e.clientY};}} onPointerMoveCapture={e=>{if(pointer.current&&Math.hypot(e.clientX-pointer.current.x,e.clientY-pointer.current.y)>8){setFollowing(false);pointer.current=null;}}} onPointerUpCapture={()=>{pointer.current=null;}} onPointerCancelCapture={()=>{pointer.current=null;}} onWheelCapture={()=>setFollowing(false)}/>
- {ready&&!error&&<><div className="map-recenter"><button className="icon-button" aria-label={navigating?'현재 위치로 지도 이동':'전체 경로 보기'} onClick={locate}><Icon name="locate"/></button>{navigating&&<span role="status">{approximate?`위치 오차 약 ${Math.round(fix!.accuracy)}m · 정확한 위치 대기`:!progress.position?'현재 위치 확인 중':!fresh?'마지막 위치 · 갱신 대기':following?'위치 따라가는 중':'지도 둘러보는 중'}</span>}</div><div className="map-key" aria-label="지도 표시 범례"><span><i className="key-current"/>현재 위치</span><span><i className="key-destination"/>목적지</span><span><i className="key-route"/>남은 경로</span>{navigating&&<span><i className="key-completed"/>지나온 경로</span>}</div></>}
+ {ready&&!error&&<><div className="map-recenter"><button className="icon-button" aria-label={navigating?'현재 위치로 지도 이동':'전체 경로 보기'} onClick={locate}><Icon name="locate"/></button>{navigating&&<span role="status">{approximate?`위치 오차 약 ${Math.round(fix!.accuracy)}m · 정확한 위치 대기`:!progress.position?'현재 위치 확인 중':!fresh?'마지막 위치 · 갱신 대기':following?'위치 따라가는 중':'지도 둘러보는 중'}</span>}</div><div className="map-key" aria-label="지도 표시 범례"><span><i className="key-current"/>현재 위치</span><span><i className="key-destination"/>{separateGoal?'경로 도착점':'목적지'}</span><span><i className="key-route"/>남은 경로</span>{navigating&&<span><i className="key-completed"/>지나온 경로</span>}</div>{navigating&&fix&&<span className="map-gps-accuracy">GPS 오차 약 {Math.round(fix.accuracy)}m</span>}</>}
  {!key?<p className="compact-map-note" role="status">지도 준비 중 · 경로 안내는 사용할 수 있어요</p>:error?<div className="compact-map-note" role="alert"><p>{error}</p><button className="secondary" onClick={()=>{setError('');setRetry(n=>n+1);}}>지도 다시 불러오기</button></div>:!ready?<div className="map-message" role="status">지도를 불러오고 있어요…</div>:null}</div>;
 }

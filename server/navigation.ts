@@ -27,8 +27,9 @@ export function parsePlaces(data: unknown): Place[] {
   const point = coordinate(p.noorLat, p.noorLon) ?? coordinate(p.frontLat, p.frontLon);
   if (!point || !string(p.name) || !string(p.id) || seen.has(string(p.id))) return [];
   seen.add(string(p.id));
+  const entrance=coordinate(p.frontLat,p.frontLon);
   const address = [p.upperAddrName, p.middleAddrName, p.lowerAddrName, p.detailAddrName].map(string).filter(Boolean).join(' ');
-  return [{...point, id: string(p.id), name: string(p.name), address: address || '주소 정보 없음', category: string(p.lowerBizName) || string(p.middleBizName) || '장소'}];
+  return [{...point, id: string(p.id), name: string(p.name), address: address || '주소 정보 없음', category: string(p.lowerBizName) || string(p.middleBizName) || '장소',...(entrance?{entrance}:{})}];
  });
 }
 
@@ -105,7 +106,8 @@ export function createNavigationHandler({appKey, fetcher = fetch}: Dependencies)
    } else {
     if (!isCoordinate(input.start) || !isCoordinate(input.end)) throw new NavigationError(400,'INVALID_COORDINATE','출발지와 목적지 위치를 확인해 주세요.');
     if (Math.abs(input.start.lat-input.end.lat)<0.00001 && Math.abs(input.start.lng-input.end.lng)<0.00001) throw new NavigationError(400,'SAME_LOCATION','출발지와 목적지가 너무 가까워요. 주변을 확인해 주세요.');
-    body = JSON.stringify({startX:input.start.lng,startY:input.start.lat,endX:input.end.lng,endY:input.end.lat,startName:encodeURIComponent('출발지'),endName:encodeURIComponent('목적지'),reqCoordType:'WGS84GEO',resCoordType:'WGS84GEO',searchOption:'0',sort:'index'});
+    if('endPoiId' in input && (typeof input.endPoiId!=='string'||!/^\d{1,30}$/.test(input.endPoiId)))throw new NavigationError(400,'INVALID_POI','목적지 정보를 확인해 주세요.');
+    body = JSON.stringify({...('endPoiId' in input?{endPoiId:input.endPoiId}:{}),startX:input.start.lng,startY:input.start.lat,endX:input.end.lng,endY:input.end.lat,startName:encodeURIComponent('출발지'),endName:encodeURIComponent('목적지'),reqCoordType:'WGS84GEO',resCoordType:'WGS84GEO',searchOption:'0',sort:'index'});
     target = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
    }
    if (!appKey.trim()) throw new NavigationError(503,'NOT_CONFIGURED','검색 서비스 설정을 확인한 뒤 다시 이용해 주세요.');

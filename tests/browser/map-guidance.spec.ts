@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
-async function setup(page:Page,withTurn=false){
+async function setup(page:Page,withTurn=false,gap=false){
  await page.clock.install({time:new Date('2026-11-12T00:00:00Z')});
  await page.addInitScript(()=>{
   navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);
@@ -10,7 +10,7 @@ async function setup(page:Page,withTurn=false){
  window.mapTest={layers:[],centers:[],maps:0};
  class Overlay{constructor(options){this.options=options;this.map=options.map;window.mapTest.layers.push(this);}setMap(map){this.map=map;}}
  Object.assign(window.Tmapv2,{Map:class{constructor(id){window.mapTest.maps++;document.getElementById(id).textContent='모의 지도';}setCenter(c){window.mapTest.centers.push(c);}fitBounds(){window.mapTest.centers.push({frame:true});}destroy(){}},LatLng:class{constructor(lat,lng){this.lat=lat;this.lng=lng;}},LatLngBounds:class{extend(){}},Size:class{constructor(w,h){this.w=w;this.h=h;}},Point:class{constructor(x,y){this.x=x;this.y=y;}},Marker:Overlay,Polyline:Overlay,Circle:Overlay});` }));
- await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:withTurn?[{lat:37.5665,lng:126.978,description:'보행로 이동',turnType:200},{lat:37.5675,lng:126.978,description:'우회전',turnType:13,roadName:'세종대로'}]:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:a==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구',category:'도서관',lat:37.5675,lng:126.978}]}});});
+ await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:withTurn?[{lat:37.5665,lng:126.978,description:'보행로 이동',turnType:200},{lat:37.5675,lng:126.978,description:'우회전',turnType:13,roadName:'세종대로'}]:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:a==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구',category:'도서관',lat:gap?37.568:37.5675,lng:126.978,...(gap?{entrance:{lat:37.5675,lng:126.978}}:{})}]}});});
  await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByLabel('지도 표시 범례')).toBeVisible();
 }
 async function fix(page:Page,lat=37.5665){await page.evaluate(lat=>(window as any).mapFix({coords:{latitude:lat,longitude:126.978,accuracy:5},timestamp:Date.now()}),lat);}
@@ -49,4 +49,15 @@ test('오차 큰 GPS는 지도에서만 움직이고 정확한 GPS 회복 전 �
  await expect(page.getByTestId('live-remaining')).toHaveText('200m');await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toHaveCount(0);
  await page.clock.runFor(1000);await emit(37.5671,5);await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();await expect(page.getByTestId('live-remaining')).not.toHaveText('200m');
  await page.clock.runFor(21000);await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toBeVisible();
+});
+
+test('경로 도착점과 장소 위치 차이를 표시하고 전체 안내를 제공한다',async({page})=>{
+ await setup(page,false,true);await expect(page.getByRole('note')).toContainText('장소 위치와 약');
+ const markers=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title).map((l:any)=>l.options));
+ expect(markers.find((m:any)=>m.title==='경로 도착점').position.lat).toBe(37.5675);expect(markers.find((m:any)=>m.title==='장소 위치').position.lat).toBe(37.568);
+ await page.getByText('전체 경로 상세 보기 · 1단계',{exact:true}).click();await expect(page.locator('.route-detail-list ol')).toContainText('보행로를 따라 직진하세요');
+});
+
+test('장소와 떨어진 경로 끝은 장소 도착으로 단정하지 않는다',async({page})=>{
+ await setup(page,false,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'경로 도착점에 도착했어요',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요',exact:true})).toHaveCount(0);
 });

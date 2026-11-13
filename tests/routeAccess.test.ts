@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {routeAccess} from '../shared/routeAccess';
+test('경로 끝과 장소가 떨어져도 경로에 가짜 연결을 추가하지 않는다',()=>{const start={lat:37,lng:127},end={lat:37.001,lng:127},destination={lat:37.0015,lng:127};const route={distanceMeters:111,durationSeconds:100,segments:[[start,end]],steps:[]};const original=JSON.stringify(route);const info=routeAccess(route,start,destination)!;assert.deepEqual(info.end,end);assert.ok(info.endGap>50);assert.equal(info.startGap,0);assert.equal(JSON.stringify(route),original);});
+test('빈 경로에 도착점이나 거리를 꾸미지 않는다',()=>{assert.equal(routeAccess({distanceMeters:0,durationSeconds:0,segments:[],steps:[]},{lat:37,lng:127},{lat:37,lng:127}),null);});

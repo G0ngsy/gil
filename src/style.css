@@ -256,3 +256,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .camera-route-instruction .instruction-copy{width:100%}
 
 .pwa-install{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--sheet)}.pwa-install h3{font-size:15px;line-height:1.6}.pwa-install p{font-size:12px;line-height:1.8;color:var(--muted);margin:6px 0}.pwa-install .secondary{margin-top:10px;min-height:44px}
+
+.route-access-note{font-size:12px;line-height:1.8;color:var(--muted);padding:12px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;margin:12px 0}.route-detail-list{margin:12px 0;font-size:13px;line-height:1.8}.route-detail-list summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--pine);font-weight:650}.route-detail-list p{color:var(--muted)}.route-detail-list ol{padding-left:24px}.route-detail-list li{padding:8px 0;border-bottom:1px solid var(--line)}.map-gps-accuracy{position:absolute;left:12px;bottom:38px;border-radius:12px;background:#fffdf9ed;padding:4px 9px;font-size:10px;color:var(--ink);z-index:3}
