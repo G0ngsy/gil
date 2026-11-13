@@ -9,7 +9,7 @@
 - React/Vite 정적 화면과 /api/navigation 함수를 함께 빌드한다.
 - Node.js는 package.json의 22 이상 25 미만 조건에 따라 사용한다.
 - 로컬 환경 파일·에이전트 설정·검증 캡처·문서는 .vercelignore로 CLI 업로드에서 제외한다.
-- CLI 배포를 사용한다. GitHub push 자동 배포 연결은 아직 설정하지 않았다.
+- 현재 배포 방식: 2026-11-13 사용자가 GitHub push 시 Vercel에 자동 반영되도록 연결했다고 확인했다. 과거 CLI 배포 기록과 구분한다. push 후에도 공개 주소의 새 코드 반영을 별도로 검증한다.
 
 ## 휴대폰 확인 순서
 
@@ -85,3 +85,9 @@
 
 
 2026-11-12 배포 확인: 코드 `318b5c8`, production `dpl_5MPcvrNQLNBPRyTYx1hJ1R3EBLgb` READY 및 gilbit.vercel.app 반영. 배포 UI에 모의 주소/경로/GPS를 주입하여 360/390/430px 검색→안내 카드→위치 카드 간격24px 이하, 위치 카드100px 이하, 가로 넘침 없음 확인. 실제 사용자 위치나 실외 정확도 검증은 아니다. 캡처 portfolio 기준 `assets/2026-11-12-compact-home-idle-390.png`, `assets/2026-11-12-compact-home-active-390.png`, `-360.png`, `-430.png`. 안내 없음/진행 중 모두 검토했다.
+
+## 2026-11-13 카메라 안내 자동 배포 확인 진행
+
+카메라 경로 안내 구현 3fd1d4f를 origin/main에 푸시했다. 사용자가 GitHub→Vercel 자동 배포가 연결됐다고 확인해 수동 CLI 배포를 하지 않고 문서 정정 커밋을 푸시한다. 최초 공개 주소는 HTTP200이나 이전 번들 `/assets/index-DP__EJNe.js`였으며 새 카메라 문구/고정 경로 카드는 미반영이었다. config는200/searchConfigured true였다. 모의 원격 카메라 검증도 새 카드가 없어 실패해 배포 완료로 보고하지 않았다.
+
+Vercel 연결 도구는 사용자 팀을 조회했지만 프로젝트 목록이 비고 gilbit/배포 조회가404여서 배포 상태를 확인하지 못했다. 로컬 CLI/로그인 설정도 찾지 못했다. 브라우저 접근은 자동 승인 검토에서 허용되지 않아 우회하지 않았다. 새 프로젝트/새 키/환경변수는 만들거나 바꾸지 않았다. 최종 공개 주소 반영 여부는 후속 검증 결과를 따른다.
