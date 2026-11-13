@@ -49,3 +49,23 @@ for(const review of [false,true])test(`실제 안내 카메라 연결·지원 �
  expect(await page.evaluate(()=>(window as any).cameraStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
  await expect(page.getByRole('heading',{name:'보행로를 따라 직진하세요'})).toBeVisible();
 });
+
+
+test('표준 Android 형태의 방향 입력과 직립 자세는 권한 허용 후에도 화살표를 만들지 않는다',async({page})=>{
+ await page.addInitScript(()=>{
+  Object.defineProperty(window,'DeviceOrientationEvent',{configurable:true,value:class {}});
+  const add=window.addEventListener.bind(window),remove=window.removeEventListener.bind(window),wrapped=new Map<EventListener,EventListener>();
+  window.addEventListener=((type:string,fn:EventListener,...args:unknown[])=>{if(type.startsWith('deviceorientation')){const cb=(e:Event)=>{if(!e.isTrusted)fn(e);};wrapped.set(fn,cb);return (add as Function)(type,cb,...args);}return (add as Function)(type,fn,...args);}) as typeof window.addEventListener;
+  window.removeEventListener=((type:string,fn:EventListener,...args:unknown[]) => (remove as Function)(type,wrapped.get(fn)||fn,...args)) as typeof window.removeEventListener;
+  Object.defineProperty(screen,'orientation',{configurable:true,value:Object.assign(new EventTarget(),{angle:0})});
+  navigator.mediaDevices.getUserMedia=async()=>{const canvas=document.createElement('canvas');canvas.width=390;canvas.height=844;const ctx=canvas.getContext('2d')!;ctx.fillStyle='#536258';ctx.fillRect(0,0,390,844);return canvas.captureStream(1);};
+ });
+ await setup(page,false);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();
+ await page.evaluate(()=>(window as any).journeyFix({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()}));
+ await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await page.getByRole('button',{name:'방향 센서 시작',exact:true}).click();
+ await expect(page.getByRole('button',{name:'방향 센서 중지',exact:true})).toBeVisible();
+ const send=async(beta:number)=>page.evaluate(beta=>{const e=new Event('deviceorientationabsolute');for(const [k,v]of Object.entries({alpha:120,beta,gamma:0,absolute:true}))Object.defineProperty(e,k,{value:v});window.dispatchEvent(e);},beta);
+ await send(0);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);
+ await expect(page.getByText('이 브라우저의 방향 오차를 확인할 수 없거나 너무 커요. 화살표를 숨겼어요.',{exact:true})).toBeVisible();
+ await send(90);await expect(page.getByTestId('facing-arrow')).toHaveCount(0);await expect(page.getByText('휴대폰을 세로 화면으로 바닥과 나란하게 들어 주세요.',{exact:true})).toBeVisible();
+});
