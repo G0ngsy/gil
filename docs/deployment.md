@@ -101,3 +101,7 @@ Vercel 연결 도구는 사용자 팀을 조회했지만 프로젝트 목록이 
 연결 후 커밋 `2050677`의 GitHub Vercel 상태가 pending→success로 전환됐다. [배포 상태](https://vercel.com/sunyoungs-projects-c61fca90/gilbit/2tDwBCM3MeSEPdDdM9F8LygCnsrd). https://gilbit.vercel.app HTTP200 및 새 번들 `/assets/index-D93Yix_3.js`, 카메라 경로 안내 문구 반영을 확인했다. API config200/searchConfigured true.
 
 Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주입해 직진·회전 접근/회전 후·이탈·GPS45m 오차·2표본 도착을 확인했다. 방향 센서 없이 동작하며 페이지 예외0개, 도착 문구 가로 넘침 없음. 원격 모의 검증이며 실제 사용자 GPS/카메라·실외 정확도 검증은 아니다. 실제 TMAP 검색 호출은 이번 배포 검증에서 수행하지 않았다. [Production 캡처](portfolio/assets/2026-11-13-camera-route-production-390.png). 임시 검증 스크립트는 제거했고 인증 값/URL은 출력하지 않았다.
+
+## 2026-11-13 PWA 설치 설정 배포
+
+코드948777a의 Vercel 상태success와 공개 주소 manifest/PNG아이콘/standalone 설정 반영 확인. [배포](https://vercel.com/sunyoungs-projects-c61fca90/gilbit/2FNC95ihTptxzXwJbQZfAV77CDoZ). 원격 일반 Chrome에서 CDP manifest/설치가능 오류0, static offline 안내만 캐시/오프라인 탐색/온라인 복귀 통과. 실제 Android 설치 승인은 미확인. [설치 방법](pwa-setup.md).

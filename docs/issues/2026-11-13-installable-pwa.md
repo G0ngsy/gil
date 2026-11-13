@@ -20,3 +20,7 @@ SW는 정적 연결 안내만 캐시한다. API·TMAP·위치·앱 번들은 캐
 - [사용 방법/재현 명령](../pwa-setup.md), [로컬 화면](../portfolio/assets/2026-11-13-pwa-install-390.png). 배포 결과는 후속 기록 참조.
 
 기준31c485c 이후 변경. AI 지원 코드 확인·구현·기존 아이콘 렌더링·자동 검증·문서화. 기존 시안/실제 모드 정책과 카메라/GPS 세션을 보존한다.
+
+## Production 최종 확인
+
+커밋948777a, GitHub Vercel 상태pending→success. https://gilbit.vercel.app HTML manifest 연결 및 별도 일반 Chrome 프로필에서 manifest 오류0/설치가능 오류0 확인. 오프라인 캐시는 /offline.html만 존재, 원격 오프라인 탐색/온라인 복귀 통과. [배포 화면](../portfolio/assets/2026-11-13-pwa-install-production-390.png). 앱 설정 API는 검증에서 모의로 격리했으며 실제 TMAP 호출/휴대폰 설치 완료를 검증한 것은 아니다. 단위120개·관련17개·빌드 통과 및 문서 링크300개·변경 형식 검사 통과. React 검토에서 설치 이벤트 선등록·사용자 클릭 때만 프롬프트·구독 정리·설치 완료/standalone 숨김·센서 세션 비간섭을 확인했다.

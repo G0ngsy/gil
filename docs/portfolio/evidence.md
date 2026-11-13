@@ -274,3 +274,5 @@ GPS 연결 최종 결과: 단위 100개·빌드 통과. 관련 브라우저 37�
 ## 2026-11-13 — 설치형 웹앱(PWA) 구성
 
 [설치 버튼 화면](assets/2026-11-13-pwa-install-390.png)은 production 빌드 Chrome390×844/별도 일반 프로필에서 실제 beforeinstallprompt로 표시됐다. API 설정 응답만 모의로 격리. manifest/CDP 설치가능 오류0, offline.html만 캐시, 오프라인 탐색·온라인 복귀 통과. 단위120개·빌드·관련 브라우저17개 통과. 실제 휴대폰 설치 완료 증거가 아니다. [문제/검증 기록](../issues/2026-11-13-installable-pwa.md).
+
+PWA 원격 최종 결과: 코드948777a의 자동배포success, [Production 설치 화면](assets/2026-11-13-pwa-install-production-390.png). 별도 일반 Chrome 프로필/390×844에서 manifest·설치가능 오류0, offline.html만 캐시, 오프라인 안내/온라인 복귀 통과. 실제 TMAP·휴대폰 설치 승인이 아닌 브라우저 설치 조건 검증이다.
