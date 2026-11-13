@@ -105,3 +105,7 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 ## 2026-11-13 PWA 설치 설정 배포
 
 코드948777a의 Vercel 상태success와 공개 주소 manifest/PNG아이콘/standalone 설정 반영 확인. [배포](https://vercel.com/sunyoungs-projects-c61fca90/gilbit/2FNC95ihTptxzXwJbQZfAV77CDoZ). 원격 일반 Chrome에서 CDP manifest/설치가능 오류0, static offline 안내만 캐시/오프라인 탐색/온라인 복귀 통과. 실제 Android 설치 승인은 미확인. [설치 방법](pwa-setup.md).
+
+## 2026-11-13 경로 도착점/출발 GPS 보완 배포
+
+코드c98a66c 자동배포success와 공개번들index-DAvi3BVr.js/HTTP200 확인. [배포](https://vercel.com/sunyoungs-projects-c61fca90/gilbit/4YzkqS9rCasZKxkNjLzC99oQhNYx). Production에서 실제 공공 POI 검색200·보행 요청에POI ID전달·실제 지도·32m차이 안내·4단계 상세 표시/페이지 예외0을 확인했다. 출발 GPS만 장소 인근 임의 좌표/오차8m로 주입했다. 실제 사용자109m 경로 및 실외 위치 정확도 검증은 아니다. [화면](portfolio/assets/2026-11-13-route-details-production-390.png).
