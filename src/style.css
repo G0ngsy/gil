@@ -182,10 +182,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-screen .map-compact{height:auto;min-height:0}
 .journey-screen .journey-sheet{position:static;border-radius:24px 24px 0 0;background:var(--sheet);box-shadow:0 -5px 22px #26372d10;padding:22px;flex:1;z-index:auto}
 .journey-screen:not(:has(.map-compact)) .journey-sheet{margin-top:-14px;z-index:2}
-.journey-screen>.journey-guidance{position:absolute;top:16px;left:16px;right:16px;z-index:3;background:#fffdf9f5;box-shadow:0 4px 18px #26372d18;margin:0;padding:16px 18px;border-radius:18px;pointer-events:none}
-.journey-screen>.journey-guidance .journey-kicker{margin-bottom:6px;font-size:11px}
-.journey-screen>.journey-guidance h2{font-size:23px;line-height:1.4}
-.journey-screen>.journey-guidance>p{font-size:12px;margin-top:6px}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance{position:absolute;top:16px;left:16px;right:16px;z-index:3;background:#fffdf9f5;box-shadow:0 4px 18px #26372d18;margin:0;padding:16px 18px;border-radius:18px;pointer-events:none}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance .journey-kicker{margin-bottom:6px;font-size:11px}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance h2{font-size:23px;line-height:1.4}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance>p{font-size:12px;margin-top:6px}
 .journey-screen:has(.map-compact)>.journey-guidance{position:static;margin:8px 18px 0}
 .journey-navigating .journey-content>.journey-remaining{display:flex;align-items:baseline;justify-content:flex-start;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:0;border:0}
 .journey-navigating .journey-remaining strong{font-size:36px;letter-spacing:-1px}
@@ -204,7 +204,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .live-route-screen:has(.real-camera)>.journey-guidance{visibility:hidden}
 .journey-sheet:has(.real-camera) .journey-content>*:not(.live-camera-guide){visibility:hidden}
 .live-route-screen:has(.real-camera) .real-camera{visibility:visible}
-@media(max-width:374px){.journey-screen>.journey-guidance h2{font-size:21px}.journey-screen .journey-sheet{padding:18px}.map-key{gap:6px;font-size:8px}}
+@media(max-width:374px){:is(.journey-screen,.map-guidance-layer)>.journey-guidance h2{font-size:21px}.journey-screen .journey-sheet{padding:18px}.map-key{gap:6px;font-size:8px}}
 
 /* Compact guidance header returns its saved height to the map. */
 .live-phone>.app-header.guidance-header{height:52px;min-height:52px;padding-top:4px;padding-bottom:4px}
@@ -220,17 +220,17 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 @media(max-width:374px){.ongoing-guidance{padding:16px}.ongoing-title h3{font-size:17px}}
 .journey-remaining>.journey-end{margin-left:auto;min-height:44px;min-width:64px;padding:8px 10px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline;text-underline-offset:4px;white-space:nowrap;flex:none}
 /* Compact route card: one maneuver icon and concise route-derived instruction. */
-.journey-screen>.journey-guidance{display:flex;align-items:center;gap:14px;padding:15px 16px;min-height:82px}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance{display:flex;align-items:center;gap:14px;padding:15px 16px;min-height:82px}
 .instruction-symbol{display:flex;align-items:center;justify-content:center;flex:none;width:40px;color:var(--teal)}
 .instruction-left{transform:scaleX(-1)}.instruction-straight{transform:rotate(-90deg)}
 .instruction-status{color:var(--pine)}.instruction-copy{min-width:0;flex:1}
-.journey-screen>.journey-guidance h2{font-size:22px;font-weight:750;line-height:1.4;letter-spacing:-.7px}
+:is(.journey-screen,.map-guidance-layer)>.journey-guidance h2{font-size:22px;font-weight:750;line-height:1.4;letter-spacing:-.7px}
 .instruction-copy>p{font-size:12px;line-height:1.6;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
 .journey-guidance:has(.journey-arrival-decoration){flex-wrap:wrap}.journey-guidance .journey-arrival-decoration{flex-basis:100%;margin:0}
 .journey-navigating .journey-sheet{padding-bottom:max(18px,env(safe-area-inset-bottom))}
 .journey-navigating .journey-content .selected-destination{border:0;background:none;padding:0;box-shadow:none;margin-bottom:14px}
 .journey-navigating .journey-destination>.selection-corner{display:none}
-@media(max-width:374px){.journey-screen>.journey-guidance{gap:10px;padding:13px}.journey-screen>.journey-guidance h2{font-size:20px}}
+@media(max-width:374px){:is(.journey-screen,.map-guidance-layer)>.journey-guidance{gap:10px;padding:13px}:is(.journey-screen,.map-guidance-layer)>.journey-guidance h2{font-size:20px}}
 .instruction-copy>.instruction-road{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Home: scenery behind the heading, search followed immediately by compact cards. */
 .live-home>.landscape-home-hero{min-height:0;padding:76px 18px 12px;background-image:linear-gradient(to bottom,#f7f3ea14 0%,#f7f3ea55 34%,#f7f3ead9 80%,var(--paper) 100%),url('/assets/intro-landscape.png');background-size:100% 100%,100% auto;background-position:center,center 35%;flex:none}
@@ -258,3 +258,29 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .pwa-install{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--sheet)}.pwa-install h3{font-size:15px;line-height:1.6}.pwa-install p{font-size:12px;line-height:1.8;color:var(--muted);margin:6px 0}.pwa-install .secondary{margin-top:10px;min-height:44px}
 
 .route-access-note{font-size:12px;line-height:1.8;color:var(--muted);padding:12px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;margin:12px 0}.route-detail-list{margin:12px 0;font-size:13px;line-height:1.8}.route-detail-list summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--pine);font-weight:650}.route-detail-list p{color:var(--muted)}.route-detail-list ol{padding-left:24px}.route-detail-list li{padding:8px 0;border-bottom:1px solid var(--line)}.map-gps-accuracy{position:absolute;left:12px;bottom:38px;border-radius:12px;background:#fffdf9ed;padding:4px 9px;font-size:10px;color:var(--ink);z-index:3}
+
+/* Keep guidance anchored to the visible navigation viewport, outside scrolling content. */
+.navigation-viewport{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;isolation:isolate}
+.map-guidance-layer{position:absolute;top:12px;left:12px;right:12px;z-index:4;pointer-events:none}
+.map-guidance-layer>.journey-guidance{position:relative;inset:auto;margin:0}
+.navigation-viewport:has(.map-compact)>.live-map{padding-top:128px}
+.camera-viewport-host{position:absolute;inset:0;z-index:6;pointer-events:none}
+.camera-viewport-host>.real-camera{pointer-events:auto}
+.real-camera.real-camera-live{inset:0;padding:12px;overflow:hidden;gap:12px;outline:none}
+.real-camera-live video{z-index:0}
+.real-camera-live>*:not(video){position:relative;z-index:1}
+.real-camera-live .live-camera-overlay{flex:none;min-height:0;display:block}
+.real-camera-live .camera-route-instruction{display:flex;flex-direction:row;align-items:center;gap:12px;margin:0;padding:10px 14px;min-height:76px;max-height:112px;border-radius:16px;background:#fffdf9f2;color:var(--ink);box-shadow:0 3px 16px #0002}
+.real-camera-live .instruction-symbol{flex:0 0 28px}
+.real-camera-live .instruction-copy{min-width:0}
+.real-camera-live .camera-route-instruction h2{font-family:inherit;font-size:20px;line-height:1.3;letter-spacing:-.6px}
+.real-camera-live .camera-route-instruction p{font-size:12px;line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.camera-route-basis{display:block;font-size:10px;color:#526b60;line-height:1.3;margin-bottom:2px}
+.real-camera-live .camera-live-controls{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:env(safe-area-inset-bottom,0px)}
+.camera-live-controls button{border:1px solid #ffffff70;background:#193b30e8;color:white;box-shadow:0 2px 12px #0002}
+.camera-info-button{width:44px;height:44px;border-radius:50%;font-size:23px}
+.camera-map-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:24px;font-size:14px;font-weight:700}
+.camera-help{color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:calc(100% - 32px);width:360px}
+.camera-help h2{font-size:20px}.camera-help p{font-size:14px;line-height:1.7;margin:16px 0}.camera-help button{min-height:44px;width:100%;border-radius:12px;background:var(--pine);color:white}.camera-help::backdrop{background:#10271d80}
+
+.real-camera-live .instruction-copy{text-align:left}

@@ -45,7 +45,7 @@ test('홈에서 탭이 숨겨지면 추적을 중지하고 복귀해도 자동 �
 });
 test('홈에서도 도착하면 추적을 마치고 도착 화면으로 복귀한다',async({page})=>{
  await start(page);await close(page);for(const [lat,lng] of [[37.567,126.978],[37.5675,126.978],[37.5675,126.9787],[37.5675,126.979],[37.5675,126.979]]){await page.clock.runFor(12000);await emit(page,lat,lng);}
- await expect(page.locator('.ongoing-title h3')).toHaveText('테스트 목적지 도착');await page.getByRole('button',{name:'안내로 돌아가기',exact:true}).click();await expect(page.getByRole('heading',{name:'목적지에 도착했어요'})).toBeVisible();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);
+ await expect(page.locator('.ongoing-title h3')).toHaveText('테스트 목적지 근처 도착');await page.getByRole('button',{name:'안내로 돌아가기',exact:true}).click();await expect(page.getByRole('heading',{name:'목적지 근처에 도착했어요'})).toBeVisible();expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([1]);
 });
 test('카메라 권한 대기 중 X로 닫으면 늦은 영상만 해제하고 GPS는 유지한다',async({page})=>{
  await page.addInitScript(()=>{navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>Object.assign(window,{allowSessionCamera:()=>{const canvas=document.createElement('canvas');const stream=canvas.captureStream();Object.assign(window,{sessionCameraStream:stream});resolve(stream);}}));});

@@ -59,5 +59,5 @@ test('경로 도착점과 장소 위치 차이를 표시하고 전체 안내를 
 });
 
 test('장소와 떨어진 경로 끝은 장소 도착으로 단정하지 않는다',async({page})=>{
- await setup(page,false,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'경로 도착점에 도착했어요',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요',exact:true})).toHaveCount(0);
+ await setup(page,false,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'목적지 근처에 도착했어요',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요',exact:true})).toHaveCount(0);await expect(page.getByText('경로 끝 기준',{exact:true})).toBeVisible();await expect(page.getByText('실제 출입구를 확인해 주세요.',{exact:true})).toBeVisible();
 });
