@@ -45,6 +45,9 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const [pendingGuidance,setPendingGuidance]=useState<Guidance|null>(null);
  const [progress,setProgress]=useState(initialProgress);
  const [observedFix,setObservedFix]=useState<Fix|null>(null);
+ const latestFix=useRef<Fix|null>(null);latestFix.current=observedFix;
+ const [rerouting,setRerouting]=useState(false),[rerouteError,setRerouteError]=useState('');
+ const rerouteAbort=useRef<AbortController|null>(null);
  const gps=useGpsTracking(fix=>{const current=guidanceRef.current;if(current){setProgress(previous=>updateProgress(current.route,previous,fix));}},'실제 GPS 위치를 수신하고 있어요.',fix=>{if(guidanceRef.current)setObservedFix(fix);});
  useEffect(()=>{if(progress.arrived&&gps.active)gps.stop('도착을 확인해 GPS 추적을 마쳤어요.');},[progress.arrived,gps.active]);
  const content=useRef<HTMLElement>(null);
@@ -72,7 +75,11 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   else if(dialog.current?.open){dialog.current.close();focus.current?.focus();}
  },[ending]);
 
- function cancelWork(){searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
+ function cancelReroute(){rerouteAbort.current?.abort();rerouteAbort.current=null;setRerouting(false);setRerouteError('');}
+ useEffect(()=>{const leave=()=>cancelReroute();const hidden=()=>{if(document.hidden)leave();};window.addEventListener('pagehide',leave);document.addEventListener('visibilitychange',hidden);return()=>{rerouteAbort.current?.abort();window.removeEventListener('pagehide',leave);document.removeEventListener('visibilitychange',hidden);};},[]);
+ useEffect(()=>{if(progress.arrived)cancelReroute();},[progress.arrived]);
+ useEffect(()=>{if(!gps.active)cancelReroute();},[gps.active]);
+ function cancelWork(){cancelReroute();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
  function back(){cancelWork();setError('');setStage(stage==='route'?'results':'home');}
  async function submitSearch(value=query,nearby=nearbySearch){
   const q=value.trim();setQuery(value);
@@ -130,12 +137,36 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   finally{if(!controller.signal.aborted)setRouting(false);}
  }
  function beginGuidance(next:Guidance){
+  cancelReroute();
   guidanceRef.current=next;setGuidance(next);setObservedFix(null);setProgress(initialProgress());setStage('map');gps.start();
  }
  function startGuidance(){
   if(!route||!selected||!position)return;
   const next={route,destination:selected,start:position};
   if(guidance){setPendingGuidance(next);setEnding(true);}else beginGuidance(next);
+ }
+ async function rerouteGuidance(){
+  const current=guidanceRef.current;
+  if(!current||rerouteAbort.current||progress.arrived)return;
+  const controller=new AbortController();rerouteAbort.current=controller;
+  setRerouting(true);setRerouteError('');
+  let timedOut=false;
+  const timer=setTimeout(()=>{timedOut=true;controller.abort();},30000);
+  const valid=()=>alive.current&&!controller.signal.aborted&&guidanceRef.current===current;
+  try{
+   let origin=latestFix.current;
+   if(!origin||origin.accuracy>30||Date.now()-origin.timestamp>10000)origin=await getUserPosition(controller.signal);
+   if(!valid())return;
+   if(origin.accuracy>30)throw new Error(`현재 위치 오차가 약 ${Math.round(origin.accuracy)}m예요. 안전한 곳에서 위치를 다시 확인해 주세요.`);
+   const data=await findWalkingRoute(origin,current.destination,controller.signal);
+   if(!valid()||document.hidden)return;
+   const next={...current,start:origin,route:data.route};
+   guidanceRef.current=next;setGuidance(next);
+   const fix=latestFix.current;
+   setProgress(fix&&fix.accuracy<=30&&Date.now()-fix.timestamp<=10000?updateProgress(next.route,initialProgress(),fix):initialProgress());
+   if(!gps.active)gps.start();
+  }catch(e){if(alive.current&&guidanceRef.current===current&&(!controller.signal.aborted||timedOut))setRerouteError(timedOut?'다시 찾는 시간이 길어졌어요. 기존 경로를 유지해요. 잠시 후 다시 시도해 주세요.':`새 경로를 찾지 못했어요. 기존 경로를 유지해요. ${message(e)}`);}
+  finally{clearTimeout(timer);if(rerouteAbort.current===controller){rerouteAbort.current=null;setRerouting(false);}}
  }
  function resumeGuidance(){if(guidanceRef.current&&!progress.arrived)gps.start();}
  function finishGuidance(){gps.stop();cancelWork();guidanceRef.current=null;setGuidance(null);setObservedFix(null);setProgress(initialProgress());setRoute(null);setSelected(null);setStage('home');}
@@ -158,7 +189,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
 
  return <div className={`studio live-studio ${review?'':'app-shell'}`}>{review&&<aside className="studio-intro"><span className="eyebrow">GILBIT / WALKING ROUTE</span><h1>눈앞의 길을,<br/>실제 경로로.</h1><p>장소를 찾고 현재 위치에서<br/>걸어갈 경로를 확인하세요.</p><div className="studio-rule"/><span className="studio-note">현재 위치는 버튼을 눌렀을 때만 확인해요.<br/>경로는 저장하지 않아요.</span>{review&&<button className="secondary return-demo" onClick={onDemo}>디자인 시안 보기</button>}</aside>}<div className="phone live-phone"><header className={`app-header ${stage==='home'?'home-header':''} ${stage==='map'?'guidance-header':''}`}>
   {stage==='home'?<Brand/>:<><button className="icon-button" aria-label="뒤로 가기" onClick={back}><Icon name="back"/></button><strong className="header-title">{stageTitle}</strong></>}
-  {stage==='map'&&guidance&&<button className="icon-button" aria-label="안내 화면 닫기" onClick={()=>{setError('');setStage('home');}}><Icon name="close"/></button>}
+  {stage==='map'&&guidance&&<button className="icon-button" aria-label="안내 화면 닫기" onClick={()=>{cancelReroute();setError('');setStage('home');}}><Icon name="close"/></button>}
   <>{review&&<button className="live-demo-exit" onClick={onDemo}>시안 보기</button>}</>
  </header><div className="navigation-viewport"><main inert={cameraOpen} className={`app-content live-content live-${stage}`} ref={content}>
  {stage==='home'&&<><section className="home-hero landscape-home-hero"><h2>어디로 걸어갈까요<span>?</span></h2>{searchScope}<form className="search-form" onSubmit={onSubmit}><button className="home-search-submit" type="submit" aria-label="실제 장소 검색" disabled={configured!==true||locating||searching}><Icon name="search" size={23}/></button><input aria-label="실제 목적지 검색" placeholder="장소나 주소를 검색하세요" value={query} maxLength={80} onChange={e=>setQuery(e.target.value)}/></form></section><div className="live-home-body">{guidance&&<section className="ongoing-guidance" aria-label="진행 중인 안내"><div className="ongoing-title"><Icon name="flag" size={25}/><div><h3>{guidance.destination.name} {progress.arrived?'근처 도착':gps.active?'안내 중':'위치 확인 필요'}</h3><p role="status">{progress.arrived?'목적지 근처에 도착했어요. 실제 출입구를 확인해 주세요.':gps.active?'위치 안내가 계속되고 있어요.':'위치 안내가 멈춰 있어요.'}</p></div></div>{progress.position&&<p className="ongoing-distance">{progress.arrived?'경로 끝 기준 거리':gps.active?'남은 거리':'마지막 확인 거리'} {formatDistance(progress.remaining)}</p>}<button className="secondary" onClick={()=>{setError('');setStage('map');}}>안내로 돌아가기<Icon name="chevron" size={18}/></button></section>}{locationPanel}{setup}{error&&<p className="inline-error" role="alert">{error}</p>}<PwaInstall/><OrnamentalDivider kind="diamonds" className="home-history-divider"/><RecentHistoryPanel controller={recent} compact onDetails={()=>{setError('');setStage('history');}} onSearch={q=>void submitSearch(q)} onDestination={p=>void submitSearch(p.name)}/></div></>}
@@ -168,7 +199,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
 
 
  <div className="map-bottom bottom-sheet journey-sheet">
- {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} cameraControl={stage==='map'?<LiveCameraGuide destination={shownDestination} route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice} overlayRoot={cameraRoot} onOpenChange={setCameraOpen}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
+ {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} rerouting={rerouting} rerouteError={rerouteError} onReroute={stage==='map'?()=>void rerouteGuidance():undefined} cameraControl={stage==='map'?<LiveCameraGuide destination={shownDestination} route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice} overlayRoot={cameraRoot} onOpenChange={setCameraOpen}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
  </div></section>}
  </main>{stage==='map'&&shownRoute&&!cameraOpen&&<div className="map-guidance-layer"><JourneyInstruction route={shownRoute} progress={progress} active={gps.active} notice={gps.notice} destination={shownDestination||undefined} fix={observedFix}/></div>}<div className="camera-viewport-host" ref={setCameraRoot}/></div></div>{review&&<aside className="studio-controls"><span className="eyebrow">REAL PLACE SEARCH</span><h2>검색에서<br/>도보 경로까지.</h2><p>실제 데이터와 시안 데이터를 섞지 않아요.<br/>위치 권한은 요청 버튼을 누를 때만 사용해요.</p>{review&&<button className="secondary" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</aside>}
  <dialog ref={dialog} onCancel={cancelEnding}><div className="dialog-inner"><h2>{pendingGuidance?'새 목적지로 안내할까요?':guidance?'길 안내를 종료할까요?':'경로 확인을 마칠까요?'}</h2><p>{pendingGuidance?'현재 안내를 마치고 선택한 목적지로 안내를 시작해요.':'안내를 마치고 처음으로 돌아가요.'}</p><button className="primary" onClick={()=>{setEnding(false);const next=pendingGuidance;setPendingGuidance(null);if(next)beginGuidance(next);else finishGuidance();}}>{pendingGuidance?'새 안내 시작':'안내 종료'}</button><button className="secondary" onClick={cancelEnding}>계속 보기</button></div></dialog></div>;

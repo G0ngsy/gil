@@ -284,3 +284,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .camera-help h2{font-size:20px}.camera-help p{font-size:14px;line-height:1.7;margin:16px 0}.camera-help button{min-height:44px;width:100%;border-radius:12px;background:var(--pine);color:white}.camera-help::backdrop{background:#10271d80}
 
 .real-camera-live .instruction-copy{text-align:left}
+
+.journey-reroute{margin:12px 0}.journey-reroute>button{width:100%;min-height:48px}.journey-reroute>p{font-size:12px;line-height:1.6;margin-top:8px}

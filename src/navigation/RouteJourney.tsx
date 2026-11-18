@@ -9,8 +9,8 @@ import {OrnamentalDivider} from '../OrnamentalDivider';
 import {SelectionCorner} from '../SelectionCorner';
 import {Icon} from '../ui';
 
-interface Props{cameraControl?:ReactNode;destination:Place;route:WalkingRoute;progress:Progress;active:boolean;notice:string;navigating:boolean;onStart:()=>void;onFinish:()=>void}
-export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl}:Props){
+interface Props{rerouting?:boolean;rerouteError?:string;onReroute?:()=>void;cameraControl?:ReactNode;destination:Place;route:WalkingRoute;progress:Progress;active:boolean;notice:string;navigating:boolean;onStart:()=>void;onFinish:()=>void}
+export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl,rerouting,rerouteError,onReroute}:Props){
  const access=routeAccess(route,route.segments[0]?.[0]??destination,destination);
  return <div className="journey-content">
  {navigating&&<div className="journey-remaining"><small>남은 거리{progress.arrived&&<span className="last-distance-label">경로 끝 기준</span>}{!active&&progress.position&&!progress.arrived&&<span className="last-distance-label">마지막 확인 기준</span>}</small><strong data-testid="live-remaining">{formatDistance(progress.position?progress.remaining:route.distanceMeters)}</strong><button className="journey-end" onClick={onFinish}>안내 종료</button></div>}
@@ -20,6 +20,7 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
  {progress.arrived&&navigating&&<button className="primary journey-start" onClick={onFinish}>안내 마치기</button>}
  {access&&access.endGap>15&&<p className="route-access-note" role="note">도보 경로는 표시된 경로 도착점까지예요. 장소 위치와 약 {formatDistance(access.endGap)} 차이가 있어요. 현장의 출입구를 확인해 주세요.</p>}
  <details className="route-detail-list"><summary>전체 경로 상세 보기 · {route.steps.length}단계</summary><p>출발부터 경로 도착점까지의 전체 안내예요.</p><ol>{route.steps.map((step,index)=><li key={index}>{step.description||'지도에서 이동 구간을 확인해 주세요.'}</li>)}</ol></details>
+ {navigating&&!progress.arrived&&onReroute&&(progress.offRoute||rerouting||rerouteError)&&<div className="journey-reroute"><button className="secondary" disabled={rerouting} onClick={onReroute}>{rerouting?'현재 위치에서 다시 찾는 중…':'현재 위치에서 다시 찾기'}</button>{rerouteError&&<p className="inline-error" role="alert">{rerouteError}</p>}{rerouting&&<p role="status">새 경로를 받을 때까지 기존 안내를 유지해요.</p>}</div>}
  {cameraControl}
  {navigating&&<p className="journey-safety"><Icon name="shield" size={16}/>주변과 신호를 확인하며 걸어가세요</p>}
 
