@@ -314,3 +314,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .app-shell .section-heading>span,.app-shell .result-copy small,.app-shell .sample-description,.app-shell .journey-caption{color:var(--muted)}
 .app-shell .search-form button{min-width:44px;flex:none}
 .camera-info-button{font-size:min(1.4375rem,32px)}
+
+/* 이용 안내는 본문 스크롤 안에서 읽고, 기존 뒤로가기 순서를 따릅니다. */
+.usage-entry{text-align:center;margin:12px 0 4px}.usage-entry .text-button{color:var(--pine)}
+.usage-guide{padding:24px 20px 32px;overflow-wrap:anywhere;line-height:1.8;font-size:.9375rem;color:var(--ink)}
+.usage-guide h1{font-size:1.5rem;line-height:1.5;letter-spacing:-.5px}.usage-intro{margin:12px 0}.usage-date{font-size:.75rem;color:var(--muted)}
+.usage-guide section{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.usage-guide h2{font-size:1.125rem;line-height:1.6;margin-bottom:10px}
+.usage-guide p{margin:10px 0}.usage-guide dt{font-weight:700;margin-top:14px}.usage-guide dd{margin:4px 0 12px}.usage-guide ol,.usage-guide ul{padding-left:22px}.usage-guide li{margin:10px 0}
+.usage-guide .secondary{width:100%;margin-top:10px}.usage-links a{display:inline-block;min-height:44px;padding:7px 0;color:var(--pine);text-decoration:underline;text-underline-offset:3px}.usage-links a:focus-visible{outline:3px solid var(--teal);outline-offset:3px}

@@ -2,7 +2,7 @@
  * 뒤로가기 훅: 화면과 카메라/확인창의 방문 순서를 브라우저 기록과 연결하며 홈에서는 기본 뒤로가기를 막지 않습니다.
  */
 import {useLayoutEffect,useRef,useState} from 'react';
-export type Stage='home'|'results'|'route'|'map'|'history';
+export type Stage='home'|'results'|'route'|'map'|'history'|'privacy';
 export interface View{stage:Stage;overlay?:'camera'|'confirm'}
 interface Entry extends View{session:string;depth:number}
 const key='gilbitNavigation';
