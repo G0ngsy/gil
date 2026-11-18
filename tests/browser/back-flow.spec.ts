@@ -18,7 +18,7 @@ async function emit(page:Page,lat:number,accuracy=5){await page.evaluate(({lat,a
 
 const title=(page:Page,text:string)=>page.locator('.header-title').filter({hasText:text});
 test('브라우저 뒤로가기는 지도→경로→검색→홈 순서이며 홈에서는 이전 웹페이지로 나간다',async({page})=>{
- await page.route('**/back-exit',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>외부 시작 페이지</h1>'}));await page.goto('/back-exit');await setup(page);
+ await page.route('https://gilbit-back-test.invalid/',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>외부 시작 페이지</h1>'}));await page.goto('https://gilbit-back-test.invalid/');await setup(page);
  await page.goBack();await expect(title(page,'도보 경로 확인')).toBeVisible();await page.goBack();await expect(title(page,'장소 검색')).toBeVisible();await page.goBack();await expect(page.locator('.home-hero')).toBeVisible();await page.goBack();await expect(page.getByRole('heading',{name:'외부 시작 페이지'})).toBeVisible();
 });
 test('상단 뒤로가기와 브라우저 뒤로가기를 섞어도 한 단계씩 돌아간다',async({page})=>{
@@ -35,5 +35,5 @@ test('안내 종료 후 앞으로가기로 이전 안내를 되살리지 않는�
 });
 
 test('새로고침 후 홈 뒤로가기는 과거 경로 화면을 되살리지 않고 외부로 나간다',async({page})=>{
- await page.route('**/back-exit',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>외부 시작 페이지</h1>'}));await page.goto('/back-exit');await setup(page);await page.reload();await expect(page.getByRole('region',{name:'이전 안내 복원'})).toBeVisible();await page.goBack();await expect(page.getByRole('heading',{name:'외부 시작 페이지'})).toBeVisible();
+ await page.route('https://gilbit-back-test.invalid/',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>외부 시작 페이지</h1>'}));await page.goto('https://gilbit-back-test.invalid/');await setup(page);await page.reload();await expect(page.getByRole('region',{name:'이전 안내 복원'})).toBeVisible();await page.goBack();await expect(page.getByRole('heading',{name:'외부 시작 페이지'})).toBeVisible();
 });
