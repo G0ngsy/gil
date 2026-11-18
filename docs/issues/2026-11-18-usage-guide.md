@@ -23,3 +23,5 @@
 구현 코드 client.ts/server/navigation.ts/history.ts/savedGuidance.ts/CameraPreview.tsx/Intro.tsx/public/sw.js를 대조했다. 제공사 링크는2026-11-18 공개 확인: TMAP 공식 사이트 https://www.tmapmobility.com/ (개인정보 안내 메뉴), Vercel https://vercel.com/legal/privacy-notice (기존 privacy-policy 주소에서 이동). 제공사 정책을 길빛의 실제 보관 기간으로 단정하지 않는다. 이 화면은 현재 기능 이용 설명이며 운영 주체/문의처/실제 제공사 계약·로그 보관 설정이 확정된 정식 운영 정책의 완성이나 법률 검토 완료를 의미하지 않는다. 확인되지 않은 연락처나 보관 기간은 만들지 않았다.
 
 로컬 검증: 빌드·단위133개·기존 흐름 포함 브라우저29개 통과. 기존 GPS 세션 유지 검사 추가 후 안내 관련6개 통과(앞선5개와 중복),390px 캡처 검사1개 재통과. 서로 다른30개 시나리오이며 합산 실행 수를 별도 성과로 해석하지 않는다. [모의 화면](../portfolio/assets/2026-11-18-usage-guide-390.png). 실제 사용자 위치·영상은 사용하지 않았다. 배포 확인은 별도 기록한다.
+
+배포 확인: 제품 코드139ba3f Vercel 자동배포success. 공개 주소 https://gilbit.vercel.app 에서 안내 진입/권한·추가 API 미요청/기록 관리·삭제/뒤로가기/320·360·430px 글자200%/기존 GPS 유지6개 통과. 모의 기록/GPS/API·Chrome 검사이며 실제 기기 권한 설정 UI나 제공사 보관 설정 검증과 구분한다. 후속 변경은 검증 기록만이며 제품 코드는 동일하다.
