@@ -286,3 +286,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .real-camera-live .instruction-copy{text-align:left}
 
 .journey-reroute{margin:12px 0}.journey-reroute>button{width:100%;min-height:48px}.journey-reroute>p{font-size:12px;line-height:1.6;margin-top:8px}
+
+.saved-guidance{padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--sheet);margin-bottom:16px}.saved-guidance h3{font-size:18px}.saved-guidance p{margin:8px 0}.saved-guidance small{display:block;color:var(--muted);line-height:1.6}.saved-guidance>.primary{width:100%;margin-top:14px}.saved-guidance>.text-button{display:block;margin:8px auto 0;min-height:44px}.storage-warning{padding:12px 18px;font-size:12px;line-height:1.6}
