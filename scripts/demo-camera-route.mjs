@@ -28,7 +28,7 @@ try{
  await emit(37.567,126.97825,5,7);await expect(card).toHaveAttribute('data-action','straight');await page.waitForTimeout(2000);
  await emit(37.568,126.97825);await expect(card.getByRole('heading')).toHaveText('경로를 벗어났어요');await page.waitForTimeout(2000);
  await emit(37.567,126.97825);await emit(37.567,126.97825,45);await expect(card.getByRole('heading')).toHaveText('위치 오차가 커요');await page.waitForTimeout(2000);
- await emit(37.567,126.97825);await emit(37.567,126.9788,5,15);await emit(37.567,126.979,5,5);await emit(37.567,126.979);await expect(card.getByRole('heading')).toHaveText('목적지에 도착했어요');if(!await page.locator('.real-camera').evaluate(e=>e.scrollWidth<=e.clientWidth))throw new Error('arrival overflow');await page.screenshot({path:path.join(output,'2026-11-13-camera-route-arrival-390.png')});await page.waitForTimeout(2000);
+ await emit(37.567,126.97825);await emit(37.567,126.9788,5,15);await emit(37.567,126.979,5,5);await emit(37.567,126.979);await expect(card.getByRole('heading')).toHaveText('목적지 근처에 도착했어요');if(!await page.locator('.real-camera').evaluate(e=>e.scrollWidth<=e.clientWidth))throw new Error('arrival overflow');await page.screenshot({path:path.join(output,'2026-11-13-camera-route-arrival-390.png')});await page.waitForTimeout(2000);
  if(pageErrors)throw new Error('page errors');
  const video=page.video();await context.close();const saved=await video.path();await rename(saved,path.join(output,'2026-11-13-camera-route-demo.webm'));
  console.log('Mobile browser demo recorded: route actions, off-route, GPS error, arrival; page errors 0.');
