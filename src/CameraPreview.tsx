@@ -9,7 +9,7 @@ function cameraError(error:unknown){
  if(name==='NotReadableError')return '카메라를 사용할 수 없어요. 다른 앱에서 사용 중인지 확인해 주세요.';
  return '카메라 화면을 열지 못했어요. 잠시 후 다시 시도해 주세요.';
 }
-export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayRoot,onOpenChange}:{onMap:()=>void;live?:boolean;overlay?:ReactNode;onPlayingChange?:(playing:boolean)=>void;overlayRoot?:HTMLElement|null;onOpenChange?:(open:boolean)=>void}){
+export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayRoot,onOpenChange,closeSignal}:{onMap:()=>void;live?:boolean;overlay?:ReactNode;onPlayingChange?:(playing:boolean)=>void;closeSignal?:number;overlayRoot?:HTMLElement|null;onOpenChange?:(open:boolean)=>void}){
  const [open,setOpen]=useState(false);
  const [state,setState]=useState<'idle'|'pending'|'playing'|'error'>('idle');
  const [error,setError]=useState('');
@@ -24,6 +24,7 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayR
  const stream=useRef<MediaStream|null>(null);
  const version=useRef(0);
  function release(){notify.current?.(false);version.current++;stream.current?.getTracks().forEach(track=>{track.onended=null;track.stop();});stream.current=null;if(video.current)video.current.srcObject=null;}
+ useEffect(()=>{if(closeSignal)close();},[closeSignal]);
  function close(){help.current?.close();release();setOpen(false);setState('idle');setError('');}
  useEffect(()=>{
   const pause=()=>{help.current?.close();release();setState('idle');setError('화면을 벗어나 카메라를 껐어요. 다시 켜려면 버튼을 눌러 주세요.');};

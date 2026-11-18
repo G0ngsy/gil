@@ -1,3 +1,4 @@
+import {useAppHistory,type Stage,type View} from './useAppHistory';
 import {guidanceKey,parseSavedGuidance,readSavedGuidance} from './savedGuidance';
 import {PwaInstall} from '../PwaInstall';
 import {useGpsTracking} from './useGpsTracking';
@@ -15,12 +16,15 @@ import {RouteJourney,JourneyInstruction} from './RouteJourney';
 import {LiveCameraGuide} from './LiveCameraGuide';
 import { WalkingMap } from './WalkingMap';
 
-type Stage='home'|'results'|'route'|'map'|'history';
 interface Guidance {route:WalkingRoute;destination:Place;start:UserPosition}
 interface Props {onDemo:()=>void;review?:boolean}
 export function LiveNavigation({onDemo,review=false}:Props) {
  const recent=useRecentHistory('live');
- const [stage,setStage]=useState<Stage>('home');
+ const navigationChange=useRef<(next:View,previous:View)=>void>(()=>{});
+ const navigation=useAppHistory((next,previous)=>navigationChange.current(next,previous));
+ const stage=navigation.view.stage;
+ const setStage=(next:Stage)=>next==='home'?navigation.home():navigation.go({stage:next});
+ const [cameraCloseSignal,setCameraCloseSignal]=useState(0);
  const [query,setQuery]=useState('');
  const [places,setPlaces]=useState<Place[]>([]);
  const [selected,setSelected]=useState<Place|null>(null);
@@ -78,8 +82,8 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  useEffect(()=>{content.current?.scrollTo(0,0);},[stage]);
  useEffect(()=>{if(stage==='map')content.current?.scrollTo(0,0);},[gps.active]);
  useEffect(()=>{
-  if(ending){focus.current=document.activeElement as HTMLElement;dialog.current?.showModal();}
-  else if(dialog.current?.open){dialog.current.close();focus.current?.focus();}
+  if(ending){if(navigation.current.current.overlay!=='confirm')navigation.go({stage,overlay:'confirm'});focus.current=document.activeElement as HTMLElement;dialog.current?.showModal();}
+  else{if(navigation.current.current.overlay==='confirm')navigation.back();if(dialog.current?.open){dialog.current.close();focus.current?.focus();}}
  },[ending]);
 
  function cancelRestore(){restoreAbort.current?.abort();restoreAbort.current=null;setRestoring(false);setRestoreError('');}
@@ -89,7 +93,9 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  useEffect(()=>{if(progress.arrived)cancelReroute();},[progress.arrived]);
  useEffect(()=>{if(!gps.active)cancelReroute();},[gps.active]);
  function cancelWork(){cancelRestore();cancelReroute();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
- function back(){cancelWork();setError('');setStage(stage==='route'?'results':'home');}
+ navigationChange.current=(next,previous)=>{cancelWork();setError('');if(previous.overlay==='camera'&&next.overlay!=='camera')setCameraCloseSignal(n=>n+1);if(previous.overlay==='confirm'&&next.overlay!=='confirm'){setEnding(false);setPendingGuidance(null);}};
+ function back(){navigation.back();}
+ function cameraChanged(open:boolean){setCameraOpen(open);if(open){if(navigation.current.current.overlay!=='camera')navigation.go({stage:'map',overlay:'camera'});}else if(navigation.current.current.overlay==='camera')navigation.back();}
  async function submitSearch(value=query,nearby=nearbySearch){
   cancelRestore();const q=value.trim();setQuery(value);
   if(q.length<2||q.length>80){setError('검색어를 2~80자로 입력해 주세요.');return;}
@@ -226,7 +232,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
 
 
  <div className="map-bottom bottom-sheet journey-sheet">
- {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} rerouting={rerouting} rerouteError={rerouteError} onReroute={stage==='map'?()=>void rerouteGuidance():undefined} cameraControl={stage==='map'?<LiveCameraGuide destination={shownDestination} route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice} overlayRoot={cameraRoot} onOpenChange={setCameraOpen}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
+ {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} rerouting={rerouting} rerouteError={rerouteError} onReroute={stage==='map'?()=>void rerouteGuidance():undefined} cameraControl={stage==='map'?<LiveCameraGuide destination={shownDestination} route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice} overlayRoot={cameraRoot} closeSignal={cameraCloseSignal} onOpenChange={cameraChanged}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
  </div></section>}
  </main>{stage==='map'&&shownRoute&&!cameraOpen&&<div className="map-guidance-layer"><JourneyInstruction route={shownRoute} progress={progress} active={gps.active} notice={gps.notice} destination={shownDestination||undefined} fix={observedFix}/></div>}<div className="camera-viewport-host" ref={setCameraRoot}/></div></div>{review&&<aside className="studio-controls"><span className="eyebrow">REAL PLACE SEARCH</span><h2>검색에서<br/>도보 경로까지.</h2><p>실제 데이터와 시안 데이터를 섞지 않아요.<br/>위치 권한은 요청 버튼을 누를 때만 사용해요.</p>{review&&<button className="secondary" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</aside>}
  <dialog ref={dialog} onCancel={cancelEnding}><div className="dialog-inner"><h2>{pendingGuidance?'새 목적지로 안내할까요?':guidance?'길 안내를 종료할까요?':'경로 확인을 마칠까요?'}</h2><p>{pendingGuidance?'현재 안내를 마치고 선택한 목적지로 안내를 시작해요.':'안내를 마치고 처음으로 돌아가요.'}</p><button className="primary" onClick={()=>{setEnding(false);const next=pendingGuidance;setPendingGuidance(null);if(next)beginGuidance(next);else finishGuidance();}}>{pendingGuidance?'새 안내 시작':'안내 종료'}</button><button className="secondary" onClick={cancelEnding}>계속 보기</button></div></dialog></div>;
