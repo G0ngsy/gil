@@ -1,21 +1,39 @@
 import {isCoordinate, type LocationAddress, type Coordinate, type Place, type WalkingRoute } from '../../shared/navigation';
 
 export class ClientError extends Error { constructor(message: string, public code = 'UNKNOWN') { super(message); } }
+const validPoint=(v:unknown):boolean=>isCoordinate(v);
+const finitePositive=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>=0;
+function validPayload(action:string,data:any){
+ if(!data||typeof data!=='object'||Array.isArray(data))return false;
+ if(action==='config')return typeof data.searchConfigured==='boolean';
+ if(action==='search')return Array.isArray(data.places)&&data.places.every((p:any)=>validPoint(p)&&typeof p.id==='string'&&typeof p.name==='string'&&typeof p.address==='string'&&(p.category===undefined||typeof p.category==='string')&&(p.entrance===undefined||validPoint(p.entrance)));
+ if(action==='address')return typeof data.location?.address==='string'&&typeof data.location?.area==='string';
+ if(action==='route'){const r=data.route;return r&&finitePositive(r.distanceMeters)&&finitePositive(r.durationSeconds)&&Array.isArray(r.segments)&&r.segments.length>0&&r.segments.every((line:any)=>Array.isArray(line)&&line.length>=2&&line.every(isCoordinate))&&Array.isArray(r.steps)&&r.steps.every((step:any)=>validPoint(step)&&typeof step.description==='string'&&Number.isFinite(step.turnType)&&(step.roadName===undefined||typeof step.roadName==='string'));}
+ return true;
+}
 export async function navigationRequest<T>(action: string, options: {q?:string;body?:unknown;signal?:AbortSignal} = {}): Promise<T> {
  const url = new URL('/api/navigation',location.origin);
  url.searchParams.set('action',action);
- if (options.q) url.searchParams.set('q',options.q);
- let response: Response;
- try {
-  response = await fetch(url, {method:options.body?'POST':'GET',cache:'no-store',headers:options.body?{'Content-Type':'application/json'}:{},body:options.body?JSON.stringify(options.body):undefined,signal:options.signal});
- } catch (error) {
-  if (error instanceof Error && error.name==='AbortError') throw error;
-  throw new ClientError('서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.','NETWORK_ERROR');
- }
- let data: T & {error?:{code?:string;message?:string}};
- try {data = await response.json();} catch {throw new ClientError('정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.','INVALID_RESPONSE');}
- if (!response.ok) throw new ClientError(['NOT_CONFIGURED','PROVIDER_AUTH'].includes(data.error?.code||'')?'지금은 서비스를 이용할 수 없어요. 잠시 후 다시 시도해 주세요.':data.error?.message || '요청을 처리하지 못했어요.',data.error?.code);
- return data;
+ if(options.q)url.searchParams.set('q',options.q);
+ const controller=new AbortController();let timedOut=false;
+ const cancel=()=>controller.abort();
+ if(options.signal?.aborted)cancel();else options.signal?.addEventListener('abort',cancel,{once:true});
+ const timer=setTimeout(()=>{timedOut=true;controller.abort();},20000);
+ try{
+  let response:Response;
+  try{response=await fetch(url,{method:options.body?'POST':'GET',cache:'no-store',headers:options.body?{'Content-Type':'application/json'}:{},body:options.body?JSON.stringify(options.body):undefined,signal:controller.signal});}
+  catch(error){if(controller.signal.aborted)throw error;throw new ClientError('서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.','NETWORK_ERROR');}
+  let data:any;
+  try{data=await response.json();}catch(error){if(controller.signal.aborted)throw error;throw new ClientError('정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.','INVALID_RESPONSE');}
+  if(controller.signal.aborted)throw new DOMException('Aborted','AbortError');
+  if(!response.ok){const code=typeof data?.error?.code==='string'?data.error.code:undefined;throw new ClientError(['NOT_CONFIGURED','PROVIDER_AUTH'].includes(code||'')?'지금은 서비스를 이용할 수 없어요. 잠시 후 다시 시도해 주세요.':typeof data?.error?.message==='string'?data.error.message.slice(0,300):'요청을 처리하지 못했어요.',code);}
+  if(!validPayload(action,data))throw new ClientError('받은 정보가 올바르지 않아요. 잠시 후 다시 시도해 주세요.','INVALID_RESPONSE');
+  return data as T;
+ }catch(error){
+  if(options.signal?.aborted)throw new DOMException('Aborted','AbortError');
+  if(timedOut)throw new ClientError('응답 시간이 길어졌어요. 연결 상태를 확인하고 다시 시도해 주세요.','REQUEST_TIMEOUT');
+  throw error;
+ }finally{clearTimeout(timer);options.signal?.removeEventListener('abort',cancel);}
 }
 export const searchPlaces = (q:string, signal:AbortSignal, center?:Coordinate) => navigationRequest<{places:Place[]}>('search',center?{body:{q,center:{lat:center.lat,lng:center.lng}},signal}:{q,signal});
 export const getLocationAddress=(point:Coordinate,signal:AbortSignal)=>navigationRequest<{location:LocationAddress}>('address',{body:{point:{lat:point.lat,lng:point.lng}},signal});
