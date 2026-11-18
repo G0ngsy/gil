@@ -1,3 +1,6 @@
+/**
+ * 실제 길찾기 총괄: 검색→경로 확인→GPS 안내, 기록·복원·재탐색·종료 및 화면 이동 상태를 관리합니다.
+ */
 import {useAppHistory,type Stage,type View} from './useAppHistory';
 import {guidanceKey,parseSavedGuidance,readSavedGuidance} from './savedGuidance';
 import {PwaInstall} from '../PwaInstall';
@@ -25,6 +28,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const stage=navigation.view.stage;
  const setStage=(next:Stage)=>next==='home'?navigation.home():navigation.go({stage:next});
  const [cameraCloseSignal,setCameraCloseSignal]=useState(0);
+ // 검색/경로 확인용 상태: 다른 목적지를 살펴보는 동안에도 진행 중인 안내 세션과 분리해 둡니다.
  const [query,setQuery]=useState('');
  const [places,setPlaces]=useState<Place[]>([]);
  const [selected,setSelected]=useState<Place|null>(null);
@@ -45,16 +49,21 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const [configError,setConfigError]=useState('');
  const [configAttempt,setConfigAttempt]=useState(0);
  const [ending,setEnding]=useState(false);
+ // 실제로 안내 중인 목적지/경로 스냅샷입니다. 검색 결과를 바꿔도 이 세션을 덮어쓰지 않습니다.
  const [guidance,setGuidance]=useState<Guidance|null>(null);
  const [saved,setSaved]=useState(readSavedGuidance);
  const [restoring,setRestoring]=useState(false),[restoreError,setRestoreError]=useState(''),[storageWarning,setStorageWarning]=useState('');
  const restoreAbort=useRef<AbortController|null>(null);
+ // 복원용 안내만 삭제합니다. 최근 검색/목적지 기록은 별도 저장소에서 관리합니다.
  function clearSaved(){setSaved(null);try{localStorage.removeItem(guidanceKey);setStorageWarning('');}catch{setStorageWarning('저장된 안내를 삭제하지 못했어요. 이 기기에 이전 기록이 남아 있을 수 있어요.');}}
 
+ // GPS와 비동기 응답이 최신 안내를 읽도록 ref도 함께 유지합니다.
  const guidanceRef=useRef<Guidance|null>(null);
  const [pendingGuidance,setPendingGuidance]=useState<Guidance|null>(null);
+ // 경로 계산에 채택된 GPS 진행값입니다. 오래되거나 오차가 큰 관측값과 구분합니다.
  const [progress,setProgress]=useState(initialProgress);
  useEffect(()=>{if(!guidance)return;if(progress.arrived){clearSaved();return;}try{const raw=JSON.stringify({version:1,savedAt:Date.now(),destination:guidance.destination,route:guidance.route});if(!parseSavedGuidance(raw))throw new Error('Unsupported route');localStorage.setItem(guidanceKey,raw);setStorageWarning('');}catch{try{localStorage.removeItem(guidanceKey);}catch{}setStorageWarning('이 기기에 안내를 저장하지 못했어요. 다시 열면 복원되지 않거나 이전 기록이 남아 있을 수 있어요.');}},[guidance,progress.arrived]);
+ // 지도 관측용 최근 위치: 오차가 큰 값은 회색 참고 위치로만 표시하고 진행 계산에는 쓰지 않습니다.
  const [observedFix,setObservedFix]=useState<Fix|null>(null);
  const latestFix=useRef<Fix|null>(null);latestFix.current=observedFix;
  const [rerouting,setRerouting]=useState(false),[rerouteError,setRerouteError]=useState('');
@@ -66,6 +75,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const [cameraOpen,setCameraOpen]=useState(false);
  const dialog=useRef<HTMLDialogElement>(null);
  const focus=useRef<HTMLElement|null>(null);
+ // 종류별 요청 취소 장치입니다. 이전 요청의 늦은 응답이 현재 화면을 바꾸지 않도록 관리합니다.
  const searchAbort=useRef<AbortController|null>(null);
  const addressAbort=useRef<AbortController|null>(null);
  const routeAbort=useRef<AbortController|null>(null);
@@ -86,16 +96,22 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   else{if(navigation.current.current.overlay==='confirm')navigation.back();if(dialog.current?.open){dialog.current.close();focus.current?.focus();}}
  },[ending]);
 
+ // 복원 요청을 취소해 화면을 떠난 뒤 늦게 온 응답이 안내를 시작하지 못하게 합니다.
  function cancelRestore(){restoreAbort.current?.abort();restoreAbort.current=null;setRestoring(false);setRestoreError('');}
  useEffect(()=>{if(stage!=='home')cancelRestore();},[stage]);
+ // 재탐색을 취소하되 현재 안내 경로와 GPS 세션은 유지합니다.
  function cancelReroute(){rerouteAbort.current?.abort();rerouteAbort.current=null;setRerouting(false);setRerouteError('');}
  useEffect(()=>{const leave=()=>{cancelReroute();cancelRestore();};const hidden=()=>{if(document.hidden)leave();};window.addEventListener('pagehide',leave);document.addEventListener('visibilitychange',hidden);return()=>{rerouteAbort.current?.abort();restoreAbort.current?.abort();window.removeEventListener('pagehide',leave);document.removeEventListener('visibilitychange',hidden);};},[]);
  useEffect(()=>{if(progress.arrived)cancelReroute();},[progress.arrived]);
  useEffect(()=>{if(!gps.active)cancelReroute();},[gps.active]);
+ // 화면 이동 시 진행 중인 조회를 중단하고 단발 위치 요청의 이전 결과도 무효화합니다.
  function cancelWork(){cancelRestore();cancelReroute();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
  navigationChange.current=(next,previous)=>{cancelWork();setError('');if(previous.overlay==='camera'&&next.overlay!=='camera')setCameraCloseSignal(n=>n+1);if(previous.overlay==='confirm'&&next.overlay!=='confirm'){setEnding(false);setPendingGuidance(null);}};
+ // 상단 뒤로가기와 브라우저 뒤로가기가 같은 방문 기록을 사용합니다.
  function back(){navigation.back();}
+ // 카메라 열기/닫기를 방문 기록에 반영합니다. 닫는 것은 안내 종료와 다릅니다.
  function cameraChanged(open:boolean){setCameraOpen(open);if(open){if(navigation.current.current.overlay!=='camera')navigation.go({stage:'map',overlay:'camera'});}else if(navigation.current.current.overlay==='camera')navigation.back();}
+ // 주변/전국 범위를 적용해 목적지를 검색하고 최근 검색 기록에 남깁니다.
  async function submitSearch(value=query,nearby=nearbySearch){
   cancelRestore();const q=value.trim();setQuery(value);
   if(q.length<2||q.length>80){setError('검색어를 2~80자로 입력해 주세요.');return;}
@@ -113,6 +129,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   }catch(e){if(!controller.signal.aborted)setError(message(e));}
   finally{if(!controller.signal.aborted)setSearching(false);}
  }
+ // 확인한 좌표를 사람이 읽을 수 있는 주소로 바꾸며 과거 위치의 늦은 응답은 무시합니다.
  async function lookupAddress(point:UserPosition){
   addressAbort.current?.abort();const controller=new AbortController();addressAbort.current=controller;
   setAddress(null);setAddressError('');
@@ -122,6 +139,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   catch(e){if(!controller.signal.aborted)setAddressError(`위치는 확인했지만 주소를 표시하지 못했어요. ${message(e)}`);}
   finally{if(!controller.signal.aborted)setAddressLoading(false);}
  }
+ // 현재 출발 위치를 새로 확인합니다. 안내 중 GPS 추적과는 별도의 단발 조회입니다.
  async function locate(cancelSearch=true):Promise<UserPosition|null>{
   cancelRestore();
   if(cancelSearch){searchAbort.current?.abort();setSearching(false);}
@@ -136,7 +154,9 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   finally{if(alive.current&&locationVersion.current===version)setLocating(false);}
   return null;
  }
+ // 검색 결과의 장소를 선택하고 경로 확인 화면으로 이동합니다.
  function choose(place:Place){recent.recordDestination(place);cancelWork();setSelected(place);setRoute(null);setError('');setStage('route');}
+ // 오래되거나 부정확한 출발 위치를 갱신한 뒤 선택한 목적지까지 최초 경로를 요청합니다.
  async function getRoute(){
   if(!selected)return;
   let origin=position;
@@ -152,16 +172,19 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   }catch(e){if(!controller.signal.aborted)setError(message(e));}
   finally{if(!controller.signal.aborted)setRouting(false);}
  }
+ // 확정된 목적지/경로를 안내 세션으로 묶고 진행값을 초기화한 후 GPS를 시작합니다.
  function beginGuidance(next:Guidance,fix?:Fix){
   cancelRestore();setSaved(null);
   cancelReroute();
   guidanceRef.current=next;setGuidance(next);setObservedFix(fix??null);setProgress(fix?updateProgress(next.route,initialProgress(),fix):initialProgress());setStage('map');gps.start();
  }
+ // 새 안내 시작 전 기존 안내가 있으면 교체 확인을 받습니다.
  function startGuidance(){
   if(!route||!selected||!position)return;
   const next={route,destination:selected,start:position};
   if(guidance){setPendingGuidance(next);setEnding(true);}else beginGuidance(next);
  }
+ // 사용자가 이어가기를 누르면 새 GPS로 진행값을 다시 계산하고 경로 밖이면 재탐색합니다.
  async function restoreGuidance(){
   if(!saved||restoreAbort.current||guidanceRef.current)return;
   const snapshot=saved,controller=new AbortController();restoreAbort.current=controller;setRestoring(true);setRestoreError('');
@@ -178,6 +201,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   }catch(e){if(alive.current&&(!controller.signal.aborted||timeout))setRestoreError(timeout?'이어가는 시간이 길어졌어요. 잠시 후 다시 시도해 주세요.':message(e));}
   finally{clearTimeout(timer);if(restoreAbort.current===controller){restoreAbort.current=null;setRestoring(false);}}
  }
+ // 현재 위치에서 기존 목적지로 재탐색합니다. 성공한 응답만 반영하고 실패 시 기존 경로를 유지합니다.
  async function rerouteGuidance(){
   const current=guidanceRef.current;
   if(!current||rerouteAbort.current||progress.arrived)return;
@@ -201,7 +225,9 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   }catch(e){if(alive.current&&guidanceRef.current===current&&(!controller.signal.aborted||timedOut))setRerouteError(timedOut?'다시 찾는 시간이 길어졌어요. 기존 경로를 유지해요. 잠시 후 다시 시도해 주세요.':`새 경로를 찾지 못했어요. 기존 경로를 유지해요. ${message(e)}`);}
   finally{clearTimeout(timer);if(rerouteAbort.current===controller){rerouteAbort.current=null;setRerouting(false);}}
  }
+ // 자동 중단된 GPS를 사용자가 다시 시작합니다. 카메라는 자동으로 켜지지 않습니다.
  function resumeGuidance(){if(guidanceRef.current&&!progress.arrived)gps.start();}
+ // 명시적 종료: GPS·대기 요청·복원 기록·안내 세션을 정리하고 홈으로 돌아갑니다.
  function finishGuidance(){clearSaved();gps.stop();cancelWork();guidanceRef.current=null;setGuidance(null);setObservedFix(null);setProgress(initialProgress());setRoute(null);setSelected(null);setStage('home');}
  function cancelEnding(){setEnding(false);setPendingGuidance(null);}
  const shownDestination=stage==='map'?guidance?.destination:selected;
@@ -209,6 +235,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const shownStart=stage==='map'?guidance?.start:position;
  const shownProgress=stage==='map'?progress:initialProgress();
 
+ // 아래부터 화면에 보여줄 요약 문구·공통 패널과 화면별 UI를 구성합니다.
  const onSubmit=(event:FormEvent)=>{event.preventDefault();void submitSearch();};
  const locationAction=locating?'현재 위치 확인 중…':position?'현재 위치 다시 확인':'현재 위치 확인';
  const locationText=address?address.address:locating?'현재 위치를 확인하고 있어요…':addressLoading?'현재 위치의 주소를 확인하고 있어요…':position?'현재 위치를 확인했어요':'현재 위치를 확인해 주세요';

@@ -1,3 +1,6 @@
+/**
+ * 다음 이동 행동 계산: 제공사의 회전 코드와 현재 경로 진행값으로 회전 종류·거리·도로명을 정합니다.
+ */
 import {distanceBetween,formatDistance,type Coordinate,type WalkingRoute} from './navigation';
 import type {Progress} from './tracking';
 export interface RouteInstruction {title:string;detail:string;symbol:'left'|'right'|'straight'|'back'|'walk'}

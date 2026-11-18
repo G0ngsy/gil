@@ -1,8 +1,12 @@
+/**
+ * 브라우저 API 연결: 검색·주소·경로를 서버에 요청하고 시간 초과/응답 검증/취소와 단발 현재 위치 확인을 처리합니다.
+ */
 import {isCoordinate, type LocationAddress, type Coordinate, type Place, type WalkingRoute } from '../../shared/navigation';
 
 export class ClientError extends Error { constructor(message: string, public code = 'UNKNOWN') { super(message); } }
 const validPoint=(v:unknown):boolean=>isCoordinate(v);
 const finitePositive=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>=0;
+// HTTP 성공만 믿지 않고 장소·주소·경로의 필드를 확인해 잘못된 데이터의 화면 반영을 막습니다.
 function validPayload(action:string,data:any){
  if(!data||typeof data!=='object'||Array.isArray(data))return false;
  if(action==='config')return typeof data.searchConfigured==='boolean';
@@ -11,6 +15,7 @@ function validPayload(action:string,data:any){
  if(action==='route'){const r=data.route;return r&&finitePositive(r.distanceMeters)&&finitePositive(r.durationSeconds)&&Array.isArray(r.segments)&&r.segments.length>0&&r.segments.every((line:any)=>Array.isArray(line)&&line.length>=2&&line.every(isCoordinate))&&Array.isArray(r.steps)&&r.steps.every((step:any)=>validPoint(step)&&typeof step.description==='string'&&Number.isFinite(step.turnType)&&(step.roadName===undefined||typeof step.roadName==='string'));}
  return true;
 }
+// 헤더와 본문 읽기를 합쳐20초로 제한합니다. 사용자 취소는 통신 오류와 구분하고 타이머를 해제합니다.
 export async function navigationRequest<T>(action: string, options: {q?:string;body?:unknown;signal?:AbortSignal} = {}): Promise<T> {
  const url = new URL('/api/navigation',location.origin);
  url.searchParams.set('action',action);
@@ -35,11 +40,15 @@ export async function navigationRequest<T>(action: string, options: {q?:string;b
   throw error;
  }finally{clearTimeout(timer);options.signal?.removeEventListener('abort',cancel);}
 }
+// 현재 위치가 있으면 주변 검색 좌표를 요청 본문에 담고, 없으면 전국 검색을 사용합니다.
 export const searchPlaces = (q:string, signal:AbortSignal, center?:Coordinate) => navigationRequest<{places:Place[]}>('search',center?{body:{q,center:{lat:center.lat,lng:center.lng}},signal}:{q,signal});
+// 현재 좌표에 해당하는 주소를 서버에 요청합니다.
 export const getLocationAddress=(point:Coordinate,signal:AbortSignal)=>navigationRequest<{location:LocationAddress}>('address',{body:{point:{lat:point.lat,lng:point.lng}},signal});
+// 출입구 좌표가 있으면 우선하며 유효한 POI ID를 함께 보냅니다. GPS 정확도/시각은 전송하지 않습니다.
 export const findWalkingRoute = (start:Coordinate,end:Coordinate&Partial<Pick<Place,'id'|'entrance'>>,signal:AbortSignal) => navigationRequest<{route:WalkingRoute}>('route',{body:{start:{lat:start.lat,lng:start.lng},end:{lat:(end.entrance??end).lat,lng:(end.entrance??end).lng},...(end.id&&/^\d{1,30}$/.test(end.id)?{endPoiId:end.id}:{})},signal});
 
 export interface UserPosition extends Coordinate { accuracy: number; timestamp: number }
+// 단발 위치를 확인하고 오차가 크면 개선 위치를 잠시 기다립니다. 취소 시 임시 감시를 해제합니다.
 export function getUserPosition(signal?:AbortSignal):Promise<UserPosition> {
  return new Promise((resolve,reject)=>{
   if(!window.isSecureContext){reject(new ClientError('현재 위치를 사용할 수 없어요. 안전한 연결로 다시 열어 주세요.','INSECURE_CONTEXT'));return;}

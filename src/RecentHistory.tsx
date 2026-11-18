@@ -1,3 +1,6 @@
+/**
+ * 최근 기록 화면: 홈에서는 목적지 하나를 요약하고 상세 화면에서는 검색·목적지 목록과 삭제 기능을 보여줍니다.
+ */
 import {useState} from 'react';
 import type {HistoryController,SavedDestination} from './history';
 export function RecentHistoryPanel({controller,onSearch,onDestination,demo=false,compact=false,onDetails}:{compact?:boolean;onDetails?:()=>void;controller:HistoryController;onSearch:(q:string)=>void;onDestination:(place:SavedDestination)=>void;demo?:boolean}){

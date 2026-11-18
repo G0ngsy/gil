@@ -1,3 +1,6 @@
+/**
+ * 앱 시작점: URL에 따라 실제 길찾기·디자인 시안·센서 테스트를 선택하고 시작 연출과 함께 실행합니다.
+ */
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {resolveAppMode} from '../shared/appMode';

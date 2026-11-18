@@ -1,3 +1,6 @@
+/**
+ * GPS 추적 훅: 명시적 시작 후 위치를 받고 정확도·오래된 좌표·수신 중단·화면 이탈을 관리합니다.
+ */
 import {useEffect,useRef,useState} from 'react';
 import {isCoordinate} from '../../shared/navigation';
 import type {Fix} from '../../shared/tracking';

@@ -1,3 +1,6 @@
+/**
+ * 센서 진단 UI: 지원 여부와 수신 필드를 사용자가 확인·복사하도록 보여줍니다.
+ */
 import {useState} from 'react';
 
 export function SensorDiagnostics({diagnostic,notice}:{diagnostic:Record<string,string|number|boolean|null>;notice:string}){

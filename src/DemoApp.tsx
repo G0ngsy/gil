@@ -1,3 +1,6 @@
+/**
+ * 디자인 검토용 앱: 예시 목적지와 화면 전환을 보여줍니다. 실제 길찾기 데이터로 사용하지 않습니다.
+ */
 import React, { useEffect, useRef, useState } from 'react';
 import { Brand, DemoMap, Icon } from './ui';
 import {OrnamentalDivider} from './OrnamentalDivider';

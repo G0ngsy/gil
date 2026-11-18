@@ -1,3 +1,6 @@
+/**
+ * 실제 카메라 위 안내: GPS 경로의 다음 행동을 보여줍니다. 휴대폰 시선 방향이나 지면에 정렬된 AR은 아닙니다.
+ */
 import {CameraPreview} from '../CameraPreview';
 import type {WalkingRoute,Place} from '../../shared/navigation';
 import type {Progress,Fix} from '../../shared/tracking';

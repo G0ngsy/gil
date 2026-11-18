@@ -1,3 +1,6 @@
+/**
+ * 공통 데이터 모델: 좌표·장소·도보 경로 형식과 거리/시간 표시 및 좌표 검사 함수를 정의합니다.
+ */
 export interface Coordinate { lat: number; lng: number }
 export interface LocationAddress { address:string; area:string }
 export interface Place extends Coordinate { id: string; name: string; address: string; category: string; entrance?:Coordinate }

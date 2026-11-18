@@ -1,3 +1,6 @@
+/**
+ * 전통 문양 SVG: 창살·구름·연꽃 등 화면 장식이며 이동 방향 안내와는 별개입니다.
+ */
 type MotifKind = 'lattice' | 'cloud' | 'lotus' | 'flower' | 'knot';
 
 /** Decorative SVGs inspired by the approved motif sheet; no functional meaning. */

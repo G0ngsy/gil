@@ -1,3 +1,6 @@
+/**
+ * 방위 센서 해석: 자세·화면 회전·방위 정확도를 확인하고 필요한 방위 보정을 계산합니다.
+ */
 import geomagnetism from 'geomagnetism';
 import {isCoordinate,type Coordinate} from './navigation';
 import type {HeadingSample} from './facing';

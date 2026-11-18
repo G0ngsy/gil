@@ -1,3 +1,6 @@
+/**
+ * 센서 실험 안내 UI: 시험 경로 방향과 유효한 센서 방위를 비교해 상태를 보여줍니다.
+ */
 import {useEffect,useState} from 'react';
 import {compareFacing} from '../../shared/facing';
 import type {WalkingRoute} from '../../shared/navigation';

@@ -1,3 +1,6 @@
+/**
+ * 안내 복원 데이터: 기기에 저장된 목적지·경로를 검사합니다. 하루가 지난 기록이나 잘못된 값은 복원하지 않습니다.
+ */
 import {isCoordinate,type Place,type WalkingRoute} from '../../shared/navigation';
 export const guidanceKey='gilbit.guidance.v1.live';
 export interface SavedGuidance{version:1;savedAt:number;destination:Place;route:WalkingRoute}

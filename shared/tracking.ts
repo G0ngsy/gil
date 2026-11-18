@@ -1,3 +1,6 @@
+/**
+ * 경로 진행 계산: GPS를 경로에 투영해 남은 거리·단계·이탈·도착을 판단하며 오차와 순간 점프를 걸러냅니다.
+ */
 import { distanceBetween, isCoordinate, type Coordinate, type WalkingRoute } from './navigation';
 
 export interface Fix extends Coordinate { accuracy:number; timestamp:number }
@@ -6,6 +9,7 @@ export const initialProgress=():Progress=>({timestamp:0,along:0,remaining:0,step
 interface Projection {distance:number;along:number}
 
 // Each line remains separate. Keep all candidates to resolve crossing/overlapping paths.
+// 서로 떨어진 경로 선분을 연결하지 않고 GPS와 각 선분의 가까운 지점/진행 거리를 구합니다.
 function project(route:WalkingRoute,fix:Coordinate) {
  let total=0;const candidates:Projection[]=[];
  for(const line of route.segments)for(let i=1;i<line.length;i++){
@@ -19,6 +23,7 @@ function project(route:WalkingRoute,fix:Coordinate) {
  }
  return {candidates,total};
 }
+// 직전 진행 상태와 새 GPS를 비교합니다. 연속 도착 표본·오차·이동 속도를 검사해 잘못된 단계 이동을 줄입니다.
 export function updateProgress(route:WalkingRoute,previous:Progress,fix:Fix):Progress {
  const reject=()=>({...previous,rejected:true,arrivalSamples:0});
  if(!isCoordinate(fix)||!Number.isFinite(fix.accuracy)||fix.accuracy<0||fix.accuracy>30||!Number.isFinite(fix.timestamp)||fix.timestamp<=previous.timestamp)return reject();

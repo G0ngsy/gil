@@ -1,3 +1,6 @@
+/**
+ * 경로 안내 UI: 시작 전 거리/시간과 시작 버튼, 안내 중 남은 거리·종료·재탐색 및 다음 행동 카드를 표시합니다.
+ */
 import {routeAccess} from '../../shared/routeAccess';
 import type {ReactNode} from 'react';
 import type {Place,WalkingRoute} from '../../shared/navigation';
@@ -10,6 +13,7 @@ import {SelectionCorner} from '../SelectionCorner';
 import {Icon} from '../ui';
 
 interface Props{rerouting?:boolean;rerouteError?:string;onReroute?:()=>void;cameraControl?:ReactNode;destination:Place;route:WalkingRoute;progress:Progress;active:boolean;notice:string;navigating:boolean;onStart:()=>void;onFinish:()=>void}
+// 경로 확인/안내 중 상태에 따라 거리·버튼·상세 목록을 구성합니다.
 export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl,rerouting,rerouteError,onReroute}:Props){
  const access=routeAccess(route,route.segments[0]?.[0]??destination,destination);
  return <div className="journey-content">
@@ -26,6 +30,7 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
 
  </div>;
 }
+// 지도와 카메라가 공유하는 다음 행동 카드입니다. 위치가 불확실하면 회전 대신 상태 안내를 표시합니다.
 export function JourneyInstruction({route,progress,active,notice,fix,destination,surface='map'}:Pick<Props,'route'|'progress'|'active'|'notice'>&{fix?:Fix|null;destination?:Place;surface?:'map'|'camera'}){
  const [now,setNow]=useState(Date.now);
  useEffect(()=>{if(!active)return;const timer=setInterval(()=>setNow(Date.now()),500);return()=>clearInterval(timer);},[active]);

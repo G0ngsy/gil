@@ -1,3 +1,6 @@
+/**
+ * 카메라 연결: 사용자 요청으로 영상을 열고 권한·오류·닫기·화면 이탈 시 스트림 해제를 처리합니다. 영상을 저장하거나 전송하지 않습니다.
+ */
 import {Icon} from './ui';
 import {createPortal} from 'react-dom';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -23,8 +26,10 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayR
  const video=useRef<HTMLVideoElement>(null);
  const stream=useRef<MediaStream|null>(null);
  const version=useRef(0);
+ // 카메라 트랙을 모두 끄고 요청 버전을 바꿔 늦게 허용된 영상도 사용하지 못하게 합니다.
  function release(){notify.current?.(false);version.current++;stream.current?.getTracks().forEach(track=>{track.onended=null;track.stop();});stream.current=null;if(video.current)video.current.srcObject=null;}
  useEffect(()=>{if(closeSignal)close();},[closeSignal]);
+ // 카메라와 정보창만 닫습니다. GPS 안내를 종료하는 처리는 여기서 하지 않습니다.
  function close(){help.current?.close();release();setOpen(false);setState('idle');setError('');}
  useEffect(()=>{
   const pause=()=>{help.current?.close();release();setState('idle');setError('화면을 벗어나 카메라를 껐어요. 다시 켜려면 버튼을 눌러 주세요.');};
@@ -32,6 +37,7 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayR
   document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pause);
   return()=>{document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pause);release();};
  },[]);
+ // 버튼을 누른 경우에만 후면 카메라를 요청합니다. 마이크는 요청하지 않습니다.
  async function start(){
   release();const request=version.current;setOpen(true);setError('');setState('pending');
   if(!window.isSecureContext){setError('카메라는 HTTPS 주소 또는 이 기기의 localhost에서 사용할 수 있어요.');setState('error');return;}

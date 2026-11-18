@@ -1,3 +1,6 @@
+/**
+ * 센서 테스트용 경로 도식: 시험 경로와 진행 위치를 보여주는 화면으로 실제 지도 SDK 화면과 구분합니다.
+ */
 import {useId,useState} from 'react';
 import {distanceBetween,type Coordinate,type WalkingRoute} from '../../shared/navigation';
 import type {Progress} from '../../shared/tracking';

@@ -1,3 +1,6 @@
+/**
+ * 서버 API 처리: 입력을 검증하고 TMAP에 요청한 뒤 검색·주소·경로 응답을 앱 형식으로 바꿉니다. 서버 인증키를 응답에 넣지 않습니다.
+ */
 import { distanceBetween, isCoordinate, type LocationAddress, type Coordinate, type Place, type WalkingRoute, type WalkingStep } from '../shared/navigation.js';
 
 export class NavigationError extends Error {
@@ -12,6 +15,7 @@ const coordinate = (lat: unknown, lng: unknown): Coordinate | null => {
  return isCoordinate(point) ? point : null;
 };
 
+// 제공사 장소 응답에서 앱이 사용하는 이름·주소·좌표·출입구 정보를 추립니다.
 export function parsePlaces(data: unknown): Place[] {
  const info = record(record(data).searchPoiInfo);
  if (!('pois' in info)) {
@@ -33,6 +37,7 @@ export function parsePlaces(data: unknown): Place[] {
  });
 }
 
+// 제공사 경로의 선분·회전 단계·전체 거리/시간을 공통 형식으로 변환합니다.
 export function parseWalkingRoute(data: unknown): WalkingRoute {
  const collection = record(data);
  const features = collection.features;
@@ -62,6 +67,7 @@ export function parseWalkingRoute(data: unknown): WalkingRoute {
 const invalidRoute = () => new NavigationError(502, 'INVALID_RESPONSE', '도보 경로 정보를 읽지 못했어요. 다시 시도해 주세요.');
 
 
+// 역지오코딩 응답을 화면에 표시할 주소와 지역명으로 정리합니다.
 export function parseLocationAddress(data:unknown):LocationAddress{
  const info=record(record(data).addressInfo);
  const area=[info.city_do,info.gu_gun,info.eup_myun,info.adminDong||info.legalDong].map(string).filter(Boolean).join(' ');
@@ -74,6 +80,7 @@ function json(data: unknown, status = 200) {
  return Response.json(data, {status, headers: {'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'}});
 }
 interface Dependencies { appKey: string; fetcher?: typeof fetch }
+// 요청 종류/입력을 검사한 뒤 서버 설정의 키로 제공사 API를 호출하고 안전한 오류 응답을 돌려줍니다.
 export function createNavigationHandler({appKey, fetcher = fetch}: Dependencies) {
  return async function handle(request: Request): Promise<Response> {
   try {

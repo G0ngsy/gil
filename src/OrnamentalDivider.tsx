@@ -1,3 +1,6 @@
+/**
+ * 전통 문양 구분선: 화면 내용 사이에 배치하는 장식 요소입니다.
+ */
 /** Purely decorative dividers; hidden from assistive technology. */
 export function OrnamentalDivider({kind,className=''}:{kind:'diamonds'|'lotus';className?:string}){
  return <div className={`ornamental-divider ornamental-${kind} ${className}`} aria-hidden="true"><span/>

@@ -1,3 +1,6 @@
+/**
+ * 방향 시험용 표시: 경로와 휴대폰 방향 비교 결과를 안내합니다. 일반 카메라 경로 카드와 별개입니다.
+ */
 import {useEffect,useId,useState} from 'react';
 import {compareFacing,routeBearingAt,type Facing} from '../../shared/facing';
 import type {WalkingRoute} from '../../shared/navigation';

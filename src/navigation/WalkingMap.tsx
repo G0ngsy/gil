@@ -1,3 +1,6 @@
+/**
+ * 실제 TMAP 지도: 출발·목적지·현재 위치·경로를 표시하고 지난 길/남은 길과 GPS 오차 상태를 구분합니다.
+ */
 import {routeAccess} from '../../shared/routeAccess';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Coordinate, Place, WalkingRoute } from '../../shared/navigation';
@@ -11,6 +14,7 @@ interface Props {start:Coordinate;destination:Place;route:WalkingRoute|null;prog
 const image=(body:string,w:number,h:number)=>`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`)}`;
 const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]!));
 /** Frame the next walkable section with room for the instruction card and pin labels. */
+// 현재 위치와 앞쪽 경로가 상단 안내 카드에 가리지 않도록 지도 범위와 여백을 맞춥니다.
 function frameAhead(sdk:Parameters<typeof point>[0],map:TMapView,position:Coordinate,route:WalkingRoute|null,along:number){
  const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,position));let budget=500,previous:Coordinate|null=null;
  if(route)for(const line of splitRoute(route,along).remaining){
@@ -64,6 +68,7 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
   return()=>overlays.splice(0).forEach(overlay=>overlay.setMap(null));
  },[ready,generation,start,destination,route,navigating,progress.along,progress.position,progress.timestamp,fresh,observed,approximate,fix,retry]);
  useEffect(()=>{const sdk=window.Tmapv2;if(ready&&sdk&&view.current&&following&&(approximate||fresh)&&markerPosition)frameAhead(sdk,view.current,markerPosition,route,progress.along);},[ready,generation,following,fresh,approximate,fix,progress.position,progress.along,route,retry]);
+ // 지도 위치 버튼: 안내 중이면 현재 위치 따라가기를 재개하고, 시작 전이면 전체 경로를 맞춥니다.
  function locate(){const sdk=window.Tmapv2,map=view.current;if(!sdk||!map)return;setFollowing(true);if(navigating&&markerPosition)frameAhead(sdk,map,markerPosition,route,progress.along);else{const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:65,top:100,right:85,bottom:90});}}
  const pointer=useRef<{x:number;y:number}|null>(null);
  return <div className={`live-map-wrapper ${!key||error?'map-compact':''}`}>

@@ -1,3 +1,6 @@
+/**
+ * 방향 비교 계산: 경로 방향과 검증된 휴대폰 방위를 비교하며 정확하지 않은 입력은 안내에 쓰지 않습니다.
+ */
 import {distanceBetween,isCoordinate,type Coordinate,type WalkingRoute} from './navigation';
 import type {Progress} from './tracking';
 

@@ -1,3 +1,6 @@
+/**
+ * 앱 설치 안내 UI: 브라우저 설치 버튼 또는 기기별 수동 설치 방법을 제공합니다.
+ */
 import {useState,useSyncExternalStore} from 'react';
 import {getInstallState,requestInstall,subscribeInstall} from './pwa';
 export function PwaInstall(){

@@ -1,3 +1,6 @@
+/**
+ * 현장 시험 경로 입력: 좌표 목록을 검증해 테스트용 도식을 만듭니다. 통행 가능한 실제 도로 경로를 찾는 기능은 아닙니다.
+ */
 import {useState} from 'react';
 import {parseFieldRoute,type FieldRoute} from '../../shared/fieldRoute';
 

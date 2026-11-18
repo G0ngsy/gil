@@ -1,3 +1,6 @@
+/**
+ * PWA 설치 상태: 브라우저 설치 이벤트를 구독하고 사용자 동작에서 설치 요청을 실행합니다.
+ */
 interface InstallPrompt extends Event {prompt():Promise<void>;userChoice:Promise<{outcome:'accepted'|'dismissed'}>}
 let prompt:InstallPrompt|null=null;
 let installed=window.matchMedia('(display-mode: standalone)').matches||Boolean((navigator as Navigator&{standalone?:boolean}).standalone);

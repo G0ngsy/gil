@@ -1,3 +1,6 @@
+/**
+ * 첫 진입 연출: 한옥 문과 로고 애니메이션, 건너뛰기 및 동작 줄이기 설정을 처리합니다.
+ */
 import {useEffect,useState,type ReactNode} from 'react';
 import {Brand} from './ui';
 

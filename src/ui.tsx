@@ -1,3 +1,6 @@
+/**
+ * 공통 UI: 길빛 로고와 기능 아이콘 등 여러 화면에서 재사용하는 요소입니다.
+ */
 import type { ReactNode } from 'react';
 
 export function Icon({ name, size = 24 }: { name: string; size?: number }) {

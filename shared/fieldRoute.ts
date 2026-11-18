@@ -1,3 +1,6 @@
+/**
+ * 시험 경로 파서: 직접 입력한 좌표 수·간격·전체 길이를 검증합니다. 실제 도로 조회는 하지 않습니다.
+ */
 import {distanceBetween,isCoordinate,type Coordinate,type WalkingRoute} from './navigation';
 
 export interface FieldRoute {route:WalkingRoute;points:Coordinate[]}

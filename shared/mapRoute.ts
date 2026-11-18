@@ -1,3 +1,6 @@
+/**
+ * 지도 경로 분할: 진행 거리를 기준으로 지난 길과 남은 길을 나눠 색상을 다르게 표시하도록 돕습니다.
+ */
 import {distanceBetween,type Coordinate,type WalkingRoute} from './navigation';
 /** Split each original segment independently; never bridge disconnected paths. */
 export function splitRoute(route:WalkingRoute,along:number){

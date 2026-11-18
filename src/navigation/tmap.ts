@@ -1,3 +1,6 @@
+/**
+ * 지도 SDK 로더: TMAP 스크립트를 비동기로 준비하고 중복 로딩·준비 확인·실패를 처리합니다.
+ */
 import type { Coordinate } from '../../shared/navigation';
 
 export interface TMapView {
@@ -19,6 +22,7 @@ export interface TMapSDK {
 declare global { interface Window { Tmapv2?: TMapSDK } }
 let loading:Promise<TMapSDK>|undefined;
 const isReady=(sdk:TMapSDK|undefined):sdk is TMapSDK=>Boolean(sdk && ['Map','LatLng','LatLngBounds','Marker','Polyline'].every(name=>typeof sdk[name as keyof TMapSDK]==='function'));
+// SDK를 준비하는 공통 진입점입니다. 스크립트가 내려와도 지도 생성 함수까지 준비돼야 성공으로 처리합니다.
 export function loadTMap(key:string):Promise<TMapSDK> {
  if (isReady(window.Tmapv2)) return Promise.resolve(window.Tmapv2);
  if (loading) return loading;

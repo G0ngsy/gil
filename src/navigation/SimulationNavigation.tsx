@@ -1,3 +1,6 @@
+/**
+ * 검토용 이동 시뮬레이션: 예시/직접 입력 경로에 모의 또는 선택형 센서를 적용합니다. 실제 제공사 길찾기와 분리합니다.
+ */
 import {SensorFacingGuide} from './SensorFacingGuide';
 import {FacingGuide} from './FacingGuide';
 import {FieldRouteEditor} from './FieldRouteEditor';

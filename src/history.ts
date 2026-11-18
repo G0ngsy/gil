@@ -1,3 +1,6 @@
+/**
+ * 최근 이용 기록: 실제/시안 검색과 목적지를 분리해 기기에 저장하고 개별·전체 삭제를 지원합니다.
+ */
 import {useEffect,useRef,useState} from 'react';
 export type HistoryMode='demo'|'live';
 export interface SavedDestination {id:string;name:string;address:string}
@@ -6,6 +9,7 @@ const empty=():RecentHistory=>({version:1,searches:[],destinations:[]});
 export const historyKey=(mode:HistoryMode)=>`gilbit.history.v1.${mode}`;
 export const cleanSearch=(query:string)=>query.trim().replace(/\s+/g,' ').slice(0,80);
 const validText=(v:unknown,max:number):v is string=>typeof v==='string'&&v.length>0&&v.length<=max;
+// 저장 데이터를 검증하고 중복/목록 개수를 제한합니다. 잘못된 JSON은 빈 기록으로 처리합니다.
 export function parseHistory(raw:string|null):RecentHistory{
  if(!raw)return empty();
  try{
@@ -22,6 +26,7 @@ export function addSearch(history:RecentHistory,query:string):RecentHistory{
 export function addDestination(history:RecentHistory,place:SavedDestination):RecentHistory{
  return {...history,destinations:[{id:place.id,name:place.name,address:place.address},...history.destinations.filter(d=>d.id!==place.id)].slice(0,10)};
 }
+// 현재 모드의 기록을 불러오고 저장/삭제 실패를 사용자 안내로 전달합니다.
 export function useRecentHistory(mode:HistoryMode){
  const load=()=>{try{return parseHistory(localStorage.getItem(historyKey(mode)));}catch{return empty();}};
  const [history,setHistory]=useState<RecentHistory>(load);

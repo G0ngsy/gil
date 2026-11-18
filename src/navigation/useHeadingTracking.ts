@@ -1,3 +1,6 @@
+/**
+ * 검토용 방향 센서 훅: 방위 이벤트·권한·정확도·자세·수신 상태를 검사합니다. 일반 실제 카메라 안내에서는 사용하지 않습니다.
+ */
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {orientationToHeading,type CompassReading} from '../../shared/compass';
 import type {HeadingSample} from '../../shared/facing';
