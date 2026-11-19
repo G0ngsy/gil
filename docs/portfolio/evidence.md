@@ -352,3 +352,7 @@ PWA 원격 최종 결과: 코드948777a의 자동배포success, [Production 설�
 빌드·단위133개·관련29개, GPS 유지 추가 후 안내6개(5개 중복), 캡처1개 재통과. [개인정보·이용 안내](assets/2026-11-18-usage-guide-390.png)는 모의 기록/권한 조건의 Chrome390px 화면이다. 실제 제공사 보관기간이나 기기 권한 UI 검증 자료가 아니다.
 
 배포 확인: 제품 코드139ba3f Vercel 자동배포success. 공개 주소 https://gilbit.vercel.app 에서 안내 진입/권한·추가 API 미요청/기록 관리·삭제/뒤로가기/320·360·430px 글자200%/기존 GPS 유지6개 통과. 모의 기록/GPS/API·Chrome 검사이며 실제 기기 권한 설정 UI나 제공사 보관 설정 검증과 구분한다. 후속 변경은 검증 기록만이며 제품 코드는 동일하다.
+
+## 2026-11-19 — 원래 목표/현재 구현 재대조 및 복귀 계획
+
+2026-11-19 코드 c1524ab의 LiveCameraGuide·RouteJourney·facing·compass·SimulationNavigation을 읽고 실제 안내/실험 연결을 구분했다. [공식 자료 및 비교 문서](../facing-guidance-plan.md). 문서 연결/변경 형식만 검증하며 제품/실기기 테스트는 재실행하지 않는다. 웹/네이티브 선택과 새 센서 품질은 아직 미결정·미검증이다.
