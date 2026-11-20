@@ -80,10 +80,11 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const searchAbort=useRef<AbortController|null>(null);
  const addressAbort=useRef<AbortController|null>(null);
  const routeAbort=useRef<AbortController|null>(null);
+ const locationAbort=useRef<AbortController|null>(null);
  const locationVersion=useRef(0);
  const alive=useRef(false);
  const stageTitle={home:'길빛',results:'장소 검색',route:'도보 경로 확인',map:'길 안내',history:'이용 기록',privacy:'개인정보·이용 안내'}[stage];
- useEffect(()=>{alive.current=true;return()=>{alive.current=false;locationVersion.current++;searchAbort.current?.abort();routeAbort.current?.abort();addressAbort.current?.abort();};},[]);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;locationVersion.current++;locationAbort.current?.abort();searchAbort.current?.abort();routeAbort.current?.abort();addressAbort.current?.abort();};},[]);
  useEffect(()=>{
   const controller=new AbortController();
   setConfigError('');setConfigured(null);
@@ -108,7 +109,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  useEffect(()=>{if(progress.arrived)cancelReroute();},[progress.arrived]);
  useEffect(()=>{if(!gps.active)cancelReroute();},[gps.active]);
  // 화면 이동 시 진행 중인 조회를 중단하고 단발 위치 요청의 이전 결과도 무효화합니다.
- function cancelWork(){cancelRestore();cancelReroute();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;setSearching(false);setRouting(false);setLocating(false);}
+ function cancelWork(){cancelRestore();cancelReroute();searchAbort.current?.abort();routeAbort.current?.abort();locationVersion.current++;locationAbort.current?.abort();addressAbort.current?.abort();setAddressLoading(false);setSearching(false);setRouting(false);setLocating(false);}
  navigationChange.current=(next,previous)=>{cancelWork();setError('');if(previous.overlay==='camera'&&next.overlay!=='camera')setCameraCloseSignal(n=>n+1);if(previous.overlay==='confirm'&&next.overlay!=='confirm'){setEnding(false);setPendingGuidance(null);}};
  // 상단 뒤로가기와 브라우저 뒤로가기가 같은 방문 기록을 사용합니다.
  function back(){navigation.back();}
@@ -124,7 +125,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   setError('');setPlaces([]);setSearched(false);setSearching(true);setRoute(null);setSelected(null);
   try {
    let origin=nearby?position:null;
-   if(origin&&Date.now()-origin.timestamp>120000){origin=await locate(false);if(!origin){setError('현재 위치를 갱신하지 못했어요. 다시 확인하거나 전국 검색을 선택해 주세요.');return;}}
+   if(origin&&Date.now()-origin.timestamp>120000){origin=await locate(false);if(controller.signal.aborted)return;if(!origin){setError('현재 위치를 갱신하지 못했어요. 다시 확인하거나 전국 검색을 선택해 주세요.');return;}}
    if(controller.signal.aborted)return;
    setSearchOrigin(origin);setStage('results');
    const data=await searchPlaces(q,controller.signal,origin||undefined);
@@ -148,13 +149,15 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   if(cancelSearch){searchAbort.current?.abort();setSearching(false);}
   addressAbort.current?.abort();setAddress(null);setAddressError('');setAddressLoading(false);setPosition(null);
   const version=++locationVersion.current;
+  // 화면 이동/새 위치 요청 때 정확도 개선용 임시 GPS 감시도 함께 정리합니다.
+  locationAbort.current?.abort();const controller=new AbortController();locationAbort.current=controller;
   routeAbort.current?.abort();setRouting(false);setRoute(null);
   setLocating(true);setLocationError('');setError('');
   try {
-   const next=await getUserPosition();
+   const next=await getUserPosition(controller.signal);
    if(alive.current&&locationVersion.current===version){setPosition(next);void lookupAddress(next);return next;}
   }catch(e){if(alive.current&&locationVersion.current===version){setPosition(null);setLocationError(message(e));}}
-  finally{if(alive.current&&locationVersion.current===version)setLocating(false);}
+  finally{if(locationAbort.current===controller)locationAbort.current=null;if(alive.current&&locationVersion.current===version)setLocating(false);}
   return null;
  }
  // 검색 결과의 장소를 선택하고 경로 확인 화면으로 이동합니다.
