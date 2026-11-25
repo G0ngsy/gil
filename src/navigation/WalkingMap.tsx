@@ -68,6 +68,13 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
   return()=>overlays.splice(0).forEach(overlay=>overlay.setMap(null));
  },[ready,generation,start,destination,route,navigating,progress.along,progress.position,progress.timestamp,fresh,observed,approximate,fix,retry]);
  useEffect(()=>{const sdk=window.Tmapv2;if(ready&&sdk&&view.current&&following&&(approximate||fresh)&&markerPosition)frameAhead(sdk,view.current,markerPosition,route,progress.along);},[ready,generation,following,fresh,approximate,fix,progress.position,progress.along,route,retry]);
+ // 시트를 접고 펼쳐 지도 컨테이너가 변하면 SDK 타일/터치 좌표 크기도 갱신합니다.
+ useEffect(()=>{
+  if(!ready||!host.current)return;
+  let frame=0,width=0,height=0;
+  const observer=new ResizeObserver(entries=>{const box=entries[0]?.contentRect;if(!box||box.width<=0||box.height<=0||box.width===width&&box.height===height)return;width=box.width;height=box.height;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>view.current?.resize?.());});
+  observer.observe(host.current);return()=>{observer.disconnect();cancelAnimationFrame(frame);};
+ },[ready,generation]);
  // 지도 위치 버튼: 안내 중이면 현재 위치 따라가기를 재개하고, 시작 전이면 전체 경로를 맞춥니다.
  function locate(){const sdk=window.Tmapv2,map=view.current;if(!sdk||!map)return;setFollowing(true);if(navigating&&markerPosition)frameAhead(sdk,map,markerPosition,route,progress.along);else{const bounds=new sdk.LatLngBounds();bounds.extend(point(sdk,start));bounds.extend(point(sdk,destination));route?.segments.forEach(line=>line.forEach(c=>bounds.extend(point(sdk,c))));map.fitBounds(bounds,{left:65,top:100,right:85,bottom:90});}}
  const pointer=useRef<{x:number;y:number}|null>(null);

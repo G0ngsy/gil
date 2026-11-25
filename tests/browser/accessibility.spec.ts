@@ -1,3 +1,4 @@
+import {expandJourney} from './helpers/journey';
 import {test,expect,type Page} from '@playwright/test';
 const original={distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5665,lng:126.978,description:'직진',turnType:11},{lat:37.5675,lng:126.978,description:'도착',turnType:201}]};
 const replacement={distanceMeters:300,durationSeconds:240,segments:[[{lat:37.5682,lng:126.978},{lat:37.5682,lng:126.979},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5682,lng:126.978,description:'새 경로',turnType:11},{lat:37.5675,lng:126.978,description:'도착',turnType:201}]};
@@ -19,7 +20,7 @@ async function emit(page:Page,lat:number,accuracy=5){await page.evaluate(({lat,a
 for(const width of [320,360,430])for(const scale of [1,2])test(`${width}px 글자${scale*100}% 긴 장소명·버튼·종료창`,async({page})=>{
  await page.setViewportSize({width,height:720});await setup(page);await page.addStyleTag({content:`html{font-size:${scale*100}%!important}`});
  const main=page.locator('main');expect(await main.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
- const dest=page.locator('.journey-destination h2');expect(await dest.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+ await expandJourney(page);const dest=page.locator('.journey-destination h2');expect(await dest.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
  if(scale===2)expect(await dest.evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(32);
  const card=page.getByRole('region',{name:'실제 경로 이동 안내'});const box=(await card.boundingBox())!;const remaining=(await page.locator('.journey-remaining').boundingBox())!;expect(remaining.y).toBeGreaterThanOrEqual(box.y+box.height);
  const end=page.locator('.journey-remaining').getByRole('button',{name:'안내 종료',exact:true});await end.scrollIntoViewIfNeeded();expect((await end.boundingBox())!.height).toBeGreaterThanOrEqual(44);await end.click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.getByRole('dialog').getByRole('button',{name:'안내 종료',exact:true})).toBeFocused();await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).not.toBeVisible();

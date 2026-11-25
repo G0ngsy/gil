@@ -7,7 +7,7 @@ import {guidanceKey,parseSavedGuidance,readSavedGuidance} from './savedGuidance'
 import {PwaInstall} from '../PwaInstall';
 import {useGpsTracking} from './useGpsTracking';
 import {initialProgress,updateProgress,type Fix} from '../../shared/tracking';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Brand, Icon } from '../ui';
 import { Motif } from '../Motif';
 import { distanceBetween, formatDistance, type LocationAddress, type Place, type WalkingRoute } from '../../shared/navigation';
@@ -72,8 +72,11 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const gps=useGpsTracking(fix=>{const current=guidanceRef.current;if(current){setProgress(previous=>updateProgress(current.route,previous,fix));}},'실제 GPS 위치를 수신하고 있어요.',fix=>{if(guidanceRef.current)setObservedFix(fix);});
  useEffect(()=>{if(progress.arrived&&gps.active)gps.stop('도착을 확인해 GPS 추적을 마쳤어요.');},[progress.arrived,gps.active]);
  const content=useRef<HTMLElement>(null);
+ const guidanceLayer=useRef<HTMLDivElement>(null);
  const [cameraRoot,setCameraRoot]=useState<HTMLDivElement|null>(null);
  const [cameraOpen,setCameraOpen]=useState(false);
+ // 글자가 커지거나 안내 문구가 바뀌면 바텀 시트 위에 필요한 안내 카드 공간을 확보합니다.
+ useLayoutEffect(()=>{const layer=guidanceLayer.current,parent=layer?.parentElement;if(!layer||!parent)return;const update=()=>parent.style.setProperty('--map-guidance-space',Math.ceil(layer.getBoundingClientRect().height+24)+'px');update();const observer=new ResizeObserver(update);observer.observe(layer);return()=>{observer.disconnect();parent.style.removeProperty('--map-guidance-space');};},[stage,cameraOpen,Boolean(guidance)]);
  const dialog=useRef<HTMLDialogElement>(null);
  const focus=useRef<HTMLElement|null>(null);
  // 종류별 요청 취소 장치입니다. 이전 요청의 늦은 응답이 현재 화면을 바꾸지 않도록 관리합니다.
@@ -268,7 +271,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  <div className="map-bottom bottom-sheet journey-sheet">
  {shownRoute?<RouteJourney destination={shownDestination} route={shownRoute} progress={shownProgress} active={gps.active} notice={gps.notice} navigating={stage==='map'} onStart={stage==='map'?resumeGuidance:startGuidance} onFinish={()=>setEnding(true)} rerouting={rerouting} rerouteError={rerouteError} onReroute={stage==='map'?()=>void rerouteGuidance():undefined} cameraControl={stage==='map'?<LiveCameraGuide destination={shownDestination} route={shownRoute} progress={progress} position={observedFix} active={gps.active} notice={gps.notice} overlayRoot={cameraRoot} closeSignal={cameraCloseSignal} onOpenChange={cameraChanged}/>:undefined}/>:<><div className="destination-heading selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{shownDestination.name}</h2><p>{shownDestination.address}</p></div></div>{setup}{!position&&locationPanel}{routing&&<p role="status" className="connection-note">걸어갈 경로를 찾고 있어요…</p>}{error&&<p className="inline-error" role="alert">{error}</p>}<button className="primary" disabled={routing||locating||configured!==true} onClick={()=>void getRoute()}><Icon name="walk"/>{routing?'도보 경로 찾는 중…':'도보 경로 찾기'}</button></>}
  </div></section>}
- </main>{stage==='map'&&shownRoute&&!cameraOpen&&<div className="map-guidance-layer"><JourneyInstruction route={shownRoute} progress={progress} active={gps.active} notice={gps.notice} destination={shownDestination||undefined} fix={observedFix}/></div>}<div className="camera-viewport-host" ref={setCameraRoot}/></div></div>{review&&<aside className="studio-controls"><span className="eyebrow">REAL PLACE SEARCH</span><h2>검색에서<br/>도보 경로까지.</h2><p>실제 데이터와 시안 데이터를 섞지 않아요.<br/>위치 권한은 요청 버튼을 누를 때만 사용해요.</p>{review&&<button className="secondary" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</aside>}
+ </main>{stage==='map'&&shownRoute&&!cameraOpen&&<div className="map-guidance-layer" ref={guidanceLayer}><JourneyInstruction route={shownRoute} progress={progress} active={gps.active} notice={gps.notice} destination={shownDestination||undefined} fix={observedFix}/></div>}<div className="camera-viewport-host" ref={setCameraRoot}/></div></div>{review&&<aside className="studio-controls"><span className="eyebrow">REAL PLACE SEARCH</span><h2>검색에서<br/>도보 경로까지.</h2><p>실제 데이터와 시안 데이터를 섞지 않아요.<br/>위치 권한은 요청 버튼을 누를 때만 사용해요.</p>{review&&<button className="secondary" onClick={onDemo}>디자인 시안으로 돌아가기</button>}</aside>}
  <dialog ref={dialog} onCancel={cancelEnding}><div className="dialog-inner"><h2>{pendingGuidance?'새 목적지로 안내할까요?':guidance?'길 안내를 종료할까요?':'경로 확인을 마칠까요?'}</h2><p>{pendingGuidance?'현재 안내를 마치고 선택한 목적지로 안내를 시작해요.':'안내를 마치고 처음으로 돌아가요.'}</p><button className="primary" onClick={()=>{setEnding(false);const next=pendingGuidance;setPendingGuidance(null);if(next)beginGuidance(next);else finishGuidance();}}>{pendingGuidance?'새 안내 시작':'안내 종료'}</button><button className="secondary" onClick={cancelEnding}>계속 보기</button></div></dialog></div>;
 
 }

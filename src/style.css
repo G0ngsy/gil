@@ -322,3 +322,25 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .usage-guide section{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.usage-guide h2{font-size:1.125rem;line-height:1.6;margin-bottom:10px}
 .usage-guide p{margin:10px 0}.usage-guide dt{font-weight:700;margin-top:14px}.usage-guide dd{margin:4px 0 12px}.usage-guide ol,.usage-guide ul{padding-left:22px}.usage-guide li{margin:10px 0}
 .usage-guide .secondary{width:100%;margin-top:10px}.usage-links a{display:inline-block;min-height:44px;padding:7px 0;color:var(--pine);text-decoration:underline;text-underline-offset:3px}.usage-links a:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+/* 안내 중 바텀 시트: 기본 접힘, 지도는 남은 높이를 모두 사용합니다. */
+.app-shell .live-map:has(.journey-navigating:not(:has(.map-compact))){overflow:hidden;padding:0}
+.app-shell .journey-navigating:not(:has(.map-compact)){height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.app-shell .journey-navigating .live-map-wrapper:not(.map-compact){flex:1;min-height:0;height:auto}
+.app-shell .journey-navigating .journey-sheet{flex:none;display:flex;min-height:0;max-height:70%;margin-top:0;padding:0 18px max(12px,env(safe-area-inset-bottom));border-radius:24px 24px 0 0;box-shadow:0 -4px 16px #26372d18}
+.app-shell .journey-navigating .journey-content{display:flex;flex-direction:column;min-height:0;overflow:auto}
+.journey-sheet-summary{flex-shrink:0}
+.journey-sheet-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:44px;width:100%;font-size:.75rem;color:var(--pine)}
+.journey-grip{display:block;width:32px;height:4px;border-radius:3px;background:#cbc7b9}
+.app-shell .journey-navigating .journey-remaining{margin:0;gap:8px;min-height:48px}
+.app-shell .journey-navigating .journey-remaining strong{font-size:1.875rem}
+.journey-sheet-details{min-height:0;overflow:auto;overscroll-behavior:contain}
+.journey-sheet-details[hidden]{display:none!important}
+.journey-sheet-details:not([hidden]){padding-top:14px}
+.app-shell .journey-navigating:has(.map-compact) .journey-sheet{max-height:none;overflow:visible}
+.app-shell .journey-navigating:has(.map-compact) .journey-content,.app-shell .journey-navigating:has(.map-compact) .journey-sheet-details{overflow:visible}
+
+.app-shell .journey-navigating .journey-remaining{display:flex;align-items:baseline;justify-content:flex-start;flex-wrap:wrap;margin:0;padding:0;border:0;gap:8px}
+
+.app-shell .journey-navigating .journey-sheet{max-height:min(70%,calc(100% - var(--map-guidance-space,128px)))}
+.navigation-viewport:has(.map-compact)>.live-map{padding-top:var(--map-guidance-space,128px)}

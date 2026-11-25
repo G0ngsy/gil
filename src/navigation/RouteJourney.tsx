@@ -6,7 +6,7 @@ import type {ReactNode} from 'react';
 import type {Place,WalkingRoute} from '../../shared/navigation';
 import {formatDistance,formatDuration} from '../../shared/navigation';
 import {routeInstruction} from '../../shared/routeInstruction';
-import {useEffect,useState} from 'react';
+import {useEffect,useId,useState} from 'react';
 import type {Progress,Fix} from '../../shared/tracking';
 import {OrnamentalDivider} from '../OrnamentalDivider';
 import {SelectionCorner} from '../SelectionCorner';
@@ -16,19 +16,25 @@ interface Props{rerouting?:boolean;rerouteError?:string;onReroute?:()=>void;came
 // 경로 확인/안내 중 상태에 따라 거리·버튼·상세 목록을 구성합니다.
 export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl,rerouting,rerouteError,onReroute}:Props){
  const access=routeAccess(route,route.segments[0]?.[0]??destination,destination);
- return <div className="journey-content">
+ const [expanded,setExpanded]=useState(false);
+ const detailId=useId();
+ // 안내 정보만 접습니다. 카메라 컴포넌트/기존 GPS 세션은 언마운트하지 않습니다.
+ return <div className="journey-content" data-sheet-expanded={navigating?String(expanded):undefined}>
+ <div className="journey-sheet-summary">
+ {navigating&&<button className="journey-sheet-toggle" aria-expanded={expanded} aria-controls={detailId} onClick={()=>setExpanded(value=>!value)}><span className="journey-grip" aria-hidden="true"/><span>안내 정보 {expanded?'접기':'펼치기'}<span aria-hidden="true"> {expanded?'⌄':'⌃'}</span></span></button>}
  {navigating&&<div className="journey-remaining"><small>남은 거리{progress.arrived&&<span className="last-distance-label">경로 끝 기준</span>}{!active&&progress.position&&!progress.arrived&&<span className="last-distance-label">마지막 확인 기준</span>}</small><strong data-testid="live-remaining">{formatDistance(progress.position?progress.remaining:route.distanceMeters)}</strong><button className="journey-end" onClick={onFinish}>안내 종료</button></div>}
- <div className="destination-heading journey-destination selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{destination.name}</h2>{!navigating&&<p>{destination.address}</p>}</div></div>
- {!navigating&&<><div className="trip-summary"><strong>{formatDuration(route.durationSeconds)}</strong><span>도보 · {formatDistance(route.distanceMeters)}</span></div><p className="journey-caption">전체 경로 기준 예상 시간</p><button className="primary journey-start" onClick={onStart}><Icon name="walk"/>길 안내 시작</button></>}
  {navigating&&!active&&!progress.arrived&&<button className="primary journey-start" onClick={onStart}>위치 안내 다시 시작</button>}
  {progress.arrived&&navigating&&<button className="primary journey-start" onClick={onFinish}>안내 마치기</button>}
+ {navigating&&!progress.arrived&&onReroute&&(progress.offRoute||rerouting||rerouteError)&&<div className="journey-reroute"><button className="secondary" disabled={rerouting} onClick={onReroute}>{rerouting?'현재 위치에서 다시 찾는 중…':'현재 위치에서 다시 찾기'}</button>{rerouteError&&<p className="inline-error" role="alert">{rerouteError}</p>}{rerouting&&<p role="status">새 경로를 받을 때까지 기존 안내를 유지해요.</p>}</div>}
+ </div>
+ <div id={detailId} className="journey-sheet-details" hidden={navigating&&!expanded}>
+ <div className="destination-heading journey-destination selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{destination.name}</h2>{!navigating&&<p>{destination.address}</p>}</div></div>
+ {!navigating&&<><div className="trip-summary"><strong>{formatDuration(route.durationSeconds)}</strong><span>도보 · {formatDistance(route.distanceMeters)}</span></div><p className="journey-caption">전체 경로 기준 예상 시간</p><button className="primary journey-start" onClick={onStart}><Icon name="walk"/>길 안내 시작</button></>}
  {access&&access.endGap>15&&<p className="route-access-note" role="note">도보 경로는 표시된 경로 도착점까지예요. 장소 위치와 약 {formatDistance(access.endGap)} 차이가 있어요. 현장의 출입구를 확인해 주세요.</p>}
  <details className="route-detail-list"><summary>전체 경로 상세 보기 · {route.steps.length}단계</summary><p>출발부터 경로 도착점까지의 전체 안내예요.</p><ol>{route.steps.map((step,index)=><li key={index}>{step.description||'지도에서 이동 구간을 확인해 주세요.'}</li>)}</ol></details>
- {navigating&&!progress.arrived&&onReroute&&(progress.offRoute||rerouting||rerouteError)&&<div className="journey-reroute"><button className="secondary" disabled={rerouting} onClick={onReroute}>{rerouting?'현재 위치에서 다시 찾는 중…':'현재 위치에서 다시 찾기'}</button>{rerouteError&&<p className="inline-error" role="alert">{rerouteError}</p>}{rerouting&&<p role="status">새 경로를 받을 때까지 기존 안내를 유지해요.</p>}</div>}
  {cameraControl}
  {navigating&&<p className="journey-safety"><Icon name="shield" size={16}/>주변과 신호를 확인하며 걸어가세요</p>}
-
- </div>;
+ </div></div>;
 }
 // 지도와 카메라가 공유하는 다음 행동 카드입니다. 위치가 불확실하면 회전 대신 상태 안내를 표시합니다.
 export function JourneyInstruction({route,progress,active,notice,fix,destination,surface='map'}:Pick<Props,'route'|'progress'|'active'|'notice'>&{fix?:Fix|null;destination?:Place;surface?:'map'|'camera'}){

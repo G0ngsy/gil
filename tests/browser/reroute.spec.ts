@@ -1,3 +1,4 @@
+import {expandJourney} from './helpers/journey';
 import {test,expect,type Page} from '@playwright/test';
 const original={distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5665,lng:126.978,description:'직진',turnType:11},{lat:37.5675,lng:126.978,description:'도착',turnType:201}]};
 const replacement={distanceMeters:300,durationSeconds:240,segments:[[{lat:37.5682,lng:126.978},{lat:37.5682,lng:126.979},{lat:37.5675,lng:126.978}]],steps:[{lat:37.5682,lng:126.978,description:'새 경로',turnType:11},{lat:37.5675,lng:126.978,description:'도착',turnType:201}]};
@@ -18,7 +19,7 @@ const button=(page:Page)=>page.getByRole('button',{name:'현재 위치에서 다
 for(const width of [360,390,430])test(`${width}px 이탈 후 현재 위치·기존 목적지로 새 경로를 교체한다`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page);let body:any,calls=0;
  await page.route('**/api/navigation?action=route',r=>{calls++;body=r.request().postDataJSON();return r.fulfill({json:{route:replacement}});});
- await button(page).click();await expect(page.getByTestId('live-remaining')).toHaveText('300m');expect(body.start).toEqual({lat:37.5682,lng:126.978});expect(body.end).toEqual({lat:37.5675,lng:126.978});expect(body.endPoiId).toBe('123');expect(calls).toBe(1);await expect(button(page)).toHaveCount(0);await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toHaveCount(0);await expect(page.getByText('기존 목적지',{exact:true})).toBeVisible();
+ await button(page).click();await expect(page.getByTestId('live-remaining')).toHaveText('300m');expect(body.start).toEqual({lat:37.5682,lng:126.978});expect(body.end).toEqual({lat:37.5675,lng:126.978});expect(body.endPoiId).toBe('123');expect(calls).toBe(1);await expect(button(page)).toHaveCount(0);await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toHaveCount(0);await expandJourney(page);await expect(page.getByText('기존 목적지',{exact:true})).toBeVisible();
 });
 test('실패는 기존 경로·거리를 유지하고 재시도 성공 시에만 교체한다',async({page})=>{
  await setup(page);const before=await page.getByTestId('live-remaining').textContent();let fail=true;

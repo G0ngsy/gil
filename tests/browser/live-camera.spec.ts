@@ -1,3 +1,4 @@
+import {expandJourney} from './helpers/journey';
 import {test,expect,type Page} from '@playwright/test';
 const route={distanceMeters:144,durationSeconds:120,segments:[[{lat:37.5665,lng:126.978},{lat:37.567,lng:126.978},{lat:37.567,lng:126.979}]],steps:[{lat:37.5665,lng:126.978,description:'직진하세요',turnType:11},{lat:37.567,lng:126.978,description:'오른쪽으로 이동하세요',turnType:13},{lat:37.567,lng:126.9782,description:'목적지까지 직진하세요',turnType:11},{lat:37.567,lng:126.979,description:'목적지 도착',turnType:201}]};
 async function setup(page:Page,turnType=13){
@@ -11,7 +12,7 @@ async function setup(page:Page,turnType=13){
  });
  await page.route('https://apis.openapi.sk.com/tmap/jsv2**',r=>r.abort());
  await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{...route,steps:route.steps.map((step,index)=>index===1?{...step,turnType}:step)}}:a==='address'?{location:{address:'모의 출발지',area:'서울'}}:{places:[{id:'test',name:'모의 목적지',address:'테스트 경로',category:'장소',lat:37.567,lng:126.979}]}});});
- await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await expect(page.getByRole('region',{name:'카메라 경로 안내',exact:true})).toBeVisible();
+ await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await emit(page,37.5665,126.978);await expandJourney(page);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await expect(page.getByRole('region',{name:'카메라 경로 안내',exact:true})).toBeVisible();
 }
 async function emit(page:Page,lat:number,lng:number,accuracy=5){await page.evaluate(({lat,lng,accuracy})=>(window as any).routeCameraTest.ok({coords:{latitude:lat,longitude:lng,accuracy},timestamp:Date.now()}),{lat,lng,accuracy});}
 const card=(page:Page)=>page.getByRole('region',{name:'카메라 경로 안내',exact:true});
@@ -56,7 +57,7 @@ for(const width of [360,390,430])test(`${width}px 카메라 중앙을 비우고 
  await page.getByRole('button',{name:'지도 보기',exact:true}).click();expect(await page.locator('main').evaluate(e=>(e as HTMLElement).inert)).toBe(false);
  const mapCard=page.getByRole('region',{name:'실제 경로 이동 안내'});const before=(await mapCard.boundingBox())!;
  await page.locator('main').evaluate(e=>e.scrollTop=e.scrollHeight);expect((await mapCard.boundingBox())!.y).toBe(before.y);await expect(mapCard).toBeInViewport();
- await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await expect(camera).toBeInViewport();expect((await camera.boundingBox())!.y).toBe(bounds.y);
+ await expandJourney(page);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await expect(camera).toBeInViewport();expect((await camera.boundingBox())!.y).toBe(bounds.y);
 });
 
 test('밝고 어두운 영상에서도 작은 안내와 버튼을 구분한다',async({page})=>{

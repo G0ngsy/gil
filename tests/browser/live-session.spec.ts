@@ -1,3 +1,4 @@
+import {expandJourney} from './helpers/journey';
 import {test,expect,type Page} from '@playwright/test';
 const route={distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978},{lat:37.5675,lng:126.979}]],steps:[{lat:37.5665,lng:126.978,description:'북쪽으로 직진',turnType:0},{lat:37.5675,lng:126.978,description:'오른쪽으로 이동',turnType:0}]};
 async function setup(page:Page){
@@ -49,5 +50,5 @@ test('홈에서도 도착하면 추적을 마치고 도착 화면으로 복귀�
 });
 test('카메라 권한 대기 중 X로 닫으면 늦은 영상만 해제하고 GPS는 유지한다',async({page})=>{
  await page.addInitScript(()=>{navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>Object.assign(window,{allowSessionCamera:()=>{const canvas=document.createElement('canvas');const stream=canvas.captureStream();Object.assign(window,{sessionCameraStream:stream});resolve(stream);}}));});
- await start(page);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await close(page);await page.evaluate(()=>(window as any).allowSessionCamera());expect(await page.evaluate(()=>(window as any).sessionCameraStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([]);
+ await start(page);await expandJourney(page);await page.getByRole('button',{name:'실제 카메라 켜기',exact:true}).click();await close(page);await page.evaluate(()=>(window as any).allowSessionCamera());expect(await page.evaluate(()=>(window as any).sessionCameraStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([]);
 });
