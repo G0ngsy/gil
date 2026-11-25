@@ -512,3 +512,8 @@ PWA 최종 배포/검증: 948777a 자동배포success, 공개manifest연결/Chro
 매듭의 합/차분한 세 걸음을 별도 TSX/CSS로 구현하고 기본 진입에는 매듭 하나만 연결했다. 첫 방문 localStorage splashSeen, 전체 탭/키보드 스킵, 동작 줄이기, 2.8초 및 effect 정리를 지원한다. 기존 문은 명시적 intro=1에서만 유지한다. 빌드·기본137개·관련 브라우저32개 통과, 발자국 모양 최종 조정 후 신규12개 재통과. 390px 캡처 assets/2026-11-25-splash-{knots,steps}-{art,logo}-390.png. 실기기 성능/새 API 검증 아님. [전체 기획·코드](../splash-concepts.md), [이슈](../issues/2026-11-25-splash-alternatives.md). 사용자 요청에 따른 AI 지원 구현.
 
 2026-11-25 스플래시 통합·배포 검증: 제품 b09466a(원격 경로 꺾쇠 76b81d7 보존 rebase), 빌드·기본138개·새 스플래시/기본 진입20개 재통과. 앞선 관련32개·최종 도안12개 검증과 구분한다. GitHub Vercel status success, 배포 EMwUCpWChLAPUfWaN8DP8izshyDN. 공개 gilbit.vercel.app의 knots/steps 두 주소에서 390px 단독 연출→홈, 기본 첫 방문 탭 스킵→splashSeen=true→새로고침 생략 확인. 연결 도구 배포 조회403 및 로컬 CLI 로그아웃 상태여서 직접 조회 대신 GitHub 배포 상태와 공개 페이지로 확인했다. 재로그인/새 수동 배포 없이 기존 자동배포를 사용했다. 실제 기기 FPS·API/GPS 정확도 검증은 이번 범위가 아니다.
+
+## 2026-11-25 — 경로 표시 밀도·핀 통일
+30m 간격의 작은 꺾쇠, 출발 핀/라벨과 현재 위치 핀의 일관된 도형·방향 회전. [문제·검증](../issues/2026-11-25-pin-consistency-density.md). 빌드·단위139개, 모의 환경/실외 확인 구분. AI 지원.
+
+브라우저 지도9개 전부 통과(360/390/430px·현재/출발 핀·민트 꺾쇠·오차/오래된 위치).

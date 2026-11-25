@@ -1,7 +1,9 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {bearing,joinTouching,routeArrows,updateMovement} from '../shared/mapDirections';
 const a={lat:37.5665,lng:126.978},b={lat:37.5675,lng:126.978},c={lat:37.5675,lng:126.979};
 test('같은 끝점만 연결하며 실제 끊긴 경로는 보존한다',()=>{assert.equal(joinTouching([[a,b],[b,c]]).length,1);assert.equal(joinTouching([[a,b],[c,a]]).length,2);});
-test('진행 꺾쇠는 북쪽/동쪽을 가리키고 개수가 제한된다',()=>{assert.ok(bearing(a,b)<1);assert.ok(Math.abs(bearing(b,c)-90)<1);const arrows=routeArrows([[a,b,c]]);assert.ok(arrows.some(x=>x.heading<1));assert.ok(arrows.some(x=>Math.abs(x.heading-90)<1));assert.ok(routeArrows([[a,{lat:38,lng:127}]]).length<=12);});
+test('진행 꺾쇠는 북쪽/동쪽을 가리키고 개수가 제한된다',()=>{assert.ok(bearing(a,b)<1);assert.ok(Math.abs(bearing(b,c)-90)<1);const arrows=routeArrows([[a,b,c]]);assert.ok(arrows.some(x=>x.heading<1));assert.ok(arrows.some(x=>Math.abs(x.heading-90)<1));assert.ok(routeArrows([[a,{lat:38,lng:127}]]).length<=24);});
 test('이동 방향은 GPS 잡음·오차·오래된 표본에 회전하지 않는다',()=>{const start={...a,accuracy:5,timestamp:1000};let m=updateMovement({anchor:null,heading:null},start);m=updateMovement(m,{...a,lat:a.lat+0.00001,accuracy:5,timestamp:2000});assert.equal(m.heading,null);m=updateMovement(m,{...a,lat:a.lat+0.0001,accuracy:5,timestamp:5000});assert.ok(m.heading!==null&&m.heading<1);const north=m;m=updateMovement(m,{...c,accuracy:60,timestamp:6000});assert.equal(m,north);m=updateMovement(m,{...c,accuracy:5,timestamp:4000});assert.equal(m,north);m=updateMovement(m,{...c,accuracy:5,timestamp:30000});assert.equal(m.heading,north.heading);});
 
 test('회전 꼭짓점 주변은 화살표를 비워 경로를 가로지르지 않는다',()=>{const corner={lat:37.56675,lng:126.978},end={lat:37.56675,lng:126.98};const arrows=routeArrows([[a,corner,end]]);for(const arrow of arrows){assert.ok(Math.abs(arrow.position.lat-corner.lat)>0.00011||Math.abs(arrow.position.lng-corner.lng)>0.00014);}assert.ok(arrows.length>0);});
+
+test('120m 직선 경로에 작은 진행 표시가 여러 개 배치된다',()=>{const arrows=routeArrows([[a,{lat:a.lat+0.00108,lng:a.lng}]]);assert.ok(arrows.length>=3);assert.ok(arrows.length<=5);});
