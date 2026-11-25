@@ -109,3 +109,5 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 ## 2026-11-13 경로 도착점/출발 GPS 보완 배포
 
 코드c98a66c 자동배포success와 공개번들index-DAvi3BVr.js/HTTP200 확인. [배포](https://vercel.com/sunyoungs-projects-c61fca90/gilbit/4YzkqS9rCasZKxkNjLzC99oQhNYx). Production에서 실제 공공 POI 검색200·보행 요청에POI ID전달·실제 지도·32m차이 안내·4단계 상세 표시/페이지 예외0을 확인했다. 출발 GPS만 장소 인근 임의 좌표/오차8m로 주입했다. 실제 사용자109m 경로 및 실외 위치 정확도 검증은 아니다. [화면](portfolio/assets/2026-11-13-route-details-production-390.png).
+
+2026-11-25 스플래시 통합·배포 검증: 제품 b09466a(원격 경로 꺾쇠 76b81d7 보존 rebase), 빌드·기본138개·새 스플래시/기본 진입20개 재통과. 앞선 관련32개·최종 도안12개 검증과 구분한다. GitHub Vercel status success, 배포 EMwUCpWChLAPUfWaN8DP8izshyDN. 공개 gilbit.vercel.app의 knots/steps 두 주소에서 390px 단독 연출→홈, 기본 첫 방문 탭 스킵→splashSeen=true→새로고침 생략 확인. 연결 도구 배포 조회403 및 로컬 CLI 로그아웃 상태여서 직접 조회 대신 GitHub 배포 상태와 공개 페이지로 확인했다. 재로그인/새 수동 배포 없이 기존 자동배포를 사용했다. 실제 기기 FPS·API/GPS 정확도 검증은 이번 범위가 아니다.
