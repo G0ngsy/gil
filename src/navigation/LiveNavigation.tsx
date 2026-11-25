@@ -152,7 +152,8 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  async function locate(cancelSearch=true):Promise<UserPosition|null>{
   cancelRestore();
   if(cancelSearch){searchAbort.current?.abort();setSearching(false);}
-  addressAbort.current?.abort();setAddress(null);setAddressError('');setAddressLoading(false);setPosition(null);
+  // 재조회 중에는 마지막 확인 위치를 보존합니다. 새 좌표가 확정될 때 주소를 교체합니다.
+  addressAbort.current?.abort();setAddressError('');setAddressLoading(false);
   const version=++locationVersion.current;
   // 화면 이동/새 위치 요청 때 정확도 개선용 임시 GPS 감시도 함께 정리합니다.
   locationAbort.current?.abort();const controller=new AbortController();locationAbort.current=controller;
@@ -161,7 +162,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
   try {
    const next=await getUserPosition(controller.signal);
    if(alive.current&&locationVersion.current===version){setPosition(next);void lookupAddress(next);return next;}
-  }catch(e){if(alive.current&&locationVersion.current===version){setPosition(null);setLocationError(message(e));}}
+  }catch(e){if(alive.current&&locationVersion.current===version){setLocationError(message(e));}}
   finally{if(locationAbort.current===controller)locationAbort.current=null;if(alive.current&&locationVersion.current===version)setLocating(false);}
   return null;
  }
@@ -251,7 +252,7 @@ export function LiveNavigation({onDemo,review=false}:Props) {
  const locationAction=locating?'현재 위치 확인 중…':position?'현재 위치 다시 확인':'현재 위치 확인';
  const locationText=address?address.address:locating?'현재 위치를 확인하고 있어요…':addressLoading?'현재 위치의 주소를 확인하고 있어요…':position?'현재 위치를 확인했어요':'현재 위치를 확인해 주세요';
  const locationPanel=<section className={`live-location ${stage==='home'?'compact-location':''}`} aria-label="현재 위치">
- {stage==='home'?<div className="compact-location-row"><Icon name="pin" size={25}/><div className="compact-location-copy"><span>현재 위치</span><strong className="current-address">{locationText}</strong></div><button className="icon-button" aria-label={locationAction} title={locationAction} disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={20}/></button></div>:<><div className="location-label"><Icon name="locate" size={18}/><strong>현재 위치 · 출발지</strong></div>{position?<><strong className="current-address">{locationText}</strong><p>주변 주소 · 오차 약 {Math.round(position.accuracy)}m<br/>확인 시각 {new Date(position.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</p></>:<p>현재 위치를 확인하면 주변 장소를 가까운 순서로 찾을 수 있어요.</p>}<button className="secondary" disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={19}/>{locationAction}</button></>}
+ {stage==='home'?<div className="compact-location-row"><Icon name="pin" size={25}/><div className="compact-location-copy"><span>현재 위치</span><strong className="current-address">{locationText}</strong>{position&&locating&&<small role="status">위치 갱신 중 · 이전 확인 위치</small>}{position&&locationError&&<small>이전 확인 위치</small>}</div><button className="icon-button" aria-label={locationAction} title={locationAction} disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={20}/></button></div>:<><div className="location-label"><Icon name="locate" size={18}/><strong>현재 위치 · 출발지</strong></div>{position?<><strong className="current-address">{locationText}</strong><p>주변 주소 · 오차 약 {Math.round(position.accuracy)}m<br/>확인 시각 {new Date(position.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</p></>:<p>현재 위치를 확인하면 주변 장소를 가까운 순서로 찾을 수 있어요.</p>}<button className="secondary" disabled={locating||routing} onClick={()=>void locate()}><Icon name="locate" size={19}/>{locationAction}</button></>}
  {position&&addressError&&<><p className="address-warning" role="status">{addressError}</p><button className="text-button" disabled={addressLoading||configured!==true} onClick={()=>void lookupAddress(position)}>주소 다시 확인</button></>}
  {locationError&&<p className="inline-error" role="alert">{locationError}</p>}</section>;
  const searchScope=<div className="search-scope"><label>검색 범위<select aria-label="검색 범위" value={position&&nearbySearch?'nearby':'national'} onChange={e=>setNearbySearch(e.target.value==='nearby')}><option value="nearby" disabled={!position}>내 주변 10km</option><option value="national">전국 검색</option></select></label>{!position&&<p>위치 미확인 · 전국 기준</p>}</div>;

@@ -38,3 +38,8 @@ test('검색 설정 확인 중에 위치를 눌러도 주소 조회를 건너뛰
  await page.route('**/api/navigation?action=config',async r=>{await pending;await r.fulfill({json:{searchConfigured:true}});});
  await page.goto('/');await expect(page.getByText('검색을 준비하고 있어요…')).toBeVisible();await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();await expect(page.getByText('서울특별시 중구 세종대로 110',{exact:true})).toBeVisible();finish!();
 });
+test('재확인 도중 다른 화면을 갔다 홈으로 돌아와도 마지막 주소를 유지한다',async({page})=>{
+ await setup(page);await page.goto('/');await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();const address=page.getByText('서울특별시 중구 세종대로 110',{exact:true});await expect(address).toBeVisible();
+ await page.evaluate(()=>{navigator.geolocation.getCurrentPosition=()=>{};});await page.getByRole('button',{name:'현재 위치 다시 확인',exact:true}).click();await expect(address).toBeVisible();await page.getByRole('button',{name:'개인정보·이용 안내',exact:true}).click();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();await expect(address).toBeVisible();await expect(page.getByRole('button',{name:'현재 위치 다시 확인',exact:true})).toBeEnabled();
+ await page.evaluate(()=>{navigator.geolocation.getCurrentPosition=(_ok,fail)=>fail?.({code:1,message:'denied'} as GeolocationPositionError);});await page.getByRole('button',{name:'현재 위치 다시 확인',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(address).toBeVisible();await expect(page.getByText('이전 확인 위치',{exact:true})).toBeVisible();
+});
