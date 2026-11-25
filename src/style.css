@@ -344,3 +344,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 
 .app-shell .journey-navigating .journey-sheet{max-height:min(70%,calc(100% - var(--map-guidance-space,128px)))}
 .navigation-viewport:has(.map-compact)>.live-map{padding-top:var(--map-guidance-space,128px)}
+
+/* 명시적으로 안내를 마친 뒤 보여주는 완료 화면. 도착 판정과는 구분합니다. */
+.guidance-ended{max-width:420px;margin:0 auto;padding:56px 24px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}.ended-check{width:76px;height:76px;border-radius:50%;background:#e8ecdf;color:var(--pine);display:grid;place-items:center}.guidance-ended h2{font-size:1.5rem;line-height:1.5}.guidance-ended p{color:var(--muted);line-height:1.7;overflow-wrap:anywhere}.guidance-ended .ended-destination{font-weight:700;color:var(--pine)}.guidance-ended button{width:100%}
