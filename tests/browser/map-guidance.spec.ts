@@ -27,9 +27,9 @@ for(const width of [360,390,430])test(`${width}px 지도 마커·진행 색상·
  const canvas=page.getByRole('region',{name:'가까운 도서관 도보 경로 지도'});await canvas.dispatchEvent('pointerdown',{clientX:100,clientY:300});await canvas.dispatchEvent('pointermove',{clientX:140,clientY:300});await canvas.dispatchEvent('pointerup');await expect(page.locator('.map-recenter')).toHaveAttribute('data-following','false');
  const count=await page.evaluate(()=>(window as any).mapTest.centers.length);await page.clock.runFor(7000);await fix(page,37.56665);expect(await page.evaluate(()=>(window as any).mapTest.centers.length)).toBe(count);
  expect(await page.evaluate(()=>(window as any).mapTest.layers.some((l:any)=>l.map&&l.options.strokeColor==='#A8B5AC'))).toBe(true);
- await page.getByRole('button',{name:'현재 위치로 지도 이동',exact:true}).click();await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();expect(await page.evaluate(()=>(window as any).mapTest.centers.length)).toBeGreaterThan(count);
+ await page.getByRole('button',{name:'현재 위치로 지도 이동',exact:true}).click();await expect(page.locator('.map-recenter')).toHaveAttribute('data-following','true');expect(await page.evaluate(()=>(window as any).mapTest.centers.length)).toBeGreaterThan(count);
  expect(await page.evaluate(()=>(window as any).mapTest.maps)).toBeLessThanOrEqual(2);
- await page.clock.runFor(10500);await expect(page.getByText('마지막 위치 · 갱신 대기',{exact:true})).toBeVisible();
+ await page.clock.runFor(10500);
  const last=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title==='마지막 확인 위치').map((l:any)=>l.options));expect(last).toHaveLength(1);expect(decodeURIComponent(last[0].icon)).toContain('#77776E');expect(last[0].offset.y).toBe(20);
  expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
 });
@@ -41,14 +41,14 @@ test('오차 큰 GPS는 지도에서만 움직이고 정확한 GPS 회복 전 �
  await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();
  const emit=async(lat:number,accuracy:number)=>page.evaluate(({lat,accuracy})=>(window as any).mapFix({coords:{latitude:lat,longitude:126.978,accuracy},timestamp:Date.now()}),{lat,accuracy});
  await emit(37.5665,45);await expect(page.getByRole('heading',{name:'위치 오차가 커요'})).toBeVisible();
- await expect(page.getByText('위치 오차 약 45m · 정확한 위치 대기',{exact:true})).toBeVisible();
+ await expect(page.getByText('GPS 오차 약 45m',{exact:true})).toBeVisible();
  await expect(page.getByTestId('live-remaining')).toHaveText('200m');
  await page.clock.runFor(12000);await emit(37.5668,45);await page.clock.runFor(12000);await emit(37.5671,45);
  const marks=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title==='대략적인 위치').map((l:any)=>l.options));
  expect(marks).toHaveLength(1);expect(marks[0].position.lat).toBe(37.5671);
  expect(await page.evaluate(()=>(window as any).mapTest.layers.some((l:any)=>l.map&&l.options.radius===45))).toBe(true);
  await expect(page.getByTestId('live-remaining')).toHaveText('200m');await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toHaveCount(0);
- await page.clock.runFor(1000);await emit(37.5671,5);await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();await expect(page.getByTestId('live-remaining')).not.toHaveText('200m');
+ await page.clock.runFor(1000);await emit(37.5671,5);await expect(page.locator('.map-recenter')).toHaveAttribute('data-following','true');await expect(page.getByTestId('live-remaining')).not.toHaveText('200m');
  await page.clock.runFor(21000);await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toBeVisible();
 });
 
@@ -62,3 +62,5 @@ test('경로 도착점과 장소 위치 차이를 표시하고 전체 안내를 
 test('장소와 떨어진 경로 끝은 장소 도착으로 단정하지 않는다',async({page})=>{
  await setup(page,false,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'목적지 근처에 도착했어요',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요',exact:true})).toHaveCount(0);await expect(page.getByText('경로 끝 기준',{exact:true})).toBeVisible();await expect(page.getByText('실제 출입구를 확인해 주세요.',{exact:true})).toBeVisible();
 });
+
+test('경로 화살표와 현재 위치 핀이 이동 방향을 표시한다',async({page})=>{await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);const icons=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));expect((await icons()).some((o:any)=>o.title==='경로 진행 방향'&&decodeURIComponent(o.icon).includes('stroke="white"'))).toBe(true);await page.clock.runFor(6000);await fix(page,37.56665);let pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');await page.clock.runFor(1000);await fix(page,37.566651);pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');});

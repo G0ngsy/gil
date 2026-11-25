@@ -7,6 +7,7 @@ import type { Coordinate, Place, WalkingRoute } from '../../shared/navigation';
 import type {Fix,Progress} from '../../shared/tracking';
 import {distanceBetween} from '../../shared/navigation';
 import {splitRoute} from '../../shared/mapRoute';
+import {joinTouching,routeArrows,updateMovement,type Movement} from '../../shared/mapDirections';
 import {Icon} from '../ui';
 import { loadTMap, point, type TMapOverlay, type TMapView } from './tmap';
 
@@ -27,6 +28,8 @@ function frameAhead(sdk:Parameters<typeof point>[0],map:TMapView,position:Coordi
 export function WalkingMap({onCameraHost,start,destination,route,progress,navigating,active,fix}:Props) {
  const host=useRef<HTMLDivElement>(null),view=useRef<TMapView|null>(null);
  const layers=useRef<TMapOverlay[]>([]);
+ const movement=useRef<Movement>({anchor:null,heading:null});
+ useEffect(()=>{movement.current={anchor:null,heading:null};},[route,navigating]);
  const id=useId().replaceAll(':','');
  const [error,setError]=useState(''),[ready,setReady]=useState(false),[retry,setRetry]=useState(0),[generation,setGeneration]=useState(0),[following,setFollowing]=useState(true),[now,setNow]=useState(Date.now);
  const key=import.meta.env.VITE_TMAP_MAP_KEY || '';
@@ -54,7 +57,7 @@ export function WalkingMap({onCameraHost,start,destination,route,progress,naviga
   const sdk=window.Tmapv2,map=view.current;if(!ready||!sdk||!map)return;
   const overlays:TMapOverlay[]=[];layers.current=overlays;
   const marker=(position:Coordinate,icon:string,title:string,w:number,h:number,anchorY=h/2)=>overlays.push(new sdk.Marker({position:point(sdk,position),map,icon,title,iconSize:sdk.Size?new sdk.Size(w,h):undefined,offset:sdk.Point?new sdk.Point(w/2,anchorY):undefined,zIndex:5}));
-  if(route){const parts=splitRoute(route,navigating?progress.along:0);for(const [lines,color,width] of [[parts.completed,'#A8B5AC',5],[parts.remaining,'#087F83',7]] as const){for(const segment of lines){const path=segment.map(c=>point(sdk,c));overlays.push(new sdk.Polyline({path,strokeColor:'#FFFDF9',strokeWeight:width+4,strokeOpacity:1,map,zIndex:1}));overlays.push(new sdk.Polyline({path,strokeColor:color,strokeWeight:width,strokeOpacity:1,map,zIndex:2}));}}}
+  if(route){const parts=splitRoute({...route,segments:joinTouching(route.segments)},navigating?progress.along:0);for(const [lines,color,width] of [[parts.completed,'#A8B5AC',5],[parts.remaining,'#087F83',7]] as const){for(const segment of lines){const path=segment.map(c=>point(sdk,c));overlays.push(new sdk.Polyline({path,strokeColor:'#FFFDF9',strokeWeight:width+4,strokeOpacity:1,map,zIndex:1}));overlays.push(new sdk.Polyline({path,strokeColor:color,strokeWeight:width,strokeOpacity:1,map,zIndex:2}));}}for(const arrow of routeArrows(parts.remaining)){overlays.push(new sdk.Marker({position:point(sdk,arrow.position),map,icon:image(`<g transform="rotate(${arrow.heading} 10 10)"><path d="m5 13 5-6 5 6" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>`,20,20),title:'경로 진행 방향',iconSize:sdk.Size?new sdk.Size(20,20):undefined,offset:sdk.Point?new sdk.Point(10,10):undefined,zIndex:4}));}}
   marker(start,image('<circle cx="15" cy="15" r="11" fill="#77776E" stroke="white" stroke-width="3"/>',30,30),'출발',30,30);
   const label=separateGoal?'경로 도착점':destination.name;
   const name=escape(label.length>14?label.slice(0,14)+'…':label);const labelWidth=Math.max(92,Math.min(220,destination.name.length*13+24));
@@ -62,8 +65,12 @@ export function WalkingMap({onCameraHost,start,destination,route,progress,naviga
   if(separateGoal)marker(destination,image('<circle cx="40" cy="12" r="7" fill="#FFFDF9" stroke="#245447" stroke-width="3"/><rect x="1" y="22" width="78" height="19" rx="9" fill="#FFFDF9" stroke="#E9E2D2"/><text x="40" y="36" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#245447">장소 위치</text>',80,42),'장소 위치',80,42,12);
   if(navigating&&markerPosition){
    const color=fresh&&!observed?'#2878D0':'#77776E';
+   // 휴대폰 방위가 아닌, 채택된 GPS 위치 사이의 이동 방향만 사용합니다.
+   if(fresh&&!observed&&progress.position)movement.current=updateMovement(movement.current,{...progress.position,accuracy:fix?.accuracy??30,timestamp:progress.timestamp});
+   const heading=movement.current.heading;
+   const pin=heading===null?`<path d="M58 2c-10 0-18 8-18 18 0 12 18 20 18 20s18-8 18-20C76 10 68 2 58 2Z" fill="${color}" stroke="white" stroke-width="3"/><circle cx="58" cy="20" r="6" fill="white"/>`:`<g data-heading="${heading}" transform="rotate(${heading} 58 20)"><path d="m58 1 16 34-16-7-16 7Z" fill="${color}" stroke="white" stroke-width="3" stroke-linejoin="round"/></g>`;
    if(fix&&sdk.Circle&&(approximate||(fresh&&fix.timestamp===progress.timestamp)))overlays.push(new sdk.Circle({center:point(sdk,markerPosition),radius:fix.accuracy,fillColor:'#2878D0',fillOpacity:0.14,strokeColor:'#2878D0',strokeOpacity:0.18,strokeWeight:1,map,zIndex:3}));
-   marker(markerPosition,image(`<circle cx="58" cy="20" r="15" fill="${color}" stroke="white" stroke-width="4"/><rect x="1" y="43" width="114" height="24" rx="12" fill="#FFFDF9" stroke="#E9E2D2"/><text x="58" y="60" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#252D2A">${approximate?'대략적인 위치':fresh&&!observed?'현재 위치':'마지막 확인 위치'}</text>`,116,69),approximate?'대략적인 위치':fresh&&!observed?'현재 위치':'마지막 확인 위치',116,69,20);
+   marker(markerPosition,image(`${pin}<rect x="1" y="43" width="114" height="24" rx="12" fill="#FFFDF9" stroke="#E9E2D2"/><text x="58" y="60" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#252D2A">${approximate?'대략적인 위치':fresh&&!observed?'현재 위치':'마지막 확인 위치'}</text>`,116,69),approximate?'대략적인 위치':fresh&&!observed?'현재 위치':'마지막 확인 위치',116,69,20);
   }
   return()=>overlays.splice(0).forEach(overlay=>overlay.setMap(null));
  },[ready,generation,start,destination,route,navigating,progress.along,progress.position,progress.timestamp,fresh,observed,approximate,fix,retry]);
