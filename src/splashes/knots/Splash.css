@@ -1,0 +1,28 @@
+/* 로컬 폰트라서 외부 폰트 서버 연결을 기다리지 않습니다. */
+@font-face{font-family:'Noto Serif KR';src:url('/assets/title-serif.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Noto Sans KR';src:url('/assets/noto-sans-kr.ttf') format('truetype');font-display:swap}
+/* 색은 모두 단색입니다. 그림자·그라데이션·발광 효과는 쓰지 않습니다. */
+.knots-splash{position:fixed;inset:0;z-index:1000;width:100%;height:100dvh;margin:0;padding:0;border:0;background:#F7F3EA;color:#245447;overflow:hidden;cursor:pointer;font-family:'Noto Sans KR',sans-serif;animation:knots-splash-leave 2.8s linear both;-webkit-tap-highlight-color:transparent}
+.knots-splash:focus-visible{outline:2px solid #B58A52;outline-offset:-8px}
+/* 장식과 로고를 같은 화면 중앙에 겹쳐 놓고 서로 다른 시간에 보입니다. */
+.knots-splash__art{position:absolute;left:50%;top:50%;width:144px;height:144px;margin:-72px 0 0 -72px;animation:knots-splash-art 2.8s ease both;pointer-events:none}
+.knots-splash__identity{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:knots-splash-identity 2.8s ease both;pointer-events:none}
+.knots-splash__brand{display:flex;align-items:center;justify-content:center;min-height:64px;color:#252D2A}
+.knots-splash__wordmark{font:500 44px/1.4 'Noto Serif KR',serif;letter-spacing:.12em}
+.knots-splash__message{font:400 17px/1.6 'Noto Sans KR',sans-serif;color:#65706B}
+.knots-splash__skip{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));left:16px;right:16px;text-align:center;font-size:12px;color:#65706B;animation:knots-splash-hint 2.8s linear both}
+/* 2.5~2.8초: 화면 전체를 옅게 만들어 뒤의 홈을 자연스럽게 드러냅니다. */
+@keyframes knots-splash-leave{0%,89.28%{opacity:1}100%{opacity:0}}
+@keyframes knots-splash-art{0%,40%{opacity:1;transform:translateY(0)}57%,100%{opacity:0;transform:translateY(-8px)}}
+/* 1.25초부터 로고와 문구를 함께 띄우고, 마지막 장면에서 정확히 중앙에 둡니다. */
+@keyframes knots-splash-identity{0%,44.64%{opacity:0;transform:translateY(8px)}62.5%,100%{opacity:1;transform:translateY(0)}}
+@keyframes knots-splash-hint{0%,75%{opacity:1}89.28%,100%{opacity:0}}
+/* 네 조각이 0~0.9초 동안 중앙으로 모입니다. SVG 선 모양 자체는 바뀌지 않습니다. */
+.knots-splash__art path{animation:knots-splash-gather .9s ease both}
+.knots-splash__north{--x:0px;--y:-14px}
+.knots-splash__east{--x:14px;--y:0px;stroke:#B58A52}
+.knots-splash__south{--x:0px;--y:14px}
+.knots-splash__west{--x:-14px;--y:0px}
+@keyframes knots-splash-gather{from{opacity:0;transform:translate(var(--x),var(--y))}to{opacity:1;transform:translate(0,0)}}
+/* 자바스크립트가 실행되기 전에도 움직임과 화면 노출을 막습니다. */
+@media(prefers-reduced-motion:reduce){.knots-splash{display:none;animation:none}.knots-splash *{animation:none!important}}
