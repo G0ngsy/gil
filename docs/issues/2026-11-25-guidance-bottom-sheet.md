@@ -21,3 +21,7 @@
 공식 근거: https://tmapapi.tmapmobility.com/main.html#webv2/docs/WebDocs.Tmap_resize 와 https://topopentile1.tmap.co.kr/scriptSDKV2/tmapjs2.min.js 에서 resize()의 컨테이너 크기 재확인 동작을 대조했다(2026-11-25). API 키/사용자 위치는 자료에 기록하지 않았다.
 
 최종 검증: 관련 브라우저 72개 전부 통과(test-results/.last-run.json passed, 실패 목록 없음). 320/390/430px 접기·펼치기, 지도 resize 호출/인스턴스 유지, 긴 상세 내부 스크롤, 200% 글자와 상단 안내 겹침, 카메라·세션·복원·뒤로가기 회귀를 확인했다.
+
+운영 확인 보완: 배포 완료 전 첫 실행은 이전 번들로 버튼을 찾지 못했다. Vercel success 이후 재확인했다. 운영 웹 글꼴 지연 로딩으로 접기 전후 지도 높이가 1.5px 변해 엄격한 크기 비교가 실패하여 document.fonts.ready 후 측정하도록 테스트를 수정했다. 실제 기능 실패와 배포/측정 시점을 구분한다.
+
+운영 검증 완료: 제품 커밋 d33c39f Vercel 자동배포 success. https://gilbit.vercel.app 에서 바텀 시트 브라우저5개 전부 통과(320/390/430px, 긴 상세, 글자200%). 운영 번들 UI를 모의 SDK/API/GPS로 검증한 결과이며 실제 지도 타일 재배치·갤럭시 터치/실외 위치 정확도는 별도 확인 대상이다. 후속 커밋은 테스트 로딩 대기와 결과 기록만 변경한다.
