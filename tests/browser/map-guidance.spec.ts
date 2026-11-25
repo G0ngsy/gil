@@ -21,10 +21,10 @@ for(const width of [360,390,430])test(`${width}px 지도 마커·진행 색상·
  const before=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));
  expect(before.some((o:any)=>o.title==='가까운 도서관'&&decodeURIComponent(o.icon).includes('#245447'))).toBe(true);
  expect(before.some((o:any)=>o.strokeColor==='#087F83')).toBe(true);
- await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect(page.locator('.map-recenter')).toHaveAttribute('data-following','true');
  await expect(page.getByRole('heading',{name:'보행로를 따라 직진하세요'})).toBeInViewport();await expect(page.getByTestId('live-remaining')).toBeInViewport();await expandJourney(page);await expect(page.getByRole('button',{name:'실제 카메라 켜기',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>(window as any).mapTest.layers.some((l:any)=>l.map&&l.options.radius===5))).toBe(true);
- const canvas=page.getByRole('region',{name:'가까운 도서관 도보 경로 지도'});await canvas.dispatchEvent('pointerdown',{clientX:100,clientY:300});await canvas.dispatchEvent('pointermove',{clientX:140,clientY:300});await canvas.dispatchEvent('pointerup');await expect(page.getByText('지도 둘러보는 중',{exact:true})).toBeVisible();
+ const canvas=page.getByRole('region',{name:'가까운 도서관 도보 경로 지도'});await canvas.dispatchEvent('pointerdown',{clientX:100,clientY:300});await canvas.dispatchEvent('pointermove',{clientX:140,clientY:300});await canvas.dispatchEvent('pointerup');await expect(page.locator('.map-recenter')).toHaveAttribute('data-following','false');
  const count=await page.evaluate(()=>(window as any).mapTest.centers.length);await page.clock.runFor(7000);await fix(page,37.56665);expect(await page.evaluate(()=>(window as any).mapTest.centers.length)).toBe(count);
  expect(await page.evaluate(()=>(window as any).mapTest.layers.some((l:any)=>l.map&&l.options.strokeColor==='#A8B5AC'))).toBe(true);
  await page.getByRole('button',{name:'현재 위치로 지도 이동',exact:true}).click();await expect(page.getByText('위치 따라가는 중',{exact:true})).toBeVisible();expect(await page.evaluate(()=>(window as any).mapTest.centers.length)).toBeGreaterThan(count);

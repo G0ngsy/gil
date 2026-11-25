@@ -21,7 +21,7 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
  // 안내 정보만 접습니다. 카메라 컴포넌트/기존 GPS 세션은 언마운트하지 않습니다.
  return <div className="journey-content" data-sheet-expanded={navigating?String(expanded):undefined}>
  <div className="journey-sheet-summary">
- {navigating&&<button className="journey-sheet-toggle" aria-expanded={expanded} aria-controls={detailId} onClick={()=>setExpanded(value=>!value)}><span className="journey-grip" aria-hidden="true"/><span>안내 정보 {expanded?'접기':'펼치기'}<span aria-hidden="true"> {expanded?'⌄':'⌃'}</span></span></button>}
+ {navigating&&<button className="journey-sheet-toggle" aria-label={`안내 정보 ${expanded?'접기':'펼치기'}`} aria-expanded={expanded} aria-controls={detailId} onClick={()=>setExpanded(value=>!value)}><span className="journey-more" aria-hidden="true">•••</span></button>}
  {navigating&&<div className="journey-remaining"><small>남은 거리{progress.arrived&&<span className="last-distance-label">경로 끝 기준</span>}{!active&&progress.position&&!progress.arrived&&<span className="last-distance-label">마지막 확인 기준</span>}</small><strong data-testid="live-remaining">{formatDistance(progress.position?progress.remaining:route.distanceMeters)}</strong><button className="journey-end" onClick={onFinish}>안내 종료</button></div>}
  {navigating&&!active&&!progress.arrived&&<button className="primary journey-start" onClick={onStart}>위치 안내 다시 시작</button>}
  {progress.arrived&&navigating&&<button className="primary journey-start" onClick={onFinish}>안내 마치기</button>}

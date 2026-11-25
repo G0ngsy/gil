@@ -197,7 +197,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-navigating .journey-details{margin-top:12px;padding-top:12px}
 .map-recenter{position:absolute;right:14px;bottom:50px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;z-index:5;pointer-events:none}
 .map-recenter button{width:48px;height:48px;background:var(--sheet);box-shadow:0 3px 15px #26372d26;pointer-events:auto;border:1px solid var(--line)}
-.map-recenter span{font-size:0.625rem;font-weight:650;color:var(--pine);background:#fffdf9f2;padding:6px 9px;border-radius:14px;box-shadow:0 2px 8px #26372d16}
+.map-recenter span:not(.sr-only){font-size:0.625rem;font-weight:650;color:var(--pine);background:#fffdf9f2;padding:6px 9px;border-radius:14px;box-shadow:0 2px 8px #26372d16}
 .map-key{position:absolute;bottom:20px;left:12px;right:12px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;background:#fffdf9eb;border-radius:12px;padding:6px 8px;font-size:0.5625rem;color:var(--ink);z-index:4;pointer-events:none}
 .map-key span{display:flex;align-items:center;gap:4px}.map-key i{display:inline-block;width:9px;height:9px;flex:none}
 .key-current{background:#2878D0;border:1px solid white;border-radius:50%;box-shadow:0 0 0 1px #2878D0}.key-destination{background:#245447;border-radius:2px 2px 6px 6px}.map-key .key-route,.map-key .key-completed{width:15px;height:4px;border-radius:4px;background:#087F83}.map-key .key-completed{background:#A8B5AC}
@@ -352,3 +352,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .map-recenter .map-camera-launch{pointer-events:auto}.map-recenter .map-camera-launch .camera-launch{display:flex;align-items:center;gap:7px;width:auto;max-width:calc(100vw - 40px);height:auto;min-height:44px;padding:11px 15px;margin:0 0 5px;border-radius:24px;background:var(--pine);color:#fffdf9;border:1px solid #fffdf9;box-shadow:0 3px 15px #26372d26;font-size:.8125rem}.map-camera-launch .camera-launch svg{width:20px;height:20px}
 
 .map-recenter .map-camera-launch .camera-launch{position:static;inset:auto;white-space:nowrap}.map-camera-launch .camera-launch svg{flex-shrink:0}
+
+/* 하단 카메라 전환·간결한 정보 토글. 접근성 이름과 펼침 상태는 유지합니다. */
+.map-recenter .map-camera-launch .camera-launch{margin:0;min-height:44px;padding:9px 13px}.journey-more{font-size:18px;letter-spacing:5px;line-height:1;color:var(--pine)}
