@@ -433,3 +433,5 @@ PWA 원격 최종 결과: 코드948777a의 자동배포success, [Production 설�
 
 ## 2026-11-25 기존 문 개선안 미리보기
 intro=refined 전용으로 3초·밝은 문색·모바일 원형 문고리·풍경 비율 유지·부드러운 홈 전환을 비교한다. 기본 스플래시/기존 문과 첫 방문 기록은 변경하지 않았다. 빌드·관련16개 통과, 최종 배경 조정 후 개선안4개 재통과. 캡처 assets/2026-11-25-refined-intro-{closed,logo}-390.png. CSS로 그린 형태/시간 비교용이며 수채 자산 재생성은 아니다. [이슈](../issues/2026-11-25-refined-intro-preview.md). AI 지원 구현, 실기기 성능 미확인.
+
+2026-11-25 문 개선안 미리보기: 코드8626b01 Vercel 자동배포 success. 배포 C4rn7hBdp54tTX8DKmcvJXEoQNqi. 공개 /?intro=refined에서390px 단독 문→로고→홈, splashSeen 미변경, 기본 / 매듭 유지 확인. 기본 연출 채택이 아닌 비교용 URL 추가다.
