@@ -354,4 +354,4 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .map-recenter .map-camera-launch .camera-launch{position:static;inset:auto;white-space:nowrap}.map-camera-launch .camera-launch svg{flex-shrink:0}
 
 /* 하단 카메라 전환·간결한 정보 토글. 접근성 이름과 펼침 상태는 유지합니다. */
-.map-recenter .map-camera-launch .camera-launch{margin:0;min-height:44px;padding:9px 13px}.journey-more{font-size:18px;letter-spacing:5px;line-height:1;color:var(--pine)}
+.map-recenter .map-camera-launch .camera-launch{margin:0;min-height:44px;padding:9px 13px}.journey-toggle-icon{display:block;flex-shrink:0;color:var(--pine)}
