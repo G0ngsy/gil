@@ -10,7 +10,7 @@ import {splitRoute} from '../../shared/mapRoute';
 import {Icon} from '../ui';
 import { loadTMap, point, type TMapOverlay, type TMapView } from './tmap';
 
-interface Props {start:Coordinate;destination:Place;route:WalkingRoute|null;progress:Progress;navigating:boolean;active:boolean;fix:Fix|null}
+interface Props {onCameraHost?:(element:HTMLDivElement|null)=>void;start:Coordinate;destination:Place;route:WalkingRoute|null;progress:Progress;navigating:boolean;active:boolean;fix:Fix|null}
 const image=(body:string,w:number,h:number)=>`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`)}`;
 const escape=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]!));
 /** Frame the next walkable section with room for the instruction card and pin labels. */
@@ -24,7 +24,7 @@ function frameAhead(sdk:Parameters<typeof point>[0],map:TMapView,position:Coordi
  }
  map.fitBounds(bounds,{left:65,top:340,right:85,bottom:90});
 }
-export function WalkingMap({start,destination,route,progress,navigating,active,fix}:Props) {
+export function WalkingMap({onCameraHost,start,destination,route,progress,navigating,active,fix}:Props) {
  const host=useRef<HTMLDivElement>(null),view=useRef<TMapView|null>(null);
  const layers=useRef<TMapOverlay[]>([]);
  const id=useId().replaceAll(':','');
@@ -80,6 +80,6 @@ export function WalkingMap({start,destination,route,progress,navigating,active,f
  const pointer=useRef<{x:number;y:number}|null>(null);
  return <div className={`live-map-wrapper ${!key||error?'map-compact':''}`}>
  <div id={`walking-map-${id}`} ref={host} className="live-map-canvas" style={!key||error?{display:'none'}:undefined} role="region" aria-label={`${destination.name} 도보 경로 지도`} onPointerDownCapture={e=>{pointer.current={x:e.clientX,y:e.clientY};}} onPointerMoveCapture={e=>{if(pointer.current&&Math.hypot(e.clientX-pointer.current.x,e.clientY-pointer.current.y)>8){setFollowing(false);pointer.current=null;}}} onPointerUpCapture={()=>{pointer.current=null;}} onPointerCancelCapture={()=>{pointer.current=null;}} onWheelCapture={()=>setFollowing(false)}/>
- {ready&&!error&&<><div className="map-recenter"><button className="icon-button" aria-label={navigating?'현재 위치로 지도 이동':'전체 경로 보기'} onClick={locate}><Icon name="locate"/></button>{navigating&&<span role="status">{approximate?`위치 오차 약 ${Math.round(fix!.accuracy)}m · 정확한 위치 대기`:!progress.position?'현재 위치 확인 중':!fresh?'마지막 위치 · 갱신 대기':following?'위치 따라가는 중':'지도 둘러보는 중'}</span>}</div><div className="map-key" aria-label="지도 표시 범례"><span><i className="key-current"/>현재 위치</span><span><i className="key-destination"/>{separateGoal?'경로 도착점':'목적지'}</span><span><i className="key-route"/>남은 경로</span>{navigating&&<span><i className="key-completed"/>지나온 경로</span>}</div>{navigating&&fix&&<span className="map-gps-accuracy">GPS 오차 약 {Math.round(fix.accuracy)}m</span>}</>}
+ {ready&&!error&&<><div className="map-recenter">{navigating&&<div className="map-camera-launch" ref={onCameraHost}/>}<button className="icon-button" aria-label={navigating?'현재 위치로 지도 이동':'전체 경로 보기'} onClick={locate}><Icon name="locate"/></button>{navigating&&<span role="status">{approximate?`위치 오차 약 ${Math.round(fix!.accuracy)}m · 정확한 위치 대기`:!progress.position?'현재 위치 확인 중':!fresh?'마지막 위치 · 갱신 대기':following?'위치 따라가는 중':'지도 둘러보는 중'}</span>}</div><div className="map-key" aria-label="지도 표시 범례"><span><i className="key-current"/>현재 위치</span><span><i className="key-destination"/>{separateGoal?'경로 도착점':'목적지'}</span><span><i className="key-route"/>남은 경로</span>{navigating&&<span><i className="key-completed"/>지나온 경로</span>}</div>{navigating&&fix&&<span className="map-gps-accuracy">GPS 오차 약 {Math.round(fix.accuracy)}m</span>}</>}
  {!key?<p className="compact-map-note" role="status">지도 준비 중 · 경로 안내는 사용할 수 있어요</p>:error?<div className="compact-map-note" role="alert"><p>{error}</p><button className="secondary" onClick={()=>{setError('');setRetry(n=>n+1);}}>지도 다시 불러오기</button></div>:!ready?<div className="map-message" role="status">지도를 불러오고 있어요…</div>:null}</div>;
 }

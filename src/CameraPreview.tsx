@@ -12,7 +12,7 @@ function cameraError(error:unknown){
  if(name==='NotReadableError')return '카메라를 사용할 수 없어요. 다른 앱에서 사용 중인지 확인해 주세요.';
  return '카메라 화면을 열지 못했어요. 잠시 후 다시 시도해 주세요.';
 }
-export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayRoot,onOpenChange,closeSignal}:{onMap:()=>void;live?:boolean;overlay?:ReactNode;onPlayingChange?:(playing:boolean)=>void;closeSignal?:number;overlayRoot?:HTMLElement|null;onOpenChange?:(open:boolean)=>void}){
+export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayRoot,onOpenChange,closeSignal,launcherRoot}:{onMap:()=>void;launcherRoot?:HTMLElement|null;live?:boolean;overlay?:ReactNode;onPlayingChange?:(playing:boolean)=>void;closeSignal?:number;overlayRoot?:HTMLElement|null;onOpenChange?:(open:boolean)=>void}){
  const [open,setOpen]=useState(false);
  const [state,setState]=useState<'idle'|'pending'|'playing'|'error'>('idle');
  const [error,setError]=useState('');
@@ -22,7 +22,8 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayR
  const panel=useRef<HTMLElement>(null),launch=useRef<HTMLButtonElement>(null),help=useRef<HTMLDialogElement>(null),info=useRef<HTMLButtonElement>(null);
  const wasOpen=useRef(false);
  useLayoutEffect(()=>{openNotice.current?.(open);return()=>{if(open)openNotice.current?.(false);};},[open]);
- useEffect(()=>{if(live&&open)panel.current?.focus();else if(live&&wasOpen.current)launch.current?.focus();wasOpen.current=open;},[open,live]);
+ // 지도 본문의 inert 해제 렌더가 끝난 뒤 실행 버튼으로 초점을 돌립니다.
+ useEffect(()=>{let frame=0;if(live&&open)panel.current?.focus();else if(live&&wasOpen.current)frame=requestAnimationFrame(()=>launch.current?.focus());wasOpen.current=open;return()=>cancelAnimationFrame(frame);},[open,live]);
  const video=useRef<HTMLVideoElement>(null);
  const stream=useRef<MediaStream|null>(null);
  const version=useRef(0);
@@ -60,5 +61,7 @@ export function CameraPreview({onMap,live=false,overlay,onPlayingChange,overlayR
  {live?<><div className="camera-live-controls"><button ref={info} className="camera-info-button icon-button" aria-label="카메라 안내 정보" onClick={()=>help.current?.showModal()}><span aria-hidden="true">ⓘ</span></button><button className="camera-map-button" onClick={()=>{close();onMap();}}><Icon name="map" size={20}/>지도 보기</button></div>
  <dialog ref={help} className="camera-help" aria-label="카메라 안내 정보"><div className="dialog-inner"><h2>카메라 안내 정보</h2><p>GPS와 경로를 기준으로 다음 행동을 알려줘요. 현재 바라보는 방향이나 실제 도로에 고정된 AR 화살표는 아니에요.</p><p>안전한 곳에 멈춰 확인하세요. 영상은 저장하거나 전송하지 않아요.</p><button className="primary" onClick={()=>{help.current?.close();info.current?.focus();}}>닫기</button></div></dialog></>:<div className="real-camera-controls"><p>안전한 곳에 멈춰 확인하세요.<br/>영상은 저장하거나 전송하지 않아요.</p><button className="secondary" onClick={close}>카메라 끄기</button><button className="secondary" onClick={()=>{close();onMap();}}>지도 보기</button></div>}
  </section>:null;
- return <>{!open&&<button ref={launch} className="secondary camera-launch" aria-label="실제 카메라 켜기" onClick={()=>void start()}>{live?<><Icon name="camera"/>카메라 안내</>:'실제 카메라 켜기'}</button>}{live&&overlayRoot?createPortal(preview,overlayRoot):preview}</>;
+ const launcher=!open&&<button ref={launch} className="secondary camera-launch" aria-label="실제 카메라 켜기" onClick={()=>void start()}>{live?<><Icon name="camera"/>{launcherRoot?'카메라로 보기':'카메라 안내'}</>:'실제 카메라 켜기'}</button>;
+ // 지도 버튼만 별도 위치에 표시하고 카메라 세션은 기존 컴포넌트에서 유지합니다.
+ return <>{launcherRoot?createPortal(launcher,launcherRoot):launcher}{live&&overlayRoot?createPortal(preview,overlayRoot):preview}</>;
 }
