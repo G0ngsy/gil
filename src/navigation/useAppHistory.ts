@@ -3,7 +3,7 @@
  */
 import {changeScreen,stopScreenMotion,type ScreenMotion} from './screenMotion';
 import {useLayoutEffect,useRef,useState} from 'react';
-export type Stage='home'|'results'|'route'|'map'|'history'|'privacy'|'ended'|'diagnostic';
+export type Stage='home'|'results'|'route'|'map'|'history'|'privacy'|'ended'|'diagnostic'|'photo';
 export interface View{stage:Stage;overlay?:'camera'|'confirm'}
 interface Entry extends View{session:string;depth:number}
 const key='gilbitNavigation';
@@ -19,7 +19,8 @@ export function useAppHistory(onChange:(next:View,previous:View)=>void){
   let motion:ScreenMotion='none';
   if(previous.stage!==next.stage){
    if((previous.stage==='results'&&next.stage==='route')||(previous.stage==='route'&&next.stage==='results'))motion='card';
-   else if((previous.stage==='home'&&next.stage==='history')||(previous.stage==='history'&&next.stage==='home'))motion=next.depth<previous.depth?'push-back':'push-forward';
+   // 기록/사진 화면은 같은 푸시 연출을 쓰고 방문 깊이로 뒤로가기 방향을 결정합니다.
+   else if((previous.stage==='home'&&(next.stage==='history'||next.stage==='photo'))||((previous.stage==='history'||previous.stage==='photo')&&next.stage==='home'))motion=next.depth<previous.depth?'push-back':'push-forward';
   }
   changeScreen(()=>{setView(next);if(announce)notify.current(next,previous);},motion);
  }

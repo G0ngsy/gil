@@ -20,6 +20,11 @@ async function start(page:Page){await setup(page);await page.getByRole('button',
 async function close(page:Page){await page.getByRole('button',{name:'안내 화면 닫기',exact:true}).click();await expect(page.getByRole('region',{name:'진행 중인 안내'})).toBeVisible();}
 async function details(page:Page){await expect(page.getByText('자세히 보기',{exact:true})).toHaveCount(0);}
 async function newDestination(page:Page){await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('새 목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeVisible();}
+test('사진 주변 장소 확인은 진행 중 목적지·복원 경로·GPS 감시를 덮어쓰지 않는다',async({page})=>{
+ await start(page);await close(page);const saved=await page.evaluate(()=>localStorage.getItem('gilbit.guidance.v1.live'));
+ await page.getByRole('button',{name:'사진으로 주변 장소 확인',exact:true}).click();await expect(page.getByRole('heading',{name:'주변 간판을 보여 주세요'})).toBeVisible();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();
+ await expect(page.getByRole('region',{name:'진행 중인 안내'})).toContainText('테스트 목적지');expect(await page.evaluate(()=>localStorage.getItem('gilbit.guidance.v1.live'))).toBe(saved);expect(await page.evaluate(()=>(window as any).liveGps)).toMatchObject({calls:1,clears:[]});
+});
 for(const width of [360,390,430])test(`${width}px X 홈 이동·복귀 중 GPS를 유지하고 남은 거리를 갱신한다`,async({page})=>{
  await page.setViewportSize({width,height:844});await start(page);await close(page);const search=await page.locator('.home-hero .search-form').boundingBox(),card=await page.locator('.ongoing-guidance').boundingBox(),location=await page.locator('.compact-location').boundingBox();expect(card!.y-search!.y-search!.height).toBeLessThanOrEqual(24);expect(location!.y-card!.y-card!.height).toBeLessThanOrEqual(24);await expect(page.getByText('위치 안내가 계속되고 있어요.',{exact:true})).toBeVisible();
  await page.clock.runFor(6000);await emit(page,37.5667,126.978);await expect(page.locator('.ongoing-distance')).not.toHaveText(/200m/);
