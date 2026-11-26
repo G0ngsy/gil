@@ -378,3 +378,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 
 /* 임시 센서 진단은 실제 안내와 분리하고 원본 값만 보여줍니다. */
 .heading-diagnostic{width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}.heading-diagnostic p{line-height:1.7;color:var(--muted)}.heading-diagnostic dl{margin:0;font-size:.75rem}.heading-diagnostic dl>div{padding:8px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.heading-diagnostic dt,.heading-diagnostic dd{margin:0;overflow-wrap:anywhere}.heading-diagnostic textarea{width:100%;max-width:100%;font-size:.75rem}.heading-diagnostic .sensor-diagnostics>*{margin-top:12px}.heading-diagnostic button{min-height:44px}
+/* 최근 검색을 검색창에 이어 붙여 하나의 펼침 패널로 보이게 합니다.
+   목록은 겹쳐 펼치므로 홈의 다른 카드 위치가 갑자기 밀리지 않습니다. */
+.search-entry:has(>.recent-search-suggestions)>.search-form{border-radius:18px 18px 0 0;box-shadow:none;background:var(--sheet);border-color:var(--pine);border-bottom-color:var(--line)}
+.search-entry:has(>.recent-search-suggestions)>.search-form:focus-within{outline:none}
+.search-entry:has(>.recent-search-suggestions)>.search-form input:focus-visible{outline:none}
+.search-entry>.recent-search-suggestions{top:calc(100% - 1px);border-radius:0 0 18px 18px;border-color:var(--pine);border-top:0;box-shadow:0 8px 16px #25372c10;padding:14px 12px 12px}
