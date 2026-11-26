@@ -3,7 +3,7 @@
  */
 import {changeScreen,stopScreenMotion,type ScreenMotion} from './screenMotion';
 import {useLayoutEffect,useRef,useState} from 'react';
-export type Stage='home'|'results'|'route'|'map'|'history'|'privacy'|'ended';
+export type Stage='home'|'results'|'route'|'map'|'history'|'privacy'|'ended'|'diagnostic';
 export interface View{stage:Stage;overlay?:'camera'|'confirm'}
 interface Entry extends View{session:string;depth:number}
 const key='gilbitNavigation';
