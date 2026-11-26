@@ -464,3 +464,7 @@ intro=refined 전용으로 3초·밝은 문색·모바일 원형 문고리·풍�
 홈 아이콘 전용 버튼을 아이콘+현재 위치 확인 글자 버튼으로 바꾸고 확인 중/다시 확인 상태를 표시한다. aria-label·44px 터치·위치 재조회 동작 유지. 빌드·관련14개 통과(모의 API/GPS), 캡처 assets/2026-11-26-location-action-label-390.png. [이슈](../issues/2026-11-26-location-action-label.md). AI 지원 수정, 실외 검증 아님.
 
 2026-11-26 현재 위치 글자 버튼 배포: 제품b5bf614 자동배포success, 배포GX12AFU2L9foSPrG3ubaW92fMtfv. 공개 기본주소360px HTTP200·현재 위치 확인 글자 상시 노출·44px 높이·가로 넘침 없음 확인. 원격 위치 권한 요청은 하지 않았다.
+
+
+## 2026-11-26 검색·기록 전환과 경로 타임라인
+최근 검색 후보/필터/삭제·320ms 목록 페이드업·360ms 카드 확장·300ms 기록 push/pop·실제 단계 타임라인을 적용했다. 네이티브 전환 미지원/실패와 동작 줄이기를 처리하고 기존 브라우저 기록/GPS 세션을 유지한다. 빌드·기본 테스트·관련 브라우저66개, 최종 네이티브 ready 검증8개 통과. API/GPS/SDK는 모의 검증, 실외/FPS 아님. 캡처 assets/2026-11-26-{recent-search,route-timeline}-390.png. [사용법](../search-experience.md), [문제 해결](../issues/2026-11-26-search-motion-timeline.md). AI 지원 구현.

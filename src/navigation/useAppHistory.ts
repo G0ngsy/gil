@@ -1,6 +1,7 @@
 /**
  * 뒤로가기 훅: 화면과 카메라/확인창의 방문 순서를 브라우저 기록과 연결하며 홈에서는 기본 뒤로가기를 막지 않습니다.
  */
+import {changeScreen,stopScreenMotion,type ScreenMotion} from './screenMotion';
 import {useLayoutEffect,useRef,useState} from 'react';
 export type Stage='home'|'results'|'route'|'map'|'history'|'privacy'|'ended';
 export interface View{stage:Stage;overlay?:'camera'|'confirm'}
@@ -13,7 +14,15 @@ export function useAppHistory(onChange:(next:View,previous:View)=>void){
  const [view,setView]=useState<View>(initial.current);
  const reset=useRef(false),travelling=useRef(false),queued=useRef<View|null>(null);
  // 방문 상태를 반영합니다. 뒤로 이동/홈 복귀일 때는 화면 정리 콜백도 실행합니다.
- function apply(next:Entry,announce=true){const previous=current.current;current.current=next;setView(next);if(announce)notify.current(next,previous);}
+ function apply(next:Entry,announce=true){
+  const previous=current.current;current.current=next;
+  let motion:ScreenMotion='none';
+  if(previous.stage!==next.stage){
+   if((previous.stage==='results'&&next.stage==='route')||(previous.stage==='route'&&next.stage==='results'))motion='card';
+   else if((previous.stage==='home'&&next.stage==='history')||(previous.stage==='history'&&next.stage==='home'))motion=next.depth<previous.depth?'push-back':'push-forward';
+  }
+  changeScreen(()=>{setView(next);if(announce)notify.current(next,previous);},motion);
+ }
  function replace(next:Entry){history.replaceState({...history.state,[key]:next},'');}
  useLayoutEffect(()=>{
   replace(initial.current);
@@ -27,7 +36,7 @@ export function useAppHistory(onChange:(next:View,previous:View)=>void){
    if(entry.overlay){history.back();return;} // Never revive camera or stale confirmation via Forward.
    apply(entry);
   };
-  window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);
+  window.addEventListener('popstate',pop);return()=>{stopScreenMotion();window.removeEventListener('popstate',pop);};
  },[]);
  // 다음 화면을 기록합니다. 홈 정리 중인 요청은 기록 이동이 끝난 뒤 반영합니다.
  function go(next:View){if(reset.current){queued.current=next;return;}if(next.stage===current.current.stage&&next.overlay===current.current.overlay)return;const entry={...next,session:current.current.session,depth:current.current.depth+1};history.pushState({...history.state,[key]:entry},'');apply(entry,false);}
