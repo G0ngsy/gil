@@ -20,16 +20,21 @@ export function Intro({children}:{children:ReactNode}){
  useEffect(()=>{
   if(!visible)return;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let cancelled=false;
+  // 이미지 준비 시간 때문에 전체 길이가 늘어나지 않도록 시작 시점부터 3초를 셉니다.
+  // 동작 줄이기에서는 이미지 준비나 타이머를 기다리지 않고 홈을 보여줍니다.
+  if(reduced){finish();return;}
   const timers:ReturnType<typeof setTimeout>[]=[];
   const later=(fn:()=>void,ms:number)=>timers.push(setTimeout(fn,ms));
-  // Decode before moving the panels so an uncached image cannot appear halfway through.
-  const images=['/assets/intro-landscape.png','/assets/gilbit-logo-reference.png'].map(src=>{const image=new Image();image.src=src;return image.decode().catch(()=>{});});
-  let started=false;
-  function begin(){if(cancelled||started)return;started=true;if(reduced){finish();return;}later(()=>setPhase('opening'),550);later(()=>setPhase('logo'),2150);later(()=>setPhase('logo-out'),3250);later(()=>setPhase('reveal'),3750);later(finish,4550);}
-  void Promise.all(images).then(begin);
-  later(begin,1500);
-  return()=>{cancelled=true;timers.forEach(clearTimeout);};
+  // 이미지는 미리 읽되 완료를 기다리지 않습니다. 실패 시에도 한지 배경은 유지됩니다.
+  for(const src of ['/assets/intro-landscape.png','/assets/gilbit-logo-reference.png']){
+   const image=new Image();image.src=src;void image.decode().catch(()=>{});
+  }
+  later(()=>setPhase('opening'),300); // 0.3~1.4초: 문 열림(기존 1.1초 유지)
+  later(()=>setPhase('logo'),1400); // 1.4~2초: 중앙 로고
+  later(()=>setPhase('logo-out'),2000); // 2~2.25초: 로고 퇴장
+  later(()=>setPhase('reveal'),2300); // 2.3~3초: 홈 줌인과 페이드
+  later(finish,3000);
+  return()=>timers.forEach(clearTimeout);
  },[visible]);
  return <><div className={`intro-home ${visible?(phase==='reveal'?'intro-home-revealing':'intro-home-waiting'):''}`} inert={visible} aria-hidden={visible||undefined}>{children}</div>{visible&&<section className={`door-intro door-intro-${phase}`} aria-label="길빛 시작 화면">
  <div className="intro-landscape" aria-hidden="true"/>

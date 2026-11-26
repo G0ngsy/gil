@@ -387,3 +387,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 
 /* 최근 목적지 제목에 기존 기록 아이콘을 사용하고 글자와 정렬합니다. */
 .history-destination-heading{display:flex;align-items:center;gap:7px}.history-destination-heading>svg{flex:none;color:var(--pine)}
+
+/* 기본 스플래시는 준비 시간 포함 3초: 마지막 홈 전환은 0.7초입니다. */
+.door-intro{transition-duration:.7s}.intro-center-logo{transition-duration:.25s}.intro-home-revealing{transition-duration:.7s,.7s}
+@media(prefers-reduced-motion:reduce){.door-intro,.intro-center-logo,.intro-home-revealing{transition-duration:0s}}

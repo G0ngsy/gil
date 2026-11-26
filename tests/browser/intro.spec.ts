@@ -35,3 +35,17 @@ test('이미지 실패와 저장소 차단이어도 홈 진입',async({page})=>{
  await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('blocked');};Storage.prototype.setItem=()=>{throw new Error('blocked');};});
  await page.route('**/assets/intro-*.png',r=>r.abort());await page.goto('/');await expect(page.locator('.door-intro')).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
 });
+
+for(const delayed of [false,true])test(`기본 문은 이미지 준비 지연 ${delayed}에서도 시작 후 3000ms에 홈 전환 완료`,async({page})=>{
+ if(delayed)await page.addInitScript(()=>{HTMLImageElement.prototype.decode=()=>new Promise(()=>{});});
+ // 검증 중 실제 시간이 함께 흐르지 않도록 페이지를 열기 전에 시계를 멈춥니다.
+ await page.clock.install({time:new Date('2026-11-26T04:00:00Z')});await page.clock.pauseAt(new Date('2026-11-26T04:00:01Z'));await page.goto('/?intro=1');
+ await expect(page.locator('.door-intro-closed')).toBeVisible();
+ await page.clock.runFor(300);await expect(page.locator('.door-intro-opening')).toBeVisible();
+ await page.clock.runFor(1100);await expect(page.locator('.door-intro-logo')).toBeVisible();
+ await page.clock.runFor(600);await expect(page.locator('.door-intro-logo-out')).toBeVisible();
+ await page.clock.runFor(300);await expect(page.locator('.intro-home-revealing')).toBeAttached();
+ await expect(page.locator('.intro-home-revealing')).toHaveCSS('transition-duration','0.7s, 0.7s');
+ await page.clock.runFor(699);await expect(page.locator('.door-intro')).toHaveCount(1);
+ await page.clock.runFor(1);await expect(page.locator('.door-intro')).toHaveCount(0);await expect(page.locator('[inert]')).toHaveCount(0);
+});
