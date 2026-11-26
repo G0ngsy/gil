@@ -113,3 +113,5 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 2026-11-25 스플래시 통합·배포 검증: 제품 b09466a(원격 경로 꺾쇠 76b81d7 보존 rebase), 빌드·기본138개·새 스플래시/기본 진입20개 재통과. 앞선 관련32개·최종 도안12개 검증과 구분한다. GitHub Vercel status success, 배포 EMwUCpWChLAPUfWaN8DP8izshyDN. 공개 gilbit.vercel.app의 knots/steps 두 주소에서 390px 단독 연출→홈, 기본 첫 방문 탭 스킵→splashSeen=true→새로고침 생략 확인. 연결 도구 배포 조회403 및 로컬 CLI 로그아웃 상태여서 직접 조회 대신 GitHub 배포 상태와 공개 페이지로 확인했다. 재로그인/새 수동 배포 없이 기존 자동배포를 사용했다. 실제 기기 FPS·API/GPS 정확도 검증은 이번 범위가 아니다.
 
 2026-11-25 문 개선안 미리보기: 코드8626b01 Vercel 자동배포 success. 배포 C4rn7hBdp54tTX8DKmcvJXEoQNqi. 공개 /?intro=refined에서390px 단독 문→로고→홈, splashSeen 미변경, 기본 / 매듭 유지 확인. 기본 연출 채택이 아닌 비교용 URL 추가다.
+
+2026-11-26 기본 문 복원 배포: 코드9150b24 자동배포success, 배포42WsmaJ2S2HbWwLnMEcZ7SDAXbf1. 공개 기본 / Chrome390px에서 기존문 기본진입·개선문고리2개/열림1.1초·기존배경/중앙로고→홈·세션재접속생략 확인. 전체3초 개선안을 기본 채택한 것이 아니라 문 부분만 교체했다.
