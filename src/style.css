@@ -403,3 +403,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-planning .journey-caption{margin-bottom:14px}
 .journey-planning .route-detail-list{border-top:1px solid var(--line);margin:10px 0 0}
 .journey-planning .route-detail-list summary{padding:8px 0}
+/* 안내 중에도 접힌 시트 한 줄에 예상 시간과 남은 거리를 함께 읽습니다. */
+.journey-trip{min-width:0;flex:1}.journey-trip-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px}
+.journey-trip-line>.journey-eta{white-space:nowrap;color:var(--ink)}
+.journey-distance{font-size:.8125rem;line-height:1.6;color:var(--muted)}

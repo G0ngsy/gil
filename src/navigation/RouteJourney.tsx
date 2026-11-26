@@ -15,12 +15,20 @@ interface Props{rerouting?:boolean;rerouteError?:string;onReroute?:()=>void;came
 // 경로 확인/안내 중 상태에 따라 거리·버튼·상세 목록을 구성합니다.
 export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl,rerouting,rerouteError,onReroute}:Props){
  const [expanded,setExpanded]=useState(false);
+ const [now,setNow]=useState(Date.now);
+ // GPS가 끊겼을 때 오래된 시간 추정을 계속 보여주지 않도록 안내 중에만 갱신합니다.
+ useEffect(()=>{if(!navigating||!active)return;setNow(Date.now());const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[navigating,active]);
+ const remaining=progress.position?progress.remaining:route.distanceMeters;
+ const fresh=!progress.position||Math.max(now,Date.now())-progress.timestamp<=10000;
+ // 전체 경로의 예상 시간을 남은 경로 비율로 환산합니다. 실제 보행 속도를 측정한 값은 아닙니다.
+ const estimate=active&&fresh&&!progress.offRoute&&!progress.rejected&&!progress.arrived&&route.distanceMeters>0
+  ?formatDuration(route.durationSeconds*Math.max(0,Math.min(1,remaining/route.distanceMeters))):null;
  const detailId=useId();
  // 안내 정보만 접습니다. 카메라 컴포넌트/기존 GPS 세션은 언마운트하지 않습니다.
  return <div className="journey-content" data-sheet-expanded={navigating?String(expanded):undefined}>
  <div className="journey-sheet-summary">
  {navigating&&<button className="journey-sheet-toggle" aria-label={`안내 정보 ${expanded?'접기':'펼치기'}`} aria-expanded={expanded} aria-controls={detailId} onClick={()=>setExpanded(value=>!value)}><svg className="journey-toggle-icon" data-direction={expanded?'down':'up'} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={expanded?'m6 9 6 6 6-6':'m6 15 6-6 6 6'}/></svg></button>}
- {navigating&&<div className="journey-remaining"><small>남은 거리{progress.arrived&&<span className="last-distance-label">경로 끝 기준</span>}{!active&&progress.position&&!progress.arrived&&<span className="last-distance-label">마지막 확인 기준</span>}</small><strong data-testid="live-remaining">{formatDistance(progress.position?progress.remaining:route.distanceMeters)}</strong><button className="journey-end" onClick={onFinish}>안내 종료</button></div>}
+ {navigating&&<div className="journey-remaining"><div className="journey-trip"><div className="journey-trip-line">{estimate&&<strong className="journey-eta" data-testid="live-eta">약 {estimate}</strong>}<span className="journey-distance">도보 · <span data-testid="live-remaining">{formatDistance(remaining)}</span></span></div>{progress.arrived&&<span className="last-distance-label">경로 끝 기준</span>}{!active&&progress.position&&!progress.arrived&&<span className="last-distance-label">마지막 확인 기준</span>}</div><button className="journey-end" onClick={onFinish}>안내 종료</button></div>}
  {navigating&&!active&&!progress.arrived&&<button className="primary journey-start" onClick={onStart}>위치 안내 다시 시작</button>}
  {progress.arrived&&navigating&&<button className="primary journey-start" onClick={onFinish}>안내 마치기</button>}
  {navigating&&!progress.arrived&&onReroute&&(progress.offRoute||rerouting||rerouteError)&&<div className="journey-reroute"><button className="secondary" disabled={rerouting} onClick={onReroute}>{rerouting?'현재 위치에서 다시 찾는 중…':'현재 위치에서 다시 찾기'}</button>{rerouteError&&<p className="inline-error" role="alert">{rerouteError}</p>}{rerouting&&<p role="status">새 경로를 받을 때까지 기존 안내를 유지해요.</p>}</div>}

@@ -82,3 +82,11 @@ test('경로 확인은 작은 화면·큰 글씨에도 시트 스크롤로 시�
  await page.setViewportSize({width:360,height:640});await setup(page,false,true);await page.addStyleTag({content:'html{font-size:200%!important}'});
  const start=page.getByRole('button',{name:'길 안내 시작',exact:true});await start.scrollIntoViewIfNeeded();await expect(start).toBeInViewport();const summary=page.locator('.route-detail-list summary');await summary.scrollIntoViewIfNeeded();await summary.click();await page.getByRole('list',{name:'경로 단계 타임라인'}).scrollIntoViewIfNeeded();expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThanOrEqual(180);expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
 });
+
+test('안내 중 예상 시간은 남은 경로에 따라 줄고 이탈·중지·도착에서는 숨긴다',async({page})=>{
+ await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect(page.getByTestId('live-eta')).toHaveText('약 3분');await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await expect(page.getByTestId('live-eta')).toHaveCount(0);await page.getByRole('button',{name:'위치 안내 다시 시작',exact:true}).click();await page.clock.runFor(1000);await fix(page);await expect(page.getByTestId('live-eta')).toHaveText('약 3분');
+ await page.clock.runFor(10000);await fix(page,37.567);await expect(page.getByTestId('live-eta')).toHaveText('약 2분');
+ await page.evaluate(()=>(window as any).mapFix({coords:{latitude:37.567,longitude:126.98,accuracy:5},timestamp:Date.now()+1}));await expect(page.getByRole('heading',{name:'경로를 벗어났어요'})).toBeVisible();await expect(page.getByTestId('live-eta')).toHaveCount(0);
+ await page.clock.runFor(1000);await fix(page,37.567);await expect(page.getByTestId('live-eta')).toHaveText('약 2분');await page.clock.runFor(11000);await expect(page.getByTestId('live-eta')).toHaveCount(0);
+ await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'목적지 근처에 도착했어요'})).toBeVisible();await expect(page.getByTestId('live-eta')).toHaveCount(0);
+});
