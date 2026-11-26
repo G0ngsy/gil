@@ -233,7 +233,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 @media(max-width:374px){:is(.journey-screen,.map-guidance-layer)>.journey-guidance{gap:10px;padding:13px}:is(.journey-screen,.map-guidance-layer)>.journey-guidance h2{font-size:1.25rem}}
 .instruction-copy>.instruction-road{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Home: scenery behind the heading, search followed immediately by compact cards. */
-.live-home>.landscape-home-hero{min-height:0;padding:76px 18px 12px;background-image:linear-gradient(to bottom,#f7f3ea14 0%,#f7f3ea55 34%,#f7f3ead9 80%,var(--paper) 100%),url('/assets/intro-landscape.png');background-size:100% 100%,100% auto;background-position:center,center 35%;flex:none}
+.live-home>.landscape-home-hero{min-height:0;padding:48px 18px 12px;background-image:linear-gradient(to bottom,#f7f3ea14 0%,#f7f3ea55 34%,#f7f3ead9 80%,var(--paper) 100%),url('/assets/intro-landscape.png');background-size:100% 100%,100% auto;background-position:center,center 35%;flex:none}
 .live-home>.landscape-home-hero h2{padding:0;margin:0 0 10px;text-align:center;font-size:1.875rem;line-height:1.4;letter-spacing:-1.2px;text-shadow:0 1px 10px #fffdf9e6}
 .live-home>.landscape-home-hero .search-form{margin-bottom:0;box-shadow:0 3px 10px #5d4b2710}
 .live-home>.live-home-body{padding:0 18px 20px}
