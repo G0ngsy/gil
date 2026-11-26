@@ -126,3 +126,8 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 설치된 Chrome 390×844에서 최근 검색어 선택→실제 TMAP 장소 검색200→장소 카드 확장→실제 보행 경로200→응답과 같은4단계 타임라인을 확인했다. 네이티브 화면 전환 ready가 카드 이동/복귀 및 기록 push-forward/push-back 모두 성공했고 브라우저 뒤로가기로 홈에 복귀했다. [운영 캡처](portfolio/assets/2026-11-26-search-experience-production-390.png).
 
 출발 위치만 서울시청 인근 공개 좌표와 오차8m를 주입했고 검색·경로 응답과 지도 SDK는 운영 연결을 사용했다. 실기기 센서·실외 이동·휴대폰별 애니메이션 성능은 미확인이다. 자동화 기본 Chromium 실행 파일이 없어 설치된 Chrome 채널로 검증했다. 이 후속 변경은 기록/캡처이며 기능 코드는 변경하지 않는다.
+
+## 2026-11-26 사진 주변 장소 확인 운영 검증
+제품 `5e8a712` 자동배포 success, 배포 ID `31WmiLXVePAYZnzXmBocud65wcPz`. 공개 https://gilbit.vercel.app/ Chrome390×844에서 실제 Tesseract6.0.1/core6.1.2와 kor/eng1.0.0 모델 버전을 확인했다.
+실제 엔진으로 Canvas 합성 ‘서울도서관 / 서울 중구’를 읽고, 확인한 검색어로 실제 TMAP 검색200·후보17개를 받아 서울도서관을 선택했다. push-forward/역방향 push-back의 네이티브 전환 ready 성공, 홈 GPS 상태 유지, 페이지 예외0. [운영 화면](portfolio/assets/2026-11-26-photo-place-production-390.png).
+사진은 합성 입력이며 GPS만 서울시청 인근 공공 좌표/오차8m를 주입했다. 사진/OCR/검색 응답을 모의로 대체하지 않았다. 실제 휴대폰 촬영·Samsung Internet/PWA·현장 간판 인식률·실외 위치 정확도는 미확인이다. 이 후속 변경은 검증 기록/화면 자료만 추가한다.
