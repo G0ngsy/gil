@@ -115,3 +115,5 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 2026-11-25 문 개선안 미리보기: 코드8626b01 Vercel 자동배포 success. 배포 C4rn7hBdp54tTX8DKmcvJXEoQNqi. 공개 /?intro=refined에서390px 단독 문→로고→홈, splashSeen 미변경, 기본 / 매듭 유지 확인. 기본 연출 채택이 아닌 비교용 URL 추가다.
 
 2026-11-26 기본 문 복원 배포: 코드9150b24 자동배포success, 배포42WsmaJ2S2HbWwLnMEcZ7SDAXbf1. 공개 기본 / Chrome390px에서 기존문 기본진입·개선문고리2개/열림1.1초·기존배경/중앙로고→홈·세션재접속생략 확인. 전체3초 개선안을 기본 채택한 것이 아니라 문 부분만 교체했다.
+
+2026-11-26 홈 제목 여백 배포: 제품4f13a10 Vercel success, 배포CTcqTCQusAnc4wZQEfkRzSdUMtXW. 공개 기본주소 Chrome390px HTTP200·home hero padding-top48px·제목/검색창 노출 확인.
