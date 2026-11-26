@@ -6,8 +6,8 @@ async function setup(page:Page){
 }
 test('현재 위치 주소 표시와 좌표가 본문에 담긴 주변 검색',async({page})=>{
  await setup(page);await page.goto('/');const panel=page.getByRole('region',{name:'현재 위치',exact:true});
- expect(await page.evaluate(()=>(window as any).geoCalls)).toBe(0);await panel.getByRole('button',{name:'현재 위치 확인',exact:true}).click();
- await expect(panel.getByText('서울특별시 중구 세종대로 110',{exact:true})).toBeVisible();await expect(page.getByRole('combobox',{name:'검색 범위'})).toHaveValue('nearby');
+ await page.evaluate(()=>document.fonts.ready);await panel.screenshot({path:'test-results/location-card-empty-390.png'});expect(await page.evaluate(()=>(window as any).geoCalls)).toBe(0);await panel.getByRole('button',{name:'현재 위치 확인',exact:true}).click();
+ await expect(panel.getByText('서울특별시 중구 세종대로 110',{exact:true})).toBeVisible();await panel.screenshot({path:'test-results/location-card-address-390.png'});await expect(page.getByRole('combobox',{name:'검색 범위'})).toHaveValue('nearby');
  const request=page.waitForRequest(r=>r.url().includes('action=search'));await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();
  const search=await request;expect(search.method()).toBe('POST');expect(search.postDataJSON()).toEqual({q:'도서관',center:origin});expect(search.url()).not.toContain('37.5665');await expect(page.getByText('주변 거리순',{exact:true})).toBeVisible();await expect(page.getByText(/직선 \d+m/)).toBeVisible();
  expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain('37.5665');

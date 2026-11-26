@@ -407,3 +407,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-trip{min-width:0;flex:1}.journey-trip-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px}
 .journey-trip-line>.journey-eta{white-space:nowrap;color:var(--ink)}
 .journey-distance{font-size:.8125rem;line-height:1.6;color:var(--muted)}
+/* 현재 위치 카드 전체를 하나의 버튼으로 사용합니다. 주소가 길면 자연스럽게 줄바꿈합니다. */
+.live-home .compact-location{padding:0}
+.location-card-action{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:16px;text-align:left;border-radius:inherit;background:var(--sheet)}
+.location-card-action>svg{flex:none;color:var(--pine)}
+.location-card-action .current-address{font-size:.9375rem;line-height:1.6}
+.location-card-action .compact-location-copy>small{display:block;margin-top:3px;font-size:.6875rem;line-height:1.6;color:var(--muted)}
+.compact-location>.inline-error,.compact-location>.address-warning,.compact-location>.text-button{margin:0 14px 12px}
