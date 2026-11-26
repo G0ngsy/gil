@@ -1,4 +1,5 @@
 /** 개인정보·이용 안내: 현재 구현의 권한, 기기 저장, 외부 요청과 삭제 방법을 설명합니다. */
+import {PwaInstall} from './PwaInstall';
 export function UsageGuide({onHistory}:{onHistory:()=>void}){
  return <article className="usage-guide" aria-labelledby="usage-title">
   <h1 id="usage-title">개인정보·이용 안내</h1>
@@ -37,5 +38,7 @@ export function UsageGuide({onHistory}:{onHistory:()=>void}){
    <p>카메라 안내는 안전한 곳에 멈춰 확인하세요. 위치 오차·지도 정보에 따라 안내가 달라질 수 있으므로 주변 신호와 실제 통행 가능 여부를 먼저 확인하세요.</p>
    <p>도착은 경로 끝 기준의 목적지 근처 안내예요. 실제 출입구는 현장에서 확인해 주세요. 검색·지도·새 경로 조회에는 인터넷 연결이 필요해요.</p>
   </section>
+  {/* 설치는 필요할 때 찾아볼 수 있도록 홈이 아닌 이용 안내에 둡니다. */}
+  <PwaInstall/>
  </article>;
 }
