@@ -391,3 +391,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 /* 기본 스플래시는 준비 시간 포함 3초: 마지막 홈 전환은 0.7초입니다. */
 .door-intro{transition-duration:.7s}.intro-center-logo{transition-duration:.25s}.intro-home-revealing{transition-duration:.7s,.7s}
 @media(prefers-reduced-motion:reduce){.door-intro,.intro-center-logo,.intro-home-revealing{transition-duration:0s}}
+/* 경로 확인은 내용만큼만 시트를 쓰고 나머지 높이를 지도에 돌려줍니다.
+   긴 이름/큰 글씨/펼친 상세는 시트 안에서 스크롤하여 지도와 버튼을 겹치지 않습니다. */
+.app-shell .live-route:has(.journey-planning .live-map-wrapper:not(.map-compact)){overflow:hidden;padding:0}
+.app-shell .journey-planning:has(.live-map-wrapper:not(.map-compact)){height:100%;min-height:0;overflow:hidden}
+.app-shell .journey-planning>.live-map-wrapper:not(.map-compact){flex:1;min-height:180px;height:auto}
+.app-shell .journey-planning>.journey-sheet{flex:none;padding:16px 22px max(12px,env(safe-area-inset-bottom));margin-top:0}
+.app-shell .journey-planning:has(.live-map-wrapper:not(.map-compact))>.journey-sheet{max-height:65%;overflow:auto;overscroll-behavior:contain}
+.journey-planning .journey-sheet-details:not([hidden]){padding-top:0;overflow:visible}
+.journey-planning .journey-content .journey-destination{margin-bottom:12px}
+.journey-planning .journey-caption{margin-bottom:14px}
+.journey-planning .route-access-note{border:0;background:none;padding:0;margin:10px 0;font-size:.6875rem;line-height:1.6}
+.journey-planning .route-detail-list{border-top:1px solid var(--line);margin:10px 0 0}
+.journey-planning .route-detail-list summary{padding:8px 0}

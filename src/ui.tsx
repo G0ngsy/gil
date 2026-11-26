@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 
 export function Icon({ name, size = 24 }: { name: string; size?: number }) {
  const paths: Record<string, ReactNode> = {
+ // 출발 행동 버튼에 쓰는 종이비행기입니다. 선 굵기는 기존 아이콘과 같습니다.
+ send: <path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/>,
  search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>,
  bell: <><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5l-2 3ZM10 21h4M12 2v2"/></>,
  back: <path d="m14 5-7 7 7 7"/>, close: <path d="m6 6 12 12M18 6 6 18"/>,

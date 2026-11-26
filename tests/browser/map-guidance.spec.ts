@@ -1,6 +1,6 @@
 import {expandJourney} from './helpers/journey';
 import {test,expect,type Page} from '@playwright/test';
-async function setup(page:Page,withTurn=false,gap=false){
+async function setup(page:Page,withTurn=false,gap=false,calculate=true){
  await page.clock.install({time:new Date('2026-11-12T00:00:00Z')});
  await page.addInitScript(()=>{
   navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:37.5665,longitude:126.978,accuracy:5},timestamp:Date.now()} as GeolocationPosition);
@@ -12,7 +12,7 @@ async function setup(page:Page,withTurn=false,gap=false){
  class Overlay{constructor(options){this.options=options;this.map=options.map;window.mapTest.layers.push(this);}setMap(map){this.map=map;}}
  Object.assign(window.Tmapv2,{Map:class{constructor(id){window.mapTest.maps++;document.getElementById(id).textContent='모의 지도';}setCenter(c){window.mapTest.centers.push(c);}fitBounds(){window.mapTest.centers.push({frame:true});}destroy(){}},LatLng:class{constructor(lat,lng){this.lat=lat;this.lng=lng;}},LatLngBounds:class{extend(){}},Size:class{constructor(w,h){this.w=w;this.h=h;}},Point:class{constructor(x,y){this.x=x;this.y=y;}},Marker:Overlay,Polyline:Overlay,Circle:Overlay});` }));
  await page.route('**/api/navigation?**',r=>{const a=new URL(r.request().url()).searchParams.get('action');return r.fulfill({json:a==='config'?{searchConfigured:true}:a==='route'?{route:{distanceMeters:200,durationSeconds:180,segments:[[{lat:37.5665,lng:126.978},{lat:37.5675,lng:126.978}]],steps:withTurn?[{lat:37.5665,lng:126.978,description:'보행로 이동',turnType:200},{lat:37.5675,lng:126.978,description:'우회전',turnType:13,roadName:'세종대로'}]:[{lat:37.5665,lng:126.978,description:'보행로를 따라 직진하세요',turnType:0}]}}:a==='address'?{location:{address:'서울 중구',area:'서울 중구'}}:{places:[{id:'test',name:'가까운 도서관',address:'서울 중구',category:'도서관',lat:gap?37.568:37.5675,lng:126.978,...(gap?{entrance:{lat:37.5675,lng:126.978}}:{})}]}});});
- await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByLabel('지도 표시 범례')).toBeVisible();
+ await page.goto('/');await expect(page.getByRole('button',{name:'실제 장소 검색',exact:true})).toBeEnabled();if(!calculate)await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('도서관');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();if(calculate)await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByLabel('지도 표시 범례')).toBeVisible();
 }
 async function fix(page:Page,lat=37.5665){await page.evaluate(lat=>(window as any).mapFix({coords:{latitude:lat,longitude:126.978,accuracy:5},timestamp:Date.now()}),lat);}
 for(const width of [360,390,430])test(`${width}px 지도 마커·진행 색상·따라가기·오래된 위치`,async({page})=>{
@@ -66,3 +66,19 @@ test('장소와 떨어진 경로 끝은 장소 도착으로 단정하지 않는�
 test('경로 화살표와 현재 위치 핀이 이동 방향을 표시한다',async({page})=>{await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);const icons=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));expect((await icons()).some((o:any)=>o.title==='경로 진행 방향'&&decodeURIComponent(o.icon).includes('stroke="#B8DED5"'))).toBe(true);await page.clock.runFor(6000);await fix(page,37.56665);let pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');await page.clock.runFor(1000);await fix(page,37.566651);pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');});
 
 test('출발은 회색 핀이며 현재 위치 수신 뒤 출발 마커가 겹치지 않는다',async({page})=>{await setup(page);const options=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));let all=await options();expect(decodeURIComponent(all.find((o:any)=>o.title==='출발').icon)).toContain('>출발</text>');expect(all.filter((o:any)=>o.title==='경로 진행 방향').length).toBeGreaterThanOrEqual(3);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect.poll(async()=>(await options()).some((o:any)=>o.title==='출발')).toBe(false);all=await options();let pin=decodeURIComponent(all.find((o:any)=>o.title==='현재 위치').icon);expect(pin).toContain('data-pin="location"');await page.clock.runFor(6000);await fix(page,37.56665);all=await options();pin=decodeURIComponent(all.find((o:any)=>o.title==='현재 위치').icon);expect(pin).toContain('data-pin="location"');expect(pin).toContain('data-heading="0"');});
+
+for(const width of [360,390,430])test(`${width}px 경로 찾기 하단 여백 축소·지도 확장·시작 아래 상세 노출`,async({page})=>{
+ await page.setViewportSize({width,height:844});await setup(page,false,true,false);await page.evaluate(()=>document.fonts.ready);
+ const find=page.getByRole('button',{name:'도보 경로 찾기',exact:true});await expect(find).toBeInViewport();
+ const initial=await page.locator('.live-map-wrapper').boundingBox();const button=await find.boundingBox();const sheet=await page.locator('.journey-sheet').boundingBox();
+ expect(sheet!.y+sheet!.height-button!.y-button!.height).toBeLessThanOrEqual(18);expect(initial!.height).toBeGreaterThan(844*.55);
+ await page.screenshot({path:`test-results/planning-before-${width}.png`});
+ await find.click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeInViewport();await expect(page.getByRole('note')).toBeInViewport();await expect(page.locator('.route-detail-list summary')).toBeInViewport();
+ expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThan(280);await page.screenshot({path:`test-results/planning-ready-${width}.png`});
+ await page.locator('.route-detail-list summary').click();await page.getByRole('list',{name:'경로 단계 타임라인'}).scrollIntoViewIfNeeded();await expect(page.getByRole('list',{name:'경로 단계 타임라인'})).toBeInViewport();expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThanOrEqual(180);
+ expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+});
+test('경로 확인은 작은 화면·큰 글씨에도 시트 스크롤로 시작/상세에 접근',async({page})=>{
+ await page.setViewportSize({width:360,height:640});await setup(page,false,true);await page.addStyleTag({content:'html{font-size:200%!important}'});
+ const start=page.getByRole('button',{name:'길 안내 시작',exact:true});await start.scrollIntoViewIfNeeded();await expect(start).toBeInViewport();const summary=page.locator('.route-detail-list summary');await summary.scrollIntoViewIfNeeded();await summary.click();await page.getByRole('list',{name:'경로 단계 타임라인'}).scrollIntoViewIfNeeded();expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThanOrEqual(180);expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+});
