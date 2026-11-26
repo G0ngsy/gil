@@ -324,3 +324,7 @@ intro=refined 전용으로 3초·밝은 문색·모바일 원형 문고리·풍�
 
 ## 2026-11-26 홈 제목 여백
 실제 홈 hero 상단 여백76→48px, 제목/검색 영역28px 상향. 빌드·모바일3개 배치/검색 검사 통과(모의 API). 캡처 assets/2026-11-26-home-title-spacing-390.png, [이슈](../issues/2026-11-26-home-title-spacing.md). AI 지원 수정.
+
+
+## 2026-11-26 현재 위치 버튼 설명
+홈 아이콘 전용 버튼을 아이콘+현재 위치 확인 글자 버튼으로 바꾸고 확인 중/다시 확인 상태를 표시한다. aria-label·44px 터치·위치 재조회 동작 유지. 빌드·관련14개 통과(모의 API/GPS), 캡처 assets/2026-11-26-location-action-label-390.png. [이슈](../issues/2026-11-26-location-action-label.md). AI 지원 수정, 실외 검증 아님.
