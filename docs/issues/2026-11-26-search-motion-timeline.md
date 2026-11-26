@@ -21,3 +21,5 @@ API/GPS/SDK는 이 검증에서 모의 응답/공개 테스트 좌표를 사용�
 ## 구현 참고
 - https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition
 - https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API/Using
+
+운영 결과(1972f83): 실제 TMAP 검색/경로200·4단계 타임라인·카드/기록 전환 ready·브라우저 뒤로가기 통과. 공개 좌표를 주입한 Chrome390px 검증이며 실외 검증은 아니다. 자동화 Chromium 미설치 문제는 설치된 Chrome 채널 사용으로 해결했다. [운영 기록](../deployment.md).

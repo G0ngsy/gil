@@ -11,3 +11,10 @@ RecentSearchSuggestions.tsx, navigation/screenMotion.ts/css, navigation/useAppHi
 
 ## 검증
 빌드/기본 테스트, 관련 브라우저66개와 최종 전환 ready8개 재검증 통과. API/GPS/지도 SDK는 모의 입력이며 실외 성능 검증은 별도다. [이슈](issues/2026-11-26-search-motion-timeline.md).
+
+## 2026-11-26 검색·전환·타임라인 운영 검증
+제품 `1972f83`의 GitHub Vercel 상태 success와 공개 https://gilbit.vercel.app/ 반영을 확인했다. 배포 ID `57QecSxbdFDWH5myDW5ZeJT8TyC5`.
+
+설치된 Chrome 390×844에서 최근 검색어 선택→실제 TMAP 장소 검색200→장소 카드 확장→실제 보행 경로200→응답과 같은4단계 타임라인을 확인했다. 네이티브 화면 전환 ready가 카드 이동/복귀 및 기록 push-forward/push-back 모두 성공했고 브라우저 뒤로가기로 홈에 복귀했다. [운영 캡처](portfolio/assets/2026-11-26-search-experience-production-390.png).
+
+출발 위치만 서울시청 인근 공개 좌표와 오차8m를 주입했고 검색·경로 응답과 지도 SDK는 운영 연결을 사용했다. 실기기 센서·실외 이동·휴대폰별 애니메이션 성능은 미확인이다. 자동화 기본 Chromium 실행 파일이 없어 설치된 Chrome 채널로 검증했다. 이 후속 변경은 기록/캡처이며 기능 코드는 변경하지 않는다.
