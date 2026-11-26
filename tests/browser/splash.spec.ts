@@ -16,15 +16,21 @@ for(const kind of ['knots','steps']){
   await page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'}).click();await page.clock.fastForward(4000);expect(await page.evaluate(()=>(window as any).splashTest.completed)).toBe(1);
  });
 }
-test('기본 첫 방문·탭 스킵·새로고침 및 새 페이지에서 저장 유지',async({page,context})=>{
- await page.goto('/');const button=page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'});await button.click();await expect(button).toHaveCount(0);expect(await page.evaluate(()=>localStorage.getItem('splashSeen'))).toBe('true');await page.reload();await expect(button).toHaveCount(0);const next=await context.newPage();await next.goto('/');await expect(next.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);
+test('대체안 컴포넌트 첫 방문·저장·다시 방문 생략은 유지',async({page,context})=>{
+ await context.route('**/__splash-harness?**',r=>r.fulfill({contentType:'text/html',body:'<div id="root"></div><script type="module" src="/tests/fixtures/splash-harness.tsx"></script>'}));
+ await page.goto('/__splash-harness?kind=knots');const button=page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'});await button.click();expect(await page.evaluate(()=>localStorage.getItem('splashSeen'))).toBe('true');expect(await page.evaluate(()=>(window as any).splashTest.completed)).toBe(1);await page.reload();await expect(button).toHaveCount(0);const next=await context.newPage();await next.goto('/__splash-harness?kind=knots');await expect(next.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);
 });
+
 test('키보드로도 즉시 건너뛰고 저장 차단이어도 홈으로 이동',async({page})=>{
- await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('blocked');};Storage.prototype.setItem=()=>{throw new Error('blocked');};});await page.goto('/');await page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'}).focus();await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+ await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('blocked');};Storage.prototype.setItem=()=>{throw new Error('blocked');};});await page.goto('/?splash=knots');await page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'}).focus();await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
 });
 test('동작 줄이기: 처음부터 및 재생 중 설정 변경 모두 즉시 종료',async({page})=>{
- await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem('splashSeen'))).toBe('true');await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/?splash=steps');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toBeVisible();await page.emulateMedia({reducedMotion:'reduce'});await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();expect(await page.evaluate(()=>sessionStorage.getItem('gilbit.intro.seen.v1'))).toBe('1');await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/?splash=steps');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toBeVisible();await page.emulateMedia({reducedMotion:'reduce'});await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);
 });
 test('시안 기본 주소는 새 연출 없이, 기존 문 주소는 문만 실행',async({page})=>{
  await page.goto('/?preview=1');await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await page.goto('/?intro=1');await expect(page.locator('.door-intro')).toBeVisible();await expect(page.getByRole('button',{name:'길빛 시작 화면 건너뛰기'})).toHaveCount(0);await page.getByRole('button',{name:'건너뛰기',exact:true}).click();await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
+});
+
+test('기본 주소는 개선된 문만 사용하고 기존 배경·로고·세션을 유지',async({page})=>{
+ await page.goto('/');await expect(page.locator('.door-intro')).toBeVisible();await expect(page.locator('.knots-splash,.steps-splash,.refined-intro')).toHaveCount(0);await expect(page.locator('.intro-landscape')).toBeAttached();await expect(page.locator('.intro-center-logo')).toBeAttached();await expect(page.locator('.intro-door .refined-handle')).toHaveCount(2);await page.getByRole('button',{name:'건너뛰기',exact:true}).click();expect(await page.evaluate(()=>localStorage.getItem('splashSeen'))).toBeNull();await page.reload();await expect(page.locator('.door-intro')).toHaveCount(0);await expect(page.getByRole('textbox',{name:'실제 목적지 검색'})).toBeVisible();
 });

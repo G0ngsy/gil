@@ -24,3 +24,5 @@
 @media(prefers-reduced-motion:reduce){.refined-intro{display:none}.refined-intro *,.refined-home{transition:none!important}.refined-home{opacity:1;transform:none}}
 /* 배경의 가장자리만 옅게 가려 한지 바탕과 연결합니다. 색이 변하는 효과는 없습니다. */
 .refined-scenery{mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 78%,transparent 100%)}
+/* 기본 연출에는 개선한 문만 이식합니다. 기존 로고/배경/홈 전환은 유지합니다. */
+.door-intro .refined-door{padding:12px;background:#9b7958;transition:transform 1.1s cubic-bezier(.4,0,.2,1)}

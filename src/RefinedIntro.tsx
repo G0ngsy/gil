@@ -3,8 +3,8 @@ import {Brand} from './ui';
 import './RefinedIntro.css';
 
 /** 문 이미지를 늘리지 않고 일정한 굵기의 창살과 원형 문고리를 그립니다. */
-function Door({side}:{side:'left'|'right'}){
- return <div className={`refined-door refined-door-${side}`} aria-hidden="true">
+export function Door({side,className=''}:{side:'left'|'right';className?:string}){
+ return <div className={`refined-door refined-door-${side} ${className}`} aria-hidden="true">
   <div className="refined-panel">
    {[14,27,73,86].map(x=><i key={`v${x}`} className="refined-stile" style={{left:`${x}%`}}/>)}
    {[8,17,83,92].map(y=><i key={`h${y}`} className="refined-rail" style={{top:`${y}%`}}/>)}

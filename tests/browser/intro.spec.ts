@@ -6,7 +6,8 @@ for(const width of [360,390,430,1280])test(`${width}px 문 열림 후 중앙 로
  await page.goto('/?intro=1');
  const intro=page.getByRole('region',{name:'길빛 시작 화면'});
  await expect(intro).toBeVisible();await expect(page.locator('[inert]')).toHaveCount(1);
- await page.locator('.intro-door-art').first().evaluate((img:HTMLImageElement)=>img.decode());
+ const handle=await page.locator('.intro-door .refined-handle').first().boundingBox();expect(handle!.width).toBe(handle!.height);await expect(page.locator('.intro-door-art')).toHaveCount(0);
+ await expect(page.locator('.intro-door').first()).toHaveCSS('transition-duration','1.1s');
  await expect(page.locator('.intro-door .brand')).toHaveCount(0);
  await expect(page.locator('.intro-center-logo')).toHaveCSS('opacity','0');
  await page.screenshot({path:`test-results/intro-closed-${width}.png`});
