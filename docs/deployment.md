@@ -117,3 +117,5 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 2026-11-26 기본 문 복원 배포: 코드9150b24 자동배포success, 배포42WsmaJ2S2HbWwLnMEcZ7SDAXbf1. 공개 기본 / Chrome390px에서 기존문 기본진입·개선문고리2개/열림1.1초·기존배경/중앙로고→홈·세션재접속생략 확인. 전체3초 개선안을 기본 채택한 것이 아니라 문 부분만 교체했다.
 
 2026-11-26 홈 제목 여백 배포: 제품4f13a10 Vercel success, 배포CTcqTCQusAnc4wZQEfkRzSdUMtXW. 공개 기본주소 Chrome390px HTTP200·home hero padding-top48px·제목/검색창 노출 확인.
+
+2026-11-26 현재 위치 글자 버튼 배포: 제품b5bf614 자동배포success, 배포GX12AFU2L9foSPrG3ubaW92fMtfv. 공개 기본주소360px HTTP200·현재 위치 확인 글자 상시 노출·44px 높이·가로 넘침 없음 확인. 원격 위치 권한 요청은 하지 않았다.
