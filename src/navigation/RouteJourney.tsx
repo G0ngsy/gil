@@ -1,7 +1,6 @@
 /**
  * 경로 안내 UI: 시작 전 거리/시간과 시작 버튼, 안내 중 남은 거리·종료·재탐색 및 다음 행동 카드를 표시합니다.
  */
-import {routeAccess} from '../../shared/routeAccess';
 import type {ReactNode} from 'react';
 import type {Place,WalkingRoute} from '../../shared/navigation';
 import {formatDistance,formatDuration} from '../../shared/navigation';
@@ -15,7 +14,6 @@ import {Icon} from '../ui';
 interface Props{rerouting?:boolean;rerouteError?:string;onReroute?:()=>void;cameraControl?:ReactNode;destination:Place;route:WalkingRoute;progress:Progress;active:boolean;notice:string;navigating:boolean;onStart:()=>void;onFinish:()=>void}
 // 경로 확인/안내 중 상태에 따라 거리·버튼·상세 목록을 구성합니다.
 export function RouteJourney({destination,route,progress,active,notice,navigating,onStart,onFinish,cameraControl,rerouting,rerouteError,onReroute}:Props){
- const access=routeAccess(route,route.segments[0]?.[0]??destination,destination);
  const [expanded,setExpanded]=useState(false);
  const detailId=useId();
  // 안내 정보만 접습니다. 카메라 컴포넌트/기존 GPS 세션은 언마운트하지 않습니다.
@@ -30,7 +28,6 @@ export function RouteJourney({destination,route,progress,active,notice,navigatin
  <div id={detailId} className="journey-sheet-details" hidden={navigating&&!expanded}>
  <div className="destination-heading journey-destination selected-destination"><SelectionCorner/><span className="result-icon"><Icon name="pin"/></span><div><h2>{destination.name}</h2>{!navigating&&<p>{destination.address}</p>}</div></div>
  {!navigating&&<><div className="trip-summary"><strong>{formatDuration(route.durationSeconds)}</strong><span>도보 · {formatDistance(route.distanceMeters)}</span></div><p className="journey-caption">전체 경로 기준 예상 시간</p><button className="primary journey-start" onClick={onStart}><Icon name="send"/>길 안내 시작</button></>}
- {access&&access.endGap>15&&<p className="route-access-note" role="note">도보 경로는 표시된 경로 도착점까지예요. 장소 위치와 약 {formatDistance(access.endGap)} 차이가 있어요. 현장의 출입구를 확인해 주세요.</p>}
  <details className="route-detail-list"><summary>전체 경로 상세 보기 · {route.steps.length}단계</summary><p>출발부터 경로 도착점까지의 전체 안내예요.</p>{route.steps.length?<div className="route-timeline"><div className="timeline-endpoint"><span className="timeline-dot"/><strong>경로 출발점</strong></div><ol aria-label="경로 단계 타임라인" role="list">{route.steps.map((step,index)=><li key={index}><span className="timeline-number" aria-hidden="true">{index+1}</span><div className="timeline-copy"><p>{step.description||'지도에서 이동 구간을 확인해 주세요.'}</p>{step.roadName&&<small>{step.roadName}</small>}</div></li>)}</ol><div className="timeline-endpoint timeline-destination"><span className="timeline-dot"/><div><strong>경로 도착점</strong><p>주변의 장소 이름과 출입구를 확인해 주세요.</p></div></div></div>:<p className="timeline-empty">상세 이동 안내가 없어요. 지도와 실제 출입구를 확인해 주세요.</p>}</details>
  {cameraControl}
  {navigating&&<p className="journey-safety"><Icon name="shield" size={16}/>주변과 신호를 확인하며 걸어가세요</p>}

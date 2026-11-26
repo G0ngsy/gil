@@ -52,10 +52,10 @@ test('오차 큰 GPS는 지도에서만 움직이고 정확한 GPS 회복 전 �
  await page.clock.runFor(21000);await expect(page.getByRole('button',{name:'위치 안내 다시 시작'})).toBeVisible();
 });
 
-test('경로 도착점과 장소 위치 차이를 표시하고 전체 안내를 제공한다',async({page})=>{
- await setup(page,false,true);await expect(page.getByRole('note')).toContainText('장소 위치와 약');
+test('경로 도착점 라벨을 글자에 맞추고 시작 아래 차이 문구는 표시하지 않는다',async({page})=>{
+ await setup(page,false,true);await expect(page.getByRole('note')).toHaveCount(0);
  const markers=await page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map&&l.options.title).map((l:any)=>l.options));
- expect(markers.find((m:any)=>m.title==='경로 도착점').position.lat).toBe(37.5675);expect(markers.find((m:any)=>m.title==='장소 위치').position.lat).toBe(37.568);
+ expect(markers.find((m:any)=>m.title==='경로 도착점').position.lat).toBe(37.5675);expect(markers.find((m:any)=>m.title==='경로 도착점').iconSize.w).toBeLessThan(100);expect(markers.find((m:any)=>m.title==='장소 위치').position.lat).toBe(37.568);
  await page.getByText('전체 경로 상세 보기 · 1단계',{exact:true}).click();await expect(page.locator('.route-detail-list ol')).toContainText('보행로를 따라 직진하세요');
 });
 
@@ -73,7 +73,7 @@ for(const width of [360,390,430])test(`${width}px 경로 찾기 하단 여백 �
  const initial=await page.locator('.live-map-wrapper').boundingBox();const button=await find.boundingBox();const sheet=await page.locator('.journey-sheet').boundingBox();
  expect(sheet!.y+sheet!.height-button!.y-button!.height).toBeLessThanOrEqual(18);expect(initial!.height).toBeGreaterThan(844*.55);
  await page.screenshot({path:`test-results/planning-before-${width}.png`});
- await find.click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeInViewport();await expect(page.getByRole('note')).toBeInViewport();await expect(page.locator('.route-detail-list summary')).toBeInViewport();
+ await find.click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeInViewport();await expect(page.getByRole('note')).toHaveCount(0);await expect(page.locator('.route-detail-list summary')).toBeInViewport();
  expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThan(280);await page.screenshot({path:`test-results/planning-ready-${width}.png`});
  await page.locator('.route-detail-list summary').click();await page.getByRole('list',{name:'경로 단계 타임라인'}).scrollIntoViewIfNeeded();await expect(page.getByRole('list',{name:'경로 단계 타임라인'})).toBeInViewport();expect((await page.locator('.live-map-wrapper').boundingBox())!.height).toBeGreaterThanOrEqual(180);
  expect(await page.locator('main').evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);

@@ -257,7 +257,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 
 .pwa-install{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--sheet)}.pwa-install h3{font-size:0.9375rem;line-height:1.6}.pwa-install p{font-size:0.75rem;line-height:1.8;color:var(--muted);margin:6px 0}.pwa-install .secondary{margin-top:10px;min-height:44px}
 
-.route-access-note{font-size:0.75rem;line-height:1.8;color:var(--muted);padding:12px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;margin:12px 0}.route-detail-list{margin:12px 0;font-size:0.8125rem;line-height:1.8}.route-detail-list summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--pine);font-weight:650}.route-detail-list p{color:var(--muted)}.route-detail-list ol{padding-left:24px}.route-detail-list li{padding:8px 0;border-bottom:1px solid var(--line)}.map-gps-accuracy{position:absolute;left:12px;bottom:38px;border-radius:12px;background:#fffdf9ed;padding:4px 9px;font-size:0.625rem;color:var(--ink);z-index:3}
+.route-detail-list{margin:12px 0;font-size:0.8125rem;line-height:1.8}.route-detail-list summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--pine);font-weight:650}.route-detail-list p{color:var(--muted)}.route-detail-list ol{padding-left:24px}.route-detail-list li{padding:8px 0;border-bottom:1px solid var(--line)}.map-gps-accuracy{position:absolute;left:12px;bottom:38px;border-radius:12px;background:#fffdf9ed;padding:4px 9px;font-size:0.625rem;color:var(--ink);z-index:3}
 
 /* Keep guidance anchored to the visible navigation viewport, outside scrolling content. */
 .navigation-viewport{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;isolation:isolate}
@@ -401,6 +401,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .journey-planning .journey-sheet-details:not([hidden]){padding-top:0;overflow:visible}
 .journey-planning .journey-content .journey-destination{margin-bottom:12px}
 .journey-planning .journey-caption{margin-bottom:14px}
-.journey-planning .route-access-note{border:0;background:none;padding:0;margin:10px 0;font-size:.6875rem;line-height:1.6}
 .journey-planning .route-detail-list{border-top:1px solid var(--line);margin:10px 0 0}
 .journey-planning .route-detail-list summary{padding:8px 0}

@@ -61,7 +61,11 @@ export function WalkingMap({onCameraHost,start,destination,route,progress,naviga
   // 안내 전에는 출발 핀, 실제 위치 수신 뒤에는 현재 위치 핀만 표시해 겹치지 않게 합니다.
   if(!navigating||!markerPosition)marker(start,image('<path d="M42 2C32 2 24 10 24 20c0 12 18 20 18 20s18-8 18-20C60 10 52 2 42 2Z" fill="#77776E" stroke="white" stroke-width="3"/><circle cx="42" cy="20" r="6" fill="white"/><rect x="15" y="43" width="54" height="22" rx="11" fill="#FFFDF9" stroke="#E9E2D2"/><text x="42" y="58" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#252D2A">출발</text>',84,68),'출발',84,68,20);
   const label=separateGoal?'경로 도착점':destination.name;
-  const name=escape(label.length>14?label.slice(0,14)+'…':label);const labelWidth=Math.max(92,Math.min(220,destination.name.length*13+24));
+  // 실제 표시 문구를 같은 글꼴로 재어 장소 이름 길이가 도착점 박스에 영향을 주지 않게 합니다.
+  const displayLabel=label.length>14?label.slice(0,14)+'…':label;
+  const context=document.createElement('canvas').getContext('2d');
+  if(context)context.font='bold 12px sans-serif';
+  const name=escape(displayLabel),labelWidth=Math.max(76,Math.ceil(context?.measureText(displayLabel).width??displayLabel.length*12)+24);
   marker(goal,image(`<path d="M${labelWidth/2} 43s-17-17-17-27a17 17 0 1 1 34 0c0 10-17 27-17 27" fill="#245447" stroke="white" stroke-width="2"/><path d="M${labelWidth/2-5} 25V9h12v9h-12" fill="white" stroke="white" stroke-width="2"/><rect x="1" y="46" width="${labelWidth-2}" height="26" rx="13" fill="#FFFDF9" stroke="#E9E2D2"/><text x="${labelWidth/2}" y="64" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#245447">${name}</text>`,labelWidth,74),separateGoal?'경로 도착점':destination.name,labelWidth,74,43);
   if(separateGoal)marker(destination,image('<circle cx="40" cy="12" r="7" fill="#FFFDF9" stroke="#245447" stroke-width="3"/><rect x="1" y="22" width="78" height="19" rx="9" fill="#FFFDF9" stroke="#E9E2D2"/><text x="40" y="36" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#245447">장소 위치</text>',80,42),'장소 위치',80,42,12);
   if(navigating&&markerPosition){
