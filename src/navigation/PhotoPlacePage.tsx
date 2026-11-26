@@ -287,10 +287,10 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
             : step === "text"
               ? "읽은 글자를 확인해 주세요"
               : step === "reading"
-                ? "간판 글자를 읽고 있어요"
+                ? "사진의 글자를 읽고 있어요"
                 : step === "review"
                   ? "이 사진을 확인해 주세요"
-                  : "주변 간판을 보여 주세요"}
+                  : "지금 계신 곳을 보여 주세요"}
       </h2>
       {error && (
         <p className="inline-error" role="alert">
@@ -301,13 +301,13 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
       {(step === "input" || step === "review") && (
         <>
           <p className="photo-description">
-            안전한 곳에 멈춰 간판과 지점명이 크게 나오게 촬영해 주세요.
+            안전한 곳에 멈춰 주변 건물의 이름이나 글자가 보이게 촬영해 주세요.
           </p>
           {step === "review" && preview && (
             <img
               className="photo-preview"
               src={preview}
-              alt="선택한 간판 사진"
+              alt="선택한 사진"
             />
           )}
           {preparing && <p role="status">사진을 준비하고 있어요…</p>}
@@ -318,7 +318,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
               onClick={() => camera.current?.click()}
             >
               <Icon name="camera" />
-              간판 촬영
+              사진 촬영
             </button>
             <button
               className="secondary"
@@ -351,7 +351,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
         type="file"
         accept="image/jpeg,image/png,image/webp"
         capture="environment"
-        aria-label="간판 촬영 파일"
+        aria-label="사진 촬영 파일"
         hidden
         onChange={(e) => void choosePhoto(e)}
       />
@@ -359,7 +359,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
         ref={gallery}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        aria-label="간판 사진 파일"
+        aria-label="선택한 사진 파일"
         hidden
         onChange={(e) => void choosePhoto(e)}
       />
@@ -370,7 +370,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
           <p>
             {readingProgress.phase === "preparing"
               ? "인식 기능을 준비하고 있어요…"
-              : "간판 글자를 읽고 있어요…"}
+              : "사진의 글자를 읽고 있어요…"}
           </p>
           {readingProgress.phase === "recognizing" && (
             <progress

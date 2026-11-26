@@ -104,7 +104,7 @@ async function open(page: Page) {
     .getByRole("button", { name: "사진으로 주변 장소 확인", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "주변 간판을 보여 주세요" }),
+    page.getByRole("heading", { name: "지금 계신 곳을 보여 주세요" }),
   ).toBeVisible();
 }
 async function image(page: Page, width = 900, height = 300) {
@@ -134,10 +134,10 @@ async function image(page: Page, width = 900, height = 300) {
 }
 async function photo(page: Page) {
   await page
-    .getByLabel("간판 사진 파일", { exact: true })
+    .getByLabel("선택한 사진 파일", { exact: true })
     .setInputFiles(await image(page));
   await expect(
-    page.getByRole("img", { name: "선택한 간판 사진" }),
+    page.getByRole("img", { name: "선택한 사진" }),
   ).toBeVisible();
 }
 
@@ -256,7 +256,7 @@ test("취소·빠른 재선택·브라우저 뒤로가기 후 늦은 OCR은 반�
   await page.goBack();
   await expect(page.locator(".home-hero")).toBeVisible();
   await open(page);
-  await expect(page.getByRole("img", { name: "선택한 간판 사진" })).toHaveCount(
+  await expect(page.getByRole("img", { name: "선택한 사진" })).toHaveCount(
     0,
   );
 });
@@ -267,7 +267,7 @@ test("파일 오류·인식 실패·직접 입력과 지역명 검색·후보 �
   await setup(page, "error");
   await open(page);
   await page
-    .getByLabel("간판 사진 파일", { exact: true })
+    .getByLabel("선택한 사진 파일", { exact: true })
     .setInputFiles({
       name: "bad.heic",
       mimeType: "image/heic",
@@ -275,7 +275,7 @@ test("파일 오류·인식 실패·직접 입력과 지역명 검색·후보 �
     });
   await expect(page.getByRole("alert")).toContainText("JPG");
   await page
-    .getByLabel("간판 사진 파일", { exact: true })
+    .getByLabel("선택한 사진 파일", { exact: true })
     .setInputFiles({
       name: "bad.jpg",
       mimeType: "image/jpeg",
