@@ -435,3 +435,7 @@ PWA 원격 최종 결과: 코드948777a의 자동배포success, [Production 설�
 intro=refined 전용으로 3초·밝은 문색·모바일 원형 문고리·풍경 비율 유지·부드러운 홈 전환을 비교한다. 기본 스플래시/기존 문과 첫 방문 기록은 변경하지 않았다. 빌드·관련16개 통과, 최종 배경 조정 후 개선안4개 재통과. 캡처 assets/2026-11-25-refined-intro-{closed,logo}-390.png. CSS로 그린 형태/시간 비교용이며 수채 자산 재생성은 아니다. [이슈](../issues/2026-11-25-refined-intro-preview.md). AI 지원 구현, 실기기 성능 미확인.
 
 2026-11-25 문 개선안 미리보기: 코드8626b01 Vercel 자동배포 success. 배포 C4rn7hBdp54tTX8DKmcvJXEoQNqi. 공개 /?intro=refined에서390px 단독 문→로고→홈, splashSeen 미변경, 기본 / 매듭 유지 확인. 기본 연출 채택이 아닌 비교용 URL 추가다.
+
+
+## 2026-11-26 스플래시 시간 기준 확인
+운영 Chrome390px에서 개선안 연출3.009초/초기 로딩 포함약4.4초, 기존문 약6.0초, 기본매듭2.814초를 각1회 측정했다. ‘총3초’ 설명의 기준을 정정했고 기본/비교 연출 코드는 바꾸지 않았다. [조건·한계·전체 실측](../validation-2026-11-26-splash-timing.md), [이슈](../issues/2026-11-26-splash-timing-explanation.md). 실기기 일반화 불가, AI 지원 운영 확인.
