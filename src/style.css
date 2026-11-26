@@ -384,3 +384,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .search-entry:has(>.recent-search-suggestions)>.search-form:focus-within{outline:none}
 .search-entry:has(>.recent-search-suggestions)>.search-form input:focus-visible{outline:none}
 .search-entry>.recent-search-suggestions{top:calc(100% - 1px);border-radius:0 0 18px 18px;border-color:var(--pine);border-top:0;box-shadow:0 8px 16px #25372c10;padding:14px 12px 12px}
+
+/* 최근 목적지 제목에 기존 기록 아이콘을 사용하고 글자와 정렬합니다. */
+.history-destination-heading{display:flex;align-items:center;gap:7px}.history-destination-heading>svg{flex:none;color:var(--pine)}
