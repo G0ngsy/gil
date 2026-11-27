@@ -40,3 +40,6 @@ OCR은 사진의 글자를 읽을 뿐 좌표를 직접 반환하지 않는다. T
 - [Cloud Vision OCR](https://docs.cloud.google.com/vision/docs/ocr): 이미지 텍스트 추출 API.
 - [TMAP POI 통합 검색](https://tmap-skopenapi.readme.io/reference/%EC%9E%A5%EC%86%8C%ED%86%B5%ED%95%A9%EA%B2%80%EC%83%89): 상호·주소·전화번호, 중심/지역 제한 및 장소 좌표.
 - [ARCore Geospatial](https://developers.google.com/ar/develop/geospatial/), [VPS 지원 확인](https://developers.google.com/ar/develop/java/geospatial/check-vps-availability): 센서/GPS/시각적 특징 결합과 지역별 지원 확인.
+
+## 2026-11-27 현장 실패 추가
+사용자 영상에서 OCR 오인식 문자열 나열을 확인했고 GPS 반대편 도로 표시를 보고받았다. 합성 입력/운영 연결 성공과 현장 사용 성능을 구분한다. 아직 미해결이며 원본 촬영 사진으로 재현이 필요하다. [상세 기록](issues/2026-11-27-field-ocr-gps-report.md).
