@@ -63,9 +63,29 @@ test('장소와 떨어진 경로 끝은 장소 도착으로 단정하지 않는�
  await setup(page,false,true);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page,37.5675);await page.clock.runFor(1000);await fix(page,37.5675);await expect(page.getByRole('heading',{name:'목적지 근처에 도착했어요',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'목적지에 도착했어요',exact:true})).toHaveCount(0);await expect(page.getByText('경로 끝 기준',{exact:true})).toBeVisible();await expect(page.getByText('실제 출입구를 확인해 주세요.',{exact:true})).toBeVisible();
 });
 
-test('경로 화살표와 현재 위치 핀이 이동 방향을 표시한다',async({page})=>{await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);const icons=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));expect((await icons()).some((o:any)=>o.title==='경로 진행 방향'&&decodeURIComponent(o.icon).includes('stroke="#B8DED5"'))).toBe(true);await page.clock.runFor(6000);await fix(page,37.56665);let pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');await page.clock.runFor(1000);await fix(page,37.566651);pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');});
+test('경로 화살표와 현재 위치 점이 이동 방향을 표시한다',async({page})=>{await setup(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);const icons=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));expect((await icons()).some((o:any)=>o.title==='경로 진행 방향'&&decodeURIComponent(o.icon).includes('stroke="#B8DED5"'))).toBe(true);await page.clock.runFor(6000);await fix(page,37.56665);let pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');await page.clock.runFor(1000);await fix(page,37.566651);pin=(await icons()).find((o:any)=>o.title==='현재 위치');expect(decodeURIComponent(pin.icon)).toContain('data-heading="0"');});
 
-test('출발은 회색 핀이며 현재 위치 수신 뒤 출발 마커가 겹치지 않는다',async({page})=>{await setup(page);const options=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));let all=await options();expect(decodeURIComponent(all.find((o:any)=>o.title==='출발').icon)).toContain('>출발</text>');expect(all.filter((o:any)=>o.title==='경로 진행 방향').length).toBeGreaterThanOrEqual(3);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);await expect.poll(async()=>(await options()).some((o:any)=>o.title==='출발')).toBe(false);all=await options();let pin=decodeURIComponent(all.find((o:any)=>o.title==='현재 위치').icon);expect(pin).toContain('data-pin="location"');await page.clock.runFor(6000);await fix(page,37.56665);all=await options();pin=decodeURIComponent(all.find((o:any)=>o.title==='현재 위치').icon);expect(pin).toContain('data-pin="location"');expect(pin).toContain('data-heading="0"');});
+test('출발 핀은 고정되고 현재 위치 점만 GPS 이동을 따른다',async({page})=>{
+ await setup(page);
+ const options=()=>page.evaluate(()=>(window as any).mapTest.layers.filter((l:any)=>l.map).map((l:any)=>l.options));
+ let all=await options();const origin=all.find((o:any)=>o.title==='출발').position;
+ expect(all.filter((o:any)=>o.title==='현재 위치')).toHaveLength(0);
+ expect(decodeURIComponent(all.find((o:any)=>o.title==='출발').icon)).toContain('>출발</text>');
+ await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await fix(page);
+ all=await options();expect(all.filter((o:any)=>o.title==='출발')).toHaveLength(1);
+ expect(all.find((o:any)=>o.title==='출발').position).toEqual(origin);
+ let current=all.find((o:any)=>o.title==='현재 위치');
+ expect(decodeURIComponent(current.icon)).toContain('data-marker="current-location"');
+ expect(decodeURIComponent(current.icon)).toContain('<circle cx="58" cy="20" r="10"');
+ expect(current.zIndex).toBeGreaterThan(all.find((o:any)=>o.title==='출발').zIndex);
+ await page.clock.runFor(6000);await fix(page,37.56665);all=await options();
+ expect(all.find((o:any)=>o.title==='출발').position).toEqual(origin);
+ current=all.find((o:any)=>o.title==='현재 위치');expect(current.position.lat).toBe(37.56665);
+ expect(decodeURIComponent(current.icon)).toContain('data-heading="0"');
+ const legend=page.getByLabel('지도 표시 범례');await expect(legend).toContainText('출발');await expect(legend).toContainText('현재 위치');
+ await page.clock.runFor(10500);all=await options();expect(all.find((o:any)=>o.title==='출발').position).toEqual(origin);
+ expect(decodeURIComponent(all.find((o:any)=>o.title==='마지막 확인 위치').icon)).toContain('#77776E');
+});
 
 for(const width of [360,390,430])test(`${width}px 경로 찾기 하단 여백 축소·지도 확장·시작 아래 상세 노출`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page,false,true,false);await page.evaluate(()=>document.fonts.ready);
