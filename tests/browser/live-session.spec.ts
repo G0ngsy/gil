@@ -22,7 +22,7 @@ async function details(page:Page){await expect(page.getByText('자세히 보기'
 async function newDestination(page:Page){await page.getByRole('textbox',{name:'실제 목적지 검색'}).fill('새 목적지');await page.getByRole('button',{name:'실제 장소 검색',exact:true}).click();await page.locator('.result-card').click();await page.getByRole('button',{name:'도보 경로 찾기',exact:true}).click();await expect(page.getByRole('button',{name:'길 안내 시작',exact:true})).toBeVisible();}
 test('사진 주변 장소 확인은 진행 중 목적지·복원 경로·GPS 감시를 덮어쓰지 않는다',async({page})=>{
  await start(page);await close(page);const saved=await page.evaluate(()=>localStorage.getItem('gilbit.guidance.v1.live'));
- await page.getByRole('button',{name:'사진으로 주변 장소 확인',exact:true}).click();await expect(page.getByRole('heading',{name:'지금 계신 곳을 보여 주세요'})).toBeVisible();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();
+ await page.getByRole('button',{name:'현재 위치 다시 확인',exact:true}).click();await page.getByRole('button',{name:'사진으로 주변 확인',exact:true}).click();await expect(page.getByRole('heading',{name:'지금 계신 곳을 보여 주세요'})).toBeVisible();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();
  await expect(page.getByRole('region',{name:'진행 중인 안내'})).toContainText('테스트 목적지');expect(await page.evaluate(()=>localStorage.getItem('gilbit.guidance.v1.live'))).toBe(saved);expect(await page.evaluate(()=>(window as any).liveGps)).toMatchObject({calls:1,clears:[]});
 });
 for(const width of [360,390,430])test(`${width}px X 홈 이동·복귀 중 GPS를 유지하고 남은 거리를 갱신한다`,async({page})=>{
@@ -37,7 +37,7 @@ test('자동 위치 중단·홈·복귀는 진행을 보존하고 재시도 후�
  expect(await page.evaluate(()=>(window as any).liveGps.calls)).toBe(1);await page.getByRole('button',{name:'위치 안내 다시 시작',exact:true}).click();await expect(page.getByTestId('live-remaining')).toHaveText(remaining);expect(await page.evaluate(()=>(window as any).liveGps.calls)).toBe(2);
 });
 test('다른 장소 탐색·위치 재확인은 기존 안내를 보존하고 새 안내는 확인 후 교체한다',async({page})=>{
- await start(page);await close(page);await page.getByRole('button',{name:'현재 위치 다시 확인',exact:true}).click();await newDestination(page);expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([]);
+ await start(page);await close(page);await page.getByRole('button',{name:'현재 위치 다시 확인',exact:true}).click();await page.getByRole('button',{name:'이 위치에서 길찾기',exact:true}).click();await newDestination(page);expect(await page.evaluate(()=>(window as any).liveGps.clears)).toEqual([]);
  await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await expect(page.getByRole('heading',{name:'새 목적지로 안내할까요?'})).toBeVisible();await page.getByRole('button',{name:'계속 보기',exact:true}).click();expect(await page.evaluate(()=>(window as any).liveGps)).toMatchObject({calls:1,clears:[]});
  await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();await page.getByRole('button',{name:'뒤로 가기',exact:true}).click();await page.getByRole('button',{name:'안내로 돌아가기',exact:true}).click();await expect(page.locator('.journey-destination h2')).toHaveText('테스트 목적지');
  await close(page);await newDestination(page);await page.getByRole('button',{name:'길 안내 시작',exact:true}).click();await page.getByRole('button',{name:'새 안내 시작',exact:true}).click();await expect(page.locator('.journey-destination h2')).toHaveText('새 목적지');expect(await page.evaluate(()=>(window as any).liveGps)).toMatchObject({calls:2,clears:[1]});

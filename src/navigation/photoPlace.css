@@ -170,15 +170,3 @@
   line-height: 1.8;
   color: var(--muted);
 }
-/* 작은 보조 진입점만 추가해 사용자가 선택한 현재 위치 카드의 단순함을 유지합니다. */
-.photo-place-entry {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  width: 100%;
-  font-size: 0.8125rem;
-  color: var(--pine);
-  min-height: 44px;
-  margin: -10px 0 10px;
-}

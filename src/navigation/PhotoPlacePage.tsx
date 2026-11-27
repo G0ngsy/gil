@@ -29,7 +29,7 @@ type Step = "input" | "review" | "reading" | "text" | "results" | "selected";
 interface Props {
   initialPosition: UserPosition | null;
   configured: boolean;
-  onDone: () => void;
+  onDone: (place: Place) => void;
 }
 const validOrigin = (point: UserPosition | null) =>
   point &&
@@ -558,7 +558,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
             사진에서 확인한 주변 장소예요. 현재 GPS 위치나 길 안내는 바뀌지
             않아요.
           </p>
-          <button className="primary" onClick={onDone}>
+          <button className="primary" onClick={() => onDone(selected)}>
             확인 완료
           </button>
           <button className="secondary" onClick={() => setStep("results")}>

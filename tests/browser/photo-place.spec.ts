@@ -1,4 +1,5 @@
 /** 모의 OCR의 UI/수명 검증과 실제 엔진 검증을 이름과 테스트로 분리합니다. */
+import {mockLocationMap} from './helpers/locationMap';
 import { test, expect, type Page } from "@playwright/test";
 test.use({ reducedMotion: "no-preference" });
 const place = {
@@ -11,6 +12,7 @@ const place = {
 };
 
 async function setup(page: Page, worker = "normal") {
+  await mockLocationMap(page);
   await page.addInitScript(() => {
     sessionStorage.setItem("gilbit.intro.seen.v1", "1");
     const testState = {
@@ -22,8 +24,8 @@ async function setup(page: Page, worker = "normal") {
       permission: 0,
     };
     Object.assign(window, { photoTest: testState });
-    navigator.geolocation.getCurrentPosition = (ok) => {
-      testState.geo++;
+    navigator.geolocation.getCurrentPosition = (ok,fail) => {
+      testState.geo++;if((window as any).denyLocationFix){fail?.({code:1,message:'denied'} as GeolocationPositionError);return;}
       ok({
         coords: { latitude: 37.386, longitude: 127.124, accuracy: 8 },
         timestamp: Date.now(),
@@ -100,12 +102,11 @@ async function setup(page: Page, worker = "normal") {
   ).toBeEnabled();
 }
 async function open(page: Page) {
-  await page
-    .getByRole("button", { name: "사진으로 주변 장소 확인", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "지금 계신 곳을 보여 주세요" }),
-  ).toBeVisible();
+  await page.evaluate(() => {Object.assign(window,{denyLocationFix:true});});
+  await page.getByRole('button',{name:'현재 위치 확인',exact:true}).click();
+  await page.getByRole('button',{name:'사진으로 주변 확인',exact:true}).click();
+  await page.evaluate(() => {Object.assign(window,{denyLocationFix:false});});
+  await expect(page.getByRole('heading',{name:'지금 계신 곳을 보여 주세요'})).toBeVisible();
 }
 async function image(page: Page, width = 900, height = 300) {
   await page.evaluate(() => document.fonts.ready);
@@ -152,7 +153,7 @@ for (const width of [360, 390, 430])
       .poll(() => page.evaluate(() => (window as any).photoTest.ready))
       .toContain("push-forward");
     expect(await page.evaluate(() => (window as any).photoTest)).toMatchObject({
-      geo: 0,
+      geo: 1,
       started: 0,
       permission: 0,
     });
@@ -195,7 +196,7 @@ for (const width of [360, 390, 430])
         path: "test-results/photo-place-confirmed-390.png",
       });
     await page.getByRole("button", { name: "확인 완료" }).click();
-    await expect(page.locator(".home-hero")).toBeVisible();
+    await expect(page.locator(".location-photo-reference")).toContainText(place.name);await page.getByRole("button",{name:"뒤로 가기",exact:true}).click();await expect(page.locator(".home-hero")).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => (window as any).photoTest.ready))
       .toContain("push-back");
@@ -253,7 +254,7 @@ test("취소·빠른 재선택·브라우저 뒤로가기 후 늦은 OCR은 반�
     "직접 입력",
   );
   expect(await page.evaluate(() => (window as any).photoTest.stopped)).toBe(1);
-  await page.goBack();
+  await page.goBack();await expect(page.getByRole("heading",{name:"지금 계신 곳이 맞나요?"})).toBeVisible();await page.goBack();
   await expect(page.locator(".home-hero")).toBeVisible();
   await open(page);
   await expect(page.getByRole("img", { name: "선택한 사진" })).toHaveCount(
@@ -326,7 +327,7 @@ test("동작 줄이기·키보드 이동·큰 글씨, 작업 중 화면 숨김 �
     await page.locator("main").evaluate((e) => e.scrollWidth <= e.clientWidth),
   ).toBe(true);
   await page.getByRole("button", { name: "뒤로 가기", exact: true }).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");await page.getByRole("button",{name:"뒤로 가기",exact:true}).click();
   await expect(page.locator(".home-hero")).toBeVisible();
 });
 
