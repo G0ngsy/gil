@@ -131,3 +131,7 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 제품 `5e8a712` 자동배포 success, 배포 ID `31WmiLXVePAYZnzXmBocud65wcPz`. 공개 https://gilbit.vercel.app/ Chrome390×844에서 실제 Tesseract6.0.1/core6.1.2와 kor/eng1.0.0 모델 버전을 확인했다.
 실제 엔진으로 Canvas 합성 ‘서울도서관 / 서울 중구’를 읽고, 확인한 검색어로 실제 TMAP 검색200·후보17개를 받아 서울도서관을 선택했다. push-forward/역방향 push-back의 네이티브 전환 ready 성공, 홈 GPS 상태 유지, 페이지 예외0. [운영 화면](portfolio/assets/2026-11-26-photo-place-production-390.png).
 사진은 합성 입력이며 GPS만 서울시청 인근 공공 좌표/오차8m를 주입했다. 사진/OCR/검색 응답을 모의로 대체하지 않았다. 실제 휴대폰 촬영·Samsung Internet/PWA·현장 간판 인식률·실외 위치 정확도는 미확인이다. 이 후속 변경은 검증 기록/화면 자료만 추가한다.
+
+## 2026-11-27 위치 확인·사진 비교 운영 검증
+제품 `3f5aac0` 자동배포 success, 배포 ID `aKMBnVbr8bQmPRdKfV3Ta46zj6Vx`. 공개 https://gilbit.vercel.app/ Chrome390×844에서 실제 지도·주소200·Tesseract 합성 한글 입력·실제 TMAP 검색200→사진 장소 선택→비교 지도 복귀를 확인했다. GPS 주소 불변·위치 요청1회·push-forward2회/push-back2회 ready 성공·홈 검색 초점·페이지 예외0.
+[운영 비교 화면](portfolio/assets/2026-11-27-location-comparison-production-390.png). GPS만 서울시청 인근 공공 좌표/오차8m를 주입했고 사진은 Canvas 합성 서울도서관 간판이다. 지도/주소/OCR/검색 응답은 실제 연결이다. 실기기 촬영·현장 인식률·실외 GPS 정확도 검증과 구분한다. 이 후속 커밋은 검증 기록/화면만 갱신한다.
