@@ -26,9 +26,11 @@ const svg = (body: string, width: number, height: number) =>
 function LocationComparisonMap({
   position,
   place,
+  stale,
 }: {
   position: UserPosition | null;
   place: Place | null;
+  stale: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null),
     id = useId().replaceAll(":", "");
@@ -60,9 +62,9 @@ function LocationComparisonMap({
             new sdk.Marker({
               map,
               position: point(sdk, position),
-              title: "현재 GPS 위치",
+              title: stale ? "마지막 확인 위치" : "현재 GPS 위치",
               icon: svg(
-                '<circle cx="12" cy="12" r="10" fill="#2878D0" stroke="white" stroke-width="3"/>',
+                `<circle cx="12" cy="12" r="10" fill="${stale ? "#77776E" : "#2878D0"}" stroke="white" stroke-width="3"/>`,
                 24,
                 24,
               ),
@@ -126,7 +128,7 @@ function LocationComparisonMap({
       map?.destroy?.();
       element.replaceChildren();
     };
-  }, [position, place, key, retry]);
+  }, [position, place, key, retry, stale]);
   return (
     <div className="location-comparison-map">
       <div
@@ -158,8 +160,8 @@ function LocationComparisonMap({
         <div className="location-map-legend">
           {position && (
             <span>
-              <i className="location-gps-dot" />
-              현재 위치
+              <i className="location-gps-dot" data-stale={stale} />
+              {stale ? "마지막 확인 위치" : "현재 위치"}
             </span>
           )}
           {place && (
@@ -188,9 +190,23 @@ export function LocationConfirmPage(props: Props) {
     onConfirm,
     onAddressRetry,
   } = props;
+  // 확인 화면에 오래 머물렀다고 예전 GPS를 새 출발 위치로 확정하지 않도록 합니다.
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (!position) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [position]);
+  const stale = Boolean(
+    position && Math.max(now, Date.now()) - position.timestamp > 120000,
+  );
   return (
     <section className="location-confirm" aria-label="내 위치 확인">
-      <LocationComparisonMap position={position} place={photoPlace} />
+      <LocationComparisonMap
+        position={position}
+        place={photoPlace}
+        stale={stale}
+      />
       <div className="location-confirm-sheet">
         <h2>지금 계신 곳이 맞나요?</h2>
         <p className="current-address">
@@ -205,8 +221,18 @@ export function LocationConfirmPage(props: Props) {
         </p>
         {position && locating && <small>위치 갱신 중 · 이전 확인 위치</small>}
         {position && locationError && <small>이전 확인 위치</small>}
+        {position && (
+          <p className="location-confirm-accuracy">
+            기기 추정 오차 약 {Math.round(position.accuracy)}m
+          </p>
+        )}
+        {stale && (
+          <p className="location-confirm-note" role="status">
+            이전 위치예요. 다시 확인해 주세요.
+          </p>
+        )}
         <p className="location-confirm-note">
-          위치는 실제와 차이가 있을 수 있어요.
+          도로 어느 편에 있는지도 확인해 주세요. 위치는 실제와 다를 수 있어요.
         </p>
         {locationError && (
           <p className="inline-error" role="alert">
@@ -242,7 +268,7 @@ export function LocationConfirmPage(props: Props) {
         )}
         <button
           className="primary"
-          disabled={!position || locating || Boolean(locationError)}
+          disabled={!position || stale || locating || Boolean(locationError)}
           onClick={onConfirm}
         >
           이 위치에서 길찾기

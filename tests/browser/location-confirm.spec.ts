@@ -230,3 +230,37 @@ test("지도 실패도 주소 확인 가능, 큰 글씨/reduced motion/뒤로가
   await page.goBack();
   await expect(page.locator(".home-hero")).toBeVisible();
 });
+
+test("도로 편 확인·기기 추정 오차 표시, 오래된 GPS는 다시 확인해야 확정한다", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await setup(page);
+  await page
+    .getByRole("button", { name: "현재 위치 확인", exact: true })
+    .click();
+  await expect(
+    page.getByText("기기 추정 오차 약 8m", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/도로 어느 편/)).toBeVisible();
+  await page.clock.runFor(121000);
+  await expect(
+    page.getByRole("button", { name: "이 위치에서 길찾기" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText("이전 위치예요. 다시 확인해 주세요.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("마지막 확인 위치", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "현재 위치 다시 확인", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "이 위치에서 길찾기" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "이 위치에서 길찾기" }).click();
+  await expect(
+    page.getByRole("textbox", { name: "실제 목적지 검색" }),
+  ).toBeFocused();
+});

@@ -1,4 +1,4 @@
-/** 사진 검증·축소·OCR 작업 수명 관리. 장소나 GPS를 변경하는 책임은 없습니다. */
+/** 사진 검증·원본 영역 자르기·OCR 작업 수명 관리. GPS를 변경하지 않습니다. */
 export interface PreparedPhoto {
   blob: Blob;
   width: number;
@@ -8,9 +8,41 @@ export interface OcrProgress {
   phase: "preparing" | "recognizing";
   progress: number;
 }
+/** 사진 표시 크기와 무관한 0~1 비율입니다. 원본 화소로 변환한 뒤 자릅니다. */
+export interface PhotoCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 const aborted = () => new DOMException("작업 취소", "AbortError");
 
-/** 파일은 사진 선택기에 들어온 값도 다시 검사하고, 긴 변만 줄여 글자 비율을 유지합니다. */
+/** 원본의 글자가 전체 사진 축소 과정에서 사라지지 않도록 선택 좌표부터 계산합니다. */
+export function sourceCrop(width: number, height: number, crop: PhotoCrop) {
+  if (
+    ![width, height, crop.x, crop.y, crop.width, crop.height].every(
+      Number.isFinite,
+    ) ||
+    width < 1 ||
+    height < 1 ||
+    crop.x < 0 ||
+    crop.y < 0 ||
+    crop.width <= 0 ||
+    crop.height <= 0 ||
+    crop.x + crop.width > 1.000001 ||
+    crop.y + crop.height > 1.000001
+  )
+    throw new Error("사진 안에서 읽을 영역을 선택해 주세요.");
+  const x = Math.round(width * crop.x),
+    y = Math.round(height * crop.y);
+  const right = Math.min(width, Math.round(width * (crop.x + crop.width))),
+    bottom = Math.min(height, Math.round(height * (crop.y + crop.height)));
+  if (right <= x || bottom <= y)
+    throw new Error("읽을 글자가 포함되도록 영역을 조금 넓혀 주세요.");
+  return { x, y, width: right - x, height: bottom - y };
+}
+
+/** 선택기 파일도 다시 검사합니다. 원본은 메모리에만 보관하고 영역 선택 전에는 축소하지 않습니다. */
 export async function preparePhoto(
   file: File,
   signal: AbortSignal,
@@ -48,12 +80,57 @@ export async function preparePhoto(
     if (signal.aborted) throw aborted();
     if (!image.naturalWidth || !image.naturalHeight)
       throw new Error("사진 크기를 확인하지 못했어요.");
-    const ratio = Math.min(
-      1,
-      2048 / Math.max(image.naturalWidth, image.naturalHeight),
-    );
-    const width = Math.max(1, Math.round(image.naturalWidth * ratio)),
-      height = Math.max(1, Math.round(image.naturalHeight * ratio));
+    return {
+      blob: file,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+    };
+  } finally {
+    image.src = "";
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** 선택 영역을 원본에서 직접 잘라낸 후에만 줄입니다. 원본 사진을 OCR 작업자로 넘기지 않습니다. */
+export async function cropPhoto(
+  photo: PreparedPhoto,
+  crop: PhotoCrop,
+  signal: AbortSignal,
+): Promise<PreparedPhoto> {
+  if (signal.aborted) throw aborted();
+  const url = URL.createObjectURL(photo.blob),
+    image = new Image();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const cleanup = () => {
+        signal.removeEventListener("abort", cancel);
+        image.onload = null;
+        image.onerror = null;
+      };
+      const cancel = () => {
+        cleanup();
+        image.src = "";
+        reject(aborted());
+      };
+      signal.addEventListener("abort", cancel, { once: true });
+      image.onload = () => {
+        cleanup();
+        resolve();
+      };
+      image.onerror = () => {
+        cleanup();
+        reject(new Error("사진을 다시 열지 못했어요. 다시 선택해 주세요."));
+      };
+      image.src = url;
+    });
+    if (signal.aborted) throw aborted();
+    const area = sourceCrop(image.naturalWidth, image.naturalHeight, crop);
+    // 글자를 테두리에 너무 딱 붙이지 않도록 10px 여백을 두되 전체 출력은 2048px 이하입니다.
+    const ratio = Math.min(1, 2028 / Math.max(area.width, area.height));
+    const contentWidth = Math.max(1, Math.round(area.width * ratio)),
+      contentHeight = Math.max(1, Math.round(area.height * ratio));
+    const width = contentWidth + 20,
+      height = contentHeight + 20;
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
@@ -62,7 +139,17 @@ export async function preparePhoto(
     // 투명 PNG도 흰 바탕에 글자가 남게 하고 브라우저가 해석한 촬영 방향을 사용합니다.
     context.fillStyle = "#fff";
     context.fillRect(0, 0, width, height);
-    context.drawImage(image, 0, 0, width, height);
+    context.drawImage(
+      image,
+      area.x,
+      area.y,
+      area.width,
+      area.height,
+      10,
+      10,
+      contentWidth,
+      contentHeight,
+    );
     const blob = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
         (value) =>
@@ -133,7 +220,9 @@ export function startPhotoOcr(
     try {
       worker.postMessage({ image });
     } catch {
-      finish(new Error("사진을 인식 작업에 전달하지 못했어요. 다시 선택해 주세요."));
+      finish(
+        new Error("사진을 인식 작업에 전달하지 못했어요. 다시 선택해 주세요."),
+      );
     }
   });
   return { promise, cancel: () => finish(aborted()) };

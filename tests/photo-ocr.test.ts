@@ -1,7 +1,11 @@
 /** 실제 엔진 정확도와 분리해 입력 제한·OCR 줄 정리의 규칙을 검증합니다. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { preparePhoto, recognizedLines } from "../src/navigation/photoOcr.ts";
+import {
+  preparePhoto,
+  recognizedLines,
+  sourceCrop,
+} from "../src/navigation/photoOcr.ts";
 
 test("OCR 줄은 공백/전각을 정리하고 말줄임 뒤 중복을 제거한다", () => {
   assert.deepEqual(
@@ -43,4 +47,22 @@ test("지원하지 않는 파일·10MB 초과·취소는 이미지 디코딩 전
     ),
     { name: "AbortError" },
   );
+});
+
+test("선택 영역은 미리보기 축소 크기가 아닌 원본 화소로 변환한다", () => {
+  assert.deepEqual(
+    sourceCrop(6000, 4000, { x: 0.25, y: 0.1, width: 0.1, height: 0.2 }),
+    { x: 1500, y: 400, width: 600, height: 800 },
+  );
+  assert.deepEqual(
+    sourceCrop(3000, 5000, { x: 0, y: 0, width: 1, height: 1 }),
+    { x: 0, y: 0, width: 3000, height: 5000 },
+  );
+  for (const crop of [
+    { x: -0.1, y: 0, width: 0.5, height: 0.5 },
+    { x: 0.8, y: 0, width: 0.5, height: 0.5 },
+    { x: 0, y: 0, width: 0, height: 0.5 },
+    { x: NaN, y: 0, width: 0.5, height: 0.5 },
+  ])
+    assert.throws(() => sourceCrop(6000, 4000, crop));
 });

@@ -157,3 +157,12 @@
     grid-template-columns: 1fr;
   }
 }
+.location-gps-dot[data-stale="true"] {
+  background: #77776e;
+}
+.location-confirm-accuracy {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 6px 0;
+}

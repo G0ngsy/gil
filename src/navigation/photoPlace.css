@@ -170,3 +170,63 @@
   line-height: 1.8;
   color: var(--muted);
 }
+
+/* 사진은 원본 비율로 표시하고 바깥을 가려 선택한 글자 부분을 구분합니다. */
+.photo-crop-image {
+  position: relative;
+  width: 100%;
+  margin: 12px auto;
+  overflow: hidden;
+  border-radius: 12px;
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+}
+.photo-crop-image > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+.photo-crop-box {
+  position: absolute;
+  border: 2px solid var(--teal);
+  box-shadow: 0 0 0 1000px #152a2566;
+  pointer-events: none;
+}
+.photo-crop-status {
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--pine);
+  margin: 8px 0;
+}
+.photo-crop-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.photo-crop-actions button {
+  font-size: 0.8125rem;
+  min-height: 44px;
+  color: var(--pine);
+}
+.photo-crop-adjust {
+  margin: 8px 0 14px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.photo-crop-adjust summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+.photo-crop-adjust label {
+  display: block;
+  margin: 8px 0;
+}
+.photo-crop-adjust input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--pine);
+}

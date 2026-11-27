@@ -16,12 +16,15 @@ import {
 } from "../../shared/navigation";
 import { Icon } from "../ui";
 import { getUserPosition, searchPlaces, type UserPosition } from "./client";
+import { PhotoCropSelector } from "./PhotoCropSelector";
 import {
+  cropPhoto,
   preparePhoto,
   recognizedLines,
   startPhotoOcr,
   type OcrProgress,
   type PreparedPhoto,
+  type PhotoCrop,
 } from "./photoOcr";
 import "./photoPlace.css";
 
@@ -52,6 +55,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
       phase: "preparing",
       progress: 0,
     });
+  const [crop, setCrop] = useState<PhotoCrop | null>(null);
   const [lines, setLines] = useState<string[]>([]),
     [chosenLines, setChosenLines] = useState<string[]>([]),
     [query, setQuery] = useState("");
@@ -133,6 +137,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
     setLocating(false);
     setError("");
     setPhoto(null);
+    setCrop(null);
     setSelected(null);
     setLines([]);
     setChosenLines([]);
@@ -156,14 +161,19 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
 
   /** OCR은 명시적으로 누를 때만 시작합니다. 사진 자체는 검색 서버에 보내지 않습니다. */
   async function readPhoto() {
-    if (!photo) return;
+    if (!photo || !crop) return;
     cancel();
-    const token = version.current;
+    const token = version.current,
+      controller = new AbortController();
+    request.current = controller;
     setError("");
     setReadingProgress({ phase: "preparing", progress: 0 });
     setStep("reading");
     try {
-      const job = startPhotoOcr(photo.blob, (value) => {
+      // 전체 사진을 먼저 축소하지 않고 선택한 원본 영역만 잘라 엔진에 전달합니다.
+      const selectedPhoto = await cropPhoto(photo, crop, controller.signal);
+      if (token !== version.current) return;
+      const job = startPhotoOcr(selectedPhoto.blob, (value) => {
         if (token === version.current) setReadingProgress(value);
       });
       ocr.current = job;
@@ -184,7 +194,10 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
         setError(message(e));
       }
     } finally {
-      if (token === version.current) ocr.current = null;
+      if (token === version.current) {
+        ocr.current = null;
+        request.current = null;
+      }
     }
   }
 
@@ -289,7 +302,7 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
               : step === "reading"
                 ? "사진의 글자를 읽고 있어요"
                 : step === "review"
-                  ? "이 사진을 확인해 주세요"
+                  ? "읽을 글자 부분을 선택해 주세요"
                   : "지금 계신 곳을 보여 주세요"}
       </h2>
       {error && (
@@ -300,14 +313,16 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
       {/* 사진 입력/확인: 자동 실행하지 않고 사용자가 인식을 누를 때까지 미리보기만 보여줍니다. */}
       {(step === "input" || step === "review") && (
         <>
-          <p className="photo-description">
+          {step==='input'&&<p className="photo-description">
             안전한 곳에 멈춰 주변 건물의 이름이나 글자가 보이게 촬영해 주세요.
-          </p>
+          </p>}
           {step === "review" && preview && (
-            <img
-              className="photo-preview"
+            <PhotoCropSelector
               src={preview}
-              alt="선택한 사진"
+              width={photo!.width}
+              height={photo!.height}
+              value={crop}
+              onChange={setCrop}
             />
           )}
           {preparing && <p role="status">사진을 준비하고 있어요…</p>}
@@ -329,8 +344,12 @@ export function PhotoPlacePage({ initialPosition, configured, onDone }: Props) {
             </button>
           </div>
           {step === "review" && (
-            <button className="primary" onClick={() => void readPhoto()}>
-              이 사진에서 글자 읽기
+            <button
+              className="primary"
+              disabled={!crop}
+              onClick={() => void readPhoto()}
+            >
+              선택한 영역 읽기
             </button>
           )}
           <button
