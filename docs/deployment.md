@@ -135,3 +135,8 @@ Production 앱에 모의 카메라(canvas)·GPS·144m 경로/API 응답을 주�
 ## 2026-11-27 위치 확인·사진 비교 운영 검증
 제품 `3f5aac0` 자동배포 success, 배포 ID `aKMBnVbr8bQmPRdKfV3Ta46zj6Vx`. 공개 https://gilbit.vercel.app/ Chrome390×844에서 실제 지도·주소200·Tesseract 합성 한글 입력·실제 TMAP 검색200→사진 장소 선택→비교 지도 복귀를 확인했다. GPS 주소 불변·위치 요청1회·push-forward2회/push-back2회 ready 성공·홈 검색 초점·페이지 예외0.
 [운영 비교 화면](portfolio/assets/2026-11-27-location-comparison-production-390.png). GPS만 서울시청 인근 공공 좌표/오차8m를 주입했고 사진은 Canvas 합성 서울도서관 간판이다. 지도/주소/OCR/검색 응답은 실제 연결이다. 실기기 촬영·현장 인식률·실외 GPS 정확도 검증과 구분한다. 이 후속 커밋은 검증 기록/화면만 갱신한다.
+
+
+## 2026-11-27 영역 선택·위치 확인 운영 검증
+제품 커밋3c458aa 자동배포 success, 배포 ID38Y7Ft2qBkHiJp4qTKBSeKPT3eEj. 공개 https://gilbit.vercel.app/ Chrome390×844에서 첫째 줄 글자 영역 드래그→실제 Tesseract 한글 인식(선택 밖 둘째 줄 제외)→실제 TMAP 검색200/후보17개→서울도서관 선택→위치 비교→홈 입력 초점까지 통과했다. 실제 주소 조회200, GPS 주소 불변, 위치 요청1회, push-forward2회/push-back2회 ready 성공, 페이지 예외0. [영역 선택](portfolio/assets/2026-11-27-photo-crop-production-390.png), [위치 비교](portfolio/assets/2026-11-27-location-crop-production-390.png).
+입력은 Canvas 합성 서울도서관/서울 중구이며 GPS만 공개 서울시청 좌표/추정8m로 주입했다. 지도/주소/OCR/장소 검색은 실제 연결이다. 실기기 촬영·Samsung Internet·현장 OCR·실외 GPS 정확도는 미확인이다. 임시 운영 검사에서 이미지/전환 완료 대기와 주소 조회 완료 대기, 홈 textbox 역할을 바로잡은 뒤 전체 재통과했다. 제품 코드는 이 후속 검증에서 바꾸지 않았다. AI 지원. 본 후속 커밋은 문서/화면 자료만 갱신한다.
