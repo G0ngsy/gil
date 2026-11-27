@@ -414,3 +414,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--tea
 .location-card-action .current-address{font-size:.9375rem;line-height:1.6}
 .location-card-action .compact-location-copy>small{display:block;margin-top:3px;font-size:.6875rem;line-height:1.6;color:var(--muted)}
 .compact-location>.inline-error,.compact-location>.address-warning,.compact-location>.text-button{margin:0 14px 12px}
+
+/* 센서 기준 북쪽 진단: 실제 경로 안내나 공간 고정 AR과 구분합니다. */
+.camera-compass{border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;min-width:0}.camera-compass h3{font-size:1rem}.camera-compass-dial{height:210px;width:210px;max-width:100%;border:1px solid var(--line);border-radius:50%;position:relative;margin:18px auto;display:grid;place-items:center;background:#fffdf9}.compass-forward{position:absolute;top:15px;font-size:.75rem;color:var(--muted)}.camera-compass-arrow{color:var(--teal);display:flex;flex-direction:column;align-items:center;transform-origin:center center}.camera-compass-arrow>span{font-weight:700}
